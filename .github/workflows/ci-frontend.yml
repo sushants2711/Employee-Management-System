@@ -2,12 +2,12 @@ name: Frontend CI
 
 on:
   push:
-    branches: [ "main", "master" ]
+    branches: [ "main", "master", "backend-development", "bug-fix-backend", "bug-fix-frontend", "frontend-development", "optimize-backend", "optimize-frontend" ]
     paths:
       - "frontend/**"
       - ".github/workflows/frontend-ci.yaml"
   pull_request:
-    branches: [ "main", "master" ]
+    branches: [ "main", "master", "backend-development", "bug-fix-backend", "bug-fix-frontend", "frontend-development", "optimize-backend", "optimize-frontend" ]
     paths:
       - "frontend/**"
       - ".github/workflows/frontend-ci.yaml"
