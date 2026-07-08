@@ -21,12 +21,10 @@ export const createdResponse = (
 export const badRequestResponse = (
   res,
   message = "Bad Request",
-  error = null
 ) => {
   return res.status(400).json({
     success: false,
     message,
-    error,
   });
 };
 
@@ -42,23 +40,20 @@ export const unauthorizedResponse = (
   });
 };
 
-export const forbiddenResponse = (res, message = "Forbidden", error = null) => {
+export const forbiddenResponse = (res, message = "Forbidden") => {
   return res.status(403).json({
     success: false,
     message,
-    error,
   });
 };
 
 export const notFoundResponse = (
   res,
   message = "Resource not found",
-  error = null
 ) => {
   return res.status(404).json({
     success: false,
     message,
-    error,
   });
 };
 
