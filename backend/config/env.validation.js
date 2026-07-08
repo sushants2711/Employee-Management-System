@@ -14,7 +14,11 @@ export const validateEnv = () => {
         "COOKIE_MAX_AGE",
         "CLOUDINARY_CLOUD_NAME",
         "CLOUDINARY_API_KEY",
-        "CLOUDINARY_API_SECRET"
+        "CLOUDINARY_API_SECRET",
+        "SMTP_HOST",
+        "SMTP_PORT",
+        "SMTP_USER",
+        "SMTP_PASS"
     ];
 
     const missingVars = requiredEnvVars.filter((curr) => !process.env[curr]);
