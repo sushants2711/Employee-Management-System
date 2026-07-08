@@ -30,7 +30,7 @@ const userSchema = new mongoose.Schema({
     },
     isAvailable: {
         type: String,
-        enum: ["Available", "Busy", "Do not distrub", "Appear offline", "Break Taken"],
+        enum: ["Available", "Busy", "Do not distrub", "Appear offline", "Break Taken", "Meeting"],
         default: "Available",
     },
     isEmailVerified: {
@@ -58,11 +58,16 @@ const userSchema = new mongoose.Schema({
     teamName: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "Team",
-        required: true
+        default: null
     },
     designation: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "Designation",
+        required: true
+    },
+    department: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Department",
         required: true
     }
 }, { timestamps: true });
