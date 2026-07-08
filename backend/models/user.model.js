@@ -78,6 +78,11 @@ const userSchema = new mongoose.Schema(
       ref: "Department",
       required: true,
     },
+    userType: {
+      type: String,
+      enum: ["SUPERUSER", "NORMALUSER"],
+      default: "NORMALUSER",
+    }
   },
   { timestamps: true }
 );

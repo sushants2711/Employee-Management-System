@@ -15,7 +15,6 @@ export const sendCookieToUser = async (userId, res) => {
         res.cookie(COOKIE_NAME, token, cookieOptionsSetting);
 
     } catch (error) {
-        internalServerErrorResponse(res, "Internal Server Error", error.message);
+        return internalServerErrorResponse(res, "Internal Server Error", error.message);
     };
 };
-
