@@ -11,7 +11,10 @@ export const validateEnv = () => {
         "JWT_EXPIRES_IN",
         "NODE_ENV",
         "COOKIE_NAME",
-        "COOKIE_MAX_AGE"
+        "COOKIE_MAX_AGE",
+        "CLOUDINARY_CLOUD_NAME",
+        "CLOUDINARY_API_KEY",
+        "CLOUDINARY_API_SECRET"
     ];
 
     const missingVars = requiredEnvVars.filter((curr) => !process.env[curr]);
