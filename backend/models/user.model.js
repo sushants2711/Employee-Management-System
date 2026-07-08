@@ -1,75 +1,85 @@
 import mongoose from "mongoose";
 
-const userSchema = new mongoose.Schema({
+const userSchema = new mongoose.Schema(
+  {
     employeeId: {
-        type: String,
-        required: true,
-        unique: true
+      type: String,
+      required: true,
+      unique: true,
     },
     name: {
-        type: String,
-        required: true
+      type: String,
+      required: true,
     },
     email: {
-        type: String,
-        required: true,
-        unique: true
+      type: String,
+      required: true,
+      unique: true,
     },
     password: {
-        type: String,
-        required: true
+      type: String,
+      required: true,
     },
     role: {
-        type: String,
-        enum: ["Employee", "HR", "Manager", "Team Leader"]
+      type: String,
+      enum: ["Employee", "HR", "Manager", "Team Leader"],
     },
     status: {
-        type: String,
-        enum: ["ACTIVE", "INACTIVE", "SUSPENDED"],
-        default: "ACTIVE",
+      type: String,
+      enum: ["ACTIVE", "INACTIVE", "SUSPENDED"],
+      default: "ACTIVE",
     },
     isAvailable: {
-        type: String,
-        enum: ["Available", "Busy", "Do not distrub", "Appear offline", "Break Taken", "Meeting"],
-        default: "Available",
+      type: String,
+      enum: [
+        "Available",
+        "Busy",
+        "Do not distrub",
+        "Appear offline",
+        "Break Taken",
+        "Meeting",
+      ],
+      default: "Available",
     },
     isEmailVerified: {
-        type: Boolean,
-        default: true,
+      type: Boolean,
+      default: true,
     },
     lastLogin: {
-        type: Date,
-        default: Date.now,
+      type: Date,
+      default: Date.now,
     },
     forgotPasswordToken: {
-        type: String,
+      type: String,
     },
     forgotPasswordExpireTime: {
-        type: Date
+      type: Date,
     },
     profilePic: {
-        type: String
+      type: String,
     },
     phoneNumber: {
-        type: String,
-        required: true,
-        unique: true
+      type: String,
+      required: true,
+      unique: true,
     },
     teamName: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Team",
-        default: null
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Team",
+      default: null,
     },
     designation: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Designation",
-        required: true
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Designation",
+      required: true,
     },
     department: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Department",
-        required: true
-    }
-}, { timestamps: true });
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Department",
+      required: true,
+    },
+  },
+  { timestamps: true }
+);
 
 export default mongoose.models.User || mongoose.model("User", userSchema);

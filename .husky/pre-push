@@ -1,0 +1,18 @@
+#!/usr/bin/env sh
+
+echo "Checking backend..."
+cd backend
+npm run check-all
+BACKEND_STATUS=$?
+cd ..
+
+echo "Checking frontend..."
+cd frontend
+npm run check-all
+FRONTEND_STATUS=$?
+cd ..
+
+if [ $BACKEND_STATUS -ne 0 ] || [ $FRONTEND_STATUS -ne 0 ]; then
+  echo "Code quality checks failed."
+  exit 1
+fi

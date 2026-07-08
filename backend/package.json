@@ -9,7 +9,13 @@
   "scripts": {
     "start": "node index.js",
     "dev": "nodemon index.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "prepare": "cd .. && husky .husky || true",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "check-all": "npm run format:check && npm run lint"
   },
   "dependencies": {
     "bcryptjs": "^3.0.3",
@@ -27,6 +33,10 @@
     "nodemailer": "^9.0.3"
   },
   "devDependencies": {
-    "nodemon": "^3.1.14"
+    "eslint": "^9.39.4",
+    "globals": "^17.7.0",
+    "husky": "^9.1.7",
+    "nodemon": "^3.1.14",
+    "prettier": "^3.9.4"
   }
 }
