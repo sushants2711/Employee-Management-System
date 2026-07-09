@@ -51,6 +51,10 @@ const projectSchema = new mongoose.Schema(
       enum: ["PLANNED", "IN_PROGRESS", "COMPLETED", "ON_HOLD"],
       default: "PLANNED",
     },
+    isActive: {
+      type: Boolean,
+      default: true,
+    },
   },
   { timestamps: true, minimize: true }
 );
