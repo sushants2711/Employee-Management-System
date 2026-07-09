@@ -74,6 +74,22 @@ const salarySchema = new mongoose.Schema(
       type: String,
       default: "Completed",
     },
+    paidLeaveUsed: {
+      type: Number,
+      default: 0,
+      min: 0,
+      max: 2,
+    },
+    unpaidLeaveDays: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
+    totalLeaveTaken: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
   },
   { timestamps: true, minimize: true }
 );
