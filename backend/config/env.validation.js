@@ -18,6 +18,7 @@ export const validateEnv = () => {
     "SMTP_PORT",
     "SMTP_USER",
     "SMTP_PASS",
+    "ALLOWED_ORIGINS",
   ];
 
   const missingVars = requiredEnvVars.filter((curr) => !process.env[curr]);
