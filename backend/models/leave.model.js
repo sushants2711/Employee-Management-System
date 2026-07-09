@@ -48,7 +48,7 @@ const leaveSchema = new mongoose.Schema(
       required: true,
     },
   },
-  { timestamps: true }
+  { timestamps: true, minimize: true }
 );
 
 export default mongoose.models.Leave || mongoose.model("Leave", leaveSchema);
