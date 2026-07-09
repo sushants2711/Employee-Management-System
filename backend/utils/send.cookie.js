@@ -5,16 +5,17 @@ import { internalServerErrorResponse } from "./response.handler.js";
 import { cookieOptionsSetting } from "./cookieOptions.js";
 
 export const sendCookieToUser = async (userId, res) => {
-    try {
-        const token = jwt.sign(
-            { userId },
-            JWT_TOKEN,
-            { expiresIn: JWT_EXPIRES_IN }
-        );
+  try {
+    const token = jwt.sign({ userId }, JWT_TOKEN, {
+      expiresIn: JWT_EXPIRES_IN,
+    });
 
-        res.cookie(COOKIE_NAME, token, cookieOptionsSetting);
-
-    } catch (error) {
-        return internalServerErrorResponse(res, "Internal Server Error", error.message);
-    };
+    res.cookie(COOKIE_NAME, token, cookieOptionsSetting);
+  } catch (error) {
+    return internalServerErrorResponse(
+      res,
+      "Internal Server Error",
+      error.message
+    );
+  }
 };

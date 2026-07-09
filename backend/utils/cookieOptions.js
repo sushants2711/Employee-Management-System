@@ -1,8 +1,8 @@
 import { COOKIE_MAX_AGE, NODE_ENV } from ".";
 
 export const cookieOptionsSetting = {
-    maxAge: COOKIE_MAX_AGE,
-    httpOnly: true,
-    sameSite: NODE_ENV === "development" ? "lax" : "none",
-    secure: NODE_ENV !== "development",
+  maxAge: COOKIE_MAX_AGE,
+  httpOnly: true,
+  sameSite: NODE_ENV === "development" ? "lax" : "none",
+  secure: NODE_ENV !== "development",
 };

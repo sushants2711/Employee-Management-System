@@ -90,12 +90,12 @@ const userSchema = new mongoose.Schema(
     },
     superUserOtp: {
       type: String,
-      default: null
+      default: null,
     },
     superUserOtpExpiredTime: {
       type: Date,
-      default: null
-    }
+      default: null,
+    },
   },
   { timestamps: true, minimize: true }
 );

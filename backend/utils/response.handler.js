@@ -18,23 +18,17 @@ export const createdResponse = (
   });
 };
 
-export const badRequestResponse = (
-  res,
-  message = "Bad Request",
-) => {
+export const badRequestResponse = (res, message = "Bad Request") => {
   return res.status(400).json({
     success: false,
     message,
   });
 };
 
-export const unauthorizedResponse = (
-  res,
-  message = "Unauthorized"
-) => {
+export const unauthorizedResponse = (res, message = "Unauthorized") => {
   return res.status(401).json({
     success: false,
-    message
+    message,
   });
 };
 
@@ -45,10 +39,7 @@ export const forbiddenResponse = (res, message = "Forbidden") => {
   });
 };
 
-export const notFoundResponse = (
-  res,
-  message = "Resource not found",
-) => {
+export const notFoundResponse = (res, message = "Resource not found") => {
   return res.status(404).json({
     success: false,
     message,

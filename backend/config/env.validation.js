@@ -3,38 +3,39 @@ dotenv.config();
 
 // Validate that all required environment variables are present
 export const validateEnv = () => {
+  const requiredEnvVars = [
+    "PORT",
+    "MONGO_URI",
+    "JWT_TOKEN",
+    "JWT_EXPIRES_IN",
+    "NODE_ENV",
+    "COOKIE_NAME",
+    "COOKIE_MAX_AGE",
+    "CLOUDINARY_CLOUD_NAME",
+    "CLOUDINARY_API_KEY",
+    "CLOUDINARY_API_SECRET",
+    "SMTP_HOST",
+    "SMTP_PORT",
+    "SMTP_USER",
+    "SMTP_PASS",
+  ];
 
-    const requiredEnvVars = [
-        "PORT",
-        "MONGO_URI",
-        "JWT_TOKEN",
-        "JWT_EXPIRES_IN",
-        "NODE_ENV",
-        "COOKIE_NAME",
-        "COOKIE_MAX_AGE",
-        "CLOUDINARY_CLOUD_NAME",
-        "CLOUDINARY_API_KEY",
-        "CLOUDINARY_API_SECRET",
-        "SMTP_HOST",
-        "SMTP_PORT",
-        "SMTP_USER",
-        "SMTP_PASS"
-    ];
+  const missingVars = requiredEnvVars.filter((curr) => !process.env[curr]);
 
-    const missingVars = requiredEnvVars.filter((curr) => !process.env[curr]);
+  if (missingVars.length > 0) {
+    console.error("[ERROR] Missing required environment variables:");
 
-    if (missingVars.length > 0) {
-        console.error("[ERROR] Missing required environment variables:");
+    missingVars.forEach((curr) => {
+      console.error(`   - ${curr}`);
+    });
 
-        missingVars.forEach((curr) => {
-            console.error(`   - ${curr}`);
-        });
+    console.error(
+      "Please check your .env file and ensure all required variables are set."
+    );
 
-        console.error("Please check your .env file and ensure all required variables are set.");
+    process.exit(1);
+  }
 
-        process.exit(1);
-    };
-
-    // Keep this as console.log since logger might not be initialized yet
-    console.log("[OK] All required environment variables are present");
+  // Keep this as console.log since logger might not be initialized yet
+  console.log("[OK] All required environment variables are present");
 };
