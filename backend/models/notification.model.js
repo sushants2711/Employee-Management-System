@@ -42,7 +42,7 @@ const notificationSchema = new mongoose.Schema(
       default: null,
     },
   },
-  { timestamps: true }
+  { timestamps: true, minimize: true }
 );
 
 export default mongoose.models.Notification ||
