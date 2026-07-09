@@ -39,6 +39,18 @@ const projectSchema = new mongoose.Schema(
       ref: "User",
       required: true,
     },
+    employees: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+        required: true,
+      },
+    ],
+    status: {
+      type: String,
+      enum: ["PLANNED", "IN_PROGRESS", "COMPLETED", "ON_HOLD"],
+      default: "PLANNED",
+    },
   },
   { timestamps: true, minimize: true }
 );
