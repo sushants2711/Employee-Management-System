@@ -29,7 +29,7 @@ export const userRegistrationMiddleware = async (req, res, next) => {
       return validationErrorResponse(
         res,
         "Error Occured at User Registration Validation",
-        error.message
+        error?.details?.[0]?.message
       );
     }
 
@@ -64,7 +64,7 @@ export const loginUserMiddleware = async (req, res, next) => {
       return validationErrorResponse(
         res,
         "Error Occured at Login Validation",
-        error.message
+        error?.details?.[0]?.message
       );
     }
 
@@ -91,7 +91,7 @@ export const userForgotPasswordMiddleware = async (req, res, next) => {
       return validationErrorResponse(
         res,
         "Error Occured at Forgot Password Validation",
-        error.message
+        error?.details?.[0]?.message
       );
     }
 
@@ -120,7 +120,7 @@ export const resetPasswordMiddleware = async (req, res, next) => {
       return validationErrorResponse(
         res,
         "Error Occured at Reset Password Validation",
-        error.message
+        error?.details?.[0]?.message
       );
     }
 
@@ -155,7 +155,7 @@ export const updatePasswordMiddleware = async (req, res, next) => {
       return validationErrorResponse(
         res,
         "Error Occured at Update Password Validation",
-        error.message
+        error?.details?.[0]?.message
       );
     }
 
@@ -192,7 +192,7 @@ export const updateUserRoleMiddleware = async (req, res, next) => {
       return validationErrorResponse(
         res,
         "Error Occured at Update User Role Validation",
-        error.message
+        error?.details?.[0]?.message
       );
     }
 
@@ -219,7 +219,7 @@ export const updateUserStatusMiddleware = async (req, res, next) => {
       return validationErrorResponse(
         res,
         "Error Occured at Update User Status Validation",
-        error.message
+        error?.details?.[0]?.message
       );
     }
 
@@ -256,7 +256,7 @@ export const updateUserIsAvailableMiddleware = async (req, res, next) => {
       return validationErrorResponse(
         res,
         "Error Occured at Update User IsAvailable Validation",
-        error.message
+        error?.details?.[0]?.message
       );
     }
 
@@ -283,7 +283,7 @@ export const updateUserDesignationMiddleware = async (req, res, next) => {
       return validationErrorResponse(
         res,
         "Error Occured at Update User Designation Validation",
-        error.message
+        error?.details?.[0]?.message
       );
     }
 
@@ -310,7 +310,7 @@ export const updateUserDepartmentMiddleware = async (req, res, next) => {
       return validationErrorResponse(
         res,
         "Error Occured at Update User Department Validation",
-        error.message
+        error?.details?.[0]?.message
       );
     }
 
@@ -337,7 +337,7 @@ export const updateUserTeamNameMiddleware = async (req, res, next) => {
       return validationErrorResponse(
         res,
         "Error Occured at Update User TeamName Validation",
-        error.message
+        error?.details?.[0]?.message
       );
     }
 
@@ -364,7 +364,7 @@ export const updateUserPhoneNumberMiddleware = async (req, res, next) => {
       return validationErrorResponse(
         res,
         "Error Occured at Update User PhoneNumber Validation",
-        error.message
+        error?.details?.[0]?.message
       );
     }
 
@@ -391,7 +391,7 @@ export const updateUserTypeMiddleware = async (req, res, next) => {
       return validationErrorResponse(
         res,
         "Error Occured at Update User Type Validation",
-        error.message
+        error?.details?.[0]?.message
       );
     }
 
