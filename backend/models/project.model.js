@@ -39,7 +39,7 @@ const projectSchema = new mongoose.Schema(
       ref: "User",
       required: true,
     },
-    employees: [
+    members: [
       {
         type: mongoose.Schema.Types.ObjectId,
         ref: "User",
