@@ -83,9 +83,21 @@ const userSchema = new mongoose.Schema(
       type: String,
       enum: ["SUPERUSER", "NORMALUSER"],
       default: "NORMALUSER",
+    },
+    isSuperUserVerified: {
+      type: Boolean,
+      default: false,
+    },
+    superUserOtp: {
+      type: String,
+      default: null
+    },
+    superUserOtpExpiredTime: {
+      type: Date,
+      default: null
     }
   },
-  { timestamps: true }
+  { timestamps: true, minimize: true }
 );
 
 export default mongoose.models.User || mongoose.model("User", userSchema);
