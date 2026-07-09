@@ -10,7 +10,7 @@ export const createDepartmentMiddleware = async (req, res, next) => {
     const schema = joi.object({
       departmentName: joi.string().min(2).max(50).trim().required(),
       departmentCode: joi.string().min(5).max(50).trim().required(),
-      description: joi.string().optional().allow(""),
+      description: joi.string().min(10).max(255).trim().optional().allow(""),
     });
 
     const { error } = schema.validate(req.body);
@@ -39,7 +39,7 @@ export const updateDepartmentMiddleware = async (req, res, next) => {
     const schema = joi.object({
       departmentName: joi.string().min(2).max(50).trim().optional().allow(""),
       departmentCode: joi.string().min(5).max(50).trim().optional().allow(""),
-      description: joi.string().optional().allow(""),
+      description: joi.string().min(10).max(255).trim().optional().allow(""),
     });
 
     const { error } = schema.validate(req.body);
