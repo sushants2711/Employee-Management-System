@@ -4,8 +4,7 @@ import cookieParser from "cookie-parser";
 import cors from "cors";
 import helmet from "helmet";
 import dotenv from "dotenv";
-import morgan from "morgan";
-import chalk from "chalk";
+import { setupLogger } from "./utils/logger.js";
 import mongoose from "mongoose";
 import { PORT } from "./config/constant.js";
 import { validateEnv } from "./config/env.validation.js";
@@ -21,33 +20,8 @@ validateEnv();
 // app config
 const app = express();
 
-// Logging configuration: Colorful logs in development, standard logs in production
-if (process.env.NODE_ENV === "development") {
-  app.use(
-    morgan((tokens, req, res) => {
-      const status = tokens.status(req, res);
-      const statusColor =
-        status >= 500
-          ? chalk.red.bold(status)
-          : status >= 400
-            ? chalk.yellow.bold(status)
-            : status >= 300
-              ? chalk.cyan.bold(status)
-              : chalk.green.bold(status);
-
-      return [
-        chalk.blue.bold(tokens.method(req, res)),
-        chalk.magenta(tokens.url(req, res)),
-        statusColor,
-        chalk.white(tokens["response-time"](req, res) + " ms"),
-        chalk.gray("- " + (tokens.res(req, res, "content-length") || "0")),
-      ].join(" ");
-    })
-  );
-} else {
-  // Standard uncolored logs for production
-  app.use(morgan("combined"));
-}
+// Setup logging
+setupLogger(app);
 
 // port number
 const PORTNUMBER = PORT;
