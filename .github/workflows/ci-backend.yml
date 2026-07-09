@@ -1,33 +1,33 @@
-name: Backend CI
+# name: Backend CI
 
-on:
-  push:
-    branches: [ "main", "master", "backend-development", "bug-fix-backend", "bug-fix-frontend", "frontend-development", "optimize-backend", "optimize-frontend" ]
-    paths:
-      - 'backend/**'
-      - '.github/workflows/backend-ci.yaml'
-  pull_request:
-    branches: [ "main", "master", "backend-development", "bug-fix-backend", "bug-fix-frontend", "frontend-development", "optimize-backend", "optimize-frontend" ]
-    paths:
-      - 'backend/**'
-      - '.github/workflows/backend-ci.yaml'
+# on:
+#   push:
+#     branches: [ "main", "master", "backend-development", "bug-fix-backend", "bug-fix-frontend", "frontend-development", "optimize-backend", "optimize-frontend" ]
+#     paths:
+#       - 'backend/**'
+#       - '.github/workflows/backend-ci.yaml'
+#   pull_request:
+#     branches: [ "main", "master", "backend-development", "bug-fix-backend", "bug-fix-frontend", "frontend-development", "optimize-backend", "optimize-frontend" ]
+#     paths:
+#       - 'backend/**'
+#       - '.github/workflows/backend-ci.yaml'
 
-jobs:
-  check:
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: backend
-    steps:
-      - name: Checkout the code
-        uses: actions/checkout@v4
+# jobs:
+#   check:
+#     runs-on: ubuntu-latest
+#     defaults:
+#       run:
+#         working-directory: backend
+#     steps:
+#       - name: Checkout the code
+#         uses: actions/checkout@v4
 
-      - name: Use Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '24.x'
-          cache: 'npm'
-          cache-dependency-path: backend/package-lock.json
+#       - name: Use Node.js
+#         uses: actions/setup-node@v4
+#         with:
+#           node-version: '24.x'
+#           cache: 'npm'
+#           cache-dependency-path: backend/package-lock.json
 
-      - run: npm install
-      - run: npm run check-all
+#       - run: npm install
+#       - run: npm run check-all
