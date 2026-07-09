@@ -1,5 +1,8 @@
 import joi from "joi";
-import { internalServerErrorResponse } from "../utils/response.handler.js";
+import {
+  internalServerErrorResponse,
+  validationErrorResponse,
+} from "../utils/response.handler.js";
 
 // create team middleware
 export const createTeamMiddleware = async (req, res, next) => {
