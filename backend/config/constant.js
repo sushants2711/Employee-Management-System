@@ -16,3 +16,5 @@ export const SMTP_PORT = process.env.SMTP_PORT;
 export const SMTP_USER = process.env.SMTP_USER;
 export const SMTP_PASS = process.env.SMTP_PASS;
 export const ALLOWED_ORIGINS = process.env.ALLOWED_ORIGINS;
+export const MANAGEMENT_CODE = process.env.MANAGEMENT_CODE;
+export const MANAGEMENT_PASSWORD = process.env.MANAGEMENT_PASSWORD;
