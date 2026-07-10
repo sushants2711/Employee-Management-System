@@ -7,7 +7,10 @@ import ManagementLogin from "./pages/ManagementLogin";
 
 function App() {
   const [isDarkMode, setIsDarkMode] = useState(() => {
-    if (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches) {
+    if (
+      window.matchMedia &&
+      window.matchMedia("(prefers-color-scheme: dark)").matches
+    ) {
       return true;
     }
     return false;
@@ -31,7 +34,11 @@ function App() {
           className="absolute top-4 right-4 p-2 rounded-full bg-ems-surface-light dark:bg-ems-surface-dark shadow-md hover:shadow-lg transition-all z-50 text-slate-700 dark:text-yellow-500 cursor-pointer"
           aria-label="Toggle Dark Mode"
         >
-          {isDarkMode ? <Sun className="w-6 h-6" /> : <Moon className="w-6 h-6" />}
+          {isDarkMode ? (
+            <Sun className="w-6 h-6" />
+          ) : (
+            <Moon className="w-6 h-6" />
+          )}
         </button>
         <Routes>
           <Route path="/" element={<Home />} />

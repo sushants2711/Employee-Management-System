@@ -10,16 +10,21 @@ function Home() {
 
       <div className="text-center mb-16 relative z-10 max-w-3xl mt-12">
         <h1 className="text-[3rem] lg:text-[4rem] font-bold text-ems-text-light dark:text-ems-text-dark leading-tight mb-6 tracking-tight">
-          Enterprise <span className="text-ems-primary dark:text-ems-primary-dark">Workforce</span> Hub
+          Enterprise{" "}
+          <span className="text-ems-primary dark:text-ems-primary-dark">
+            Workforce
+          </span>{" "}
+          Hub
         </h1>
         <p className="text-lg lg:text-xl text-slate-600 dark:text-slate-300 font-medium">
-          Internal portal for employee management, analytics, and operational tracking. Please select your designated access level.
+          Internal portal for employee management, analytics, and operational
+          tracking. Please select your designated access level.
         </p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full max-w-5xl relative z-10">
         {/* Employee Card */}
-        <Link 
+        <Link
           to="/employee-login"
           className="group relative flex flex-col p-8 lg:p-12 bg-white dark:bg-slate-800 rounded-3xl shadow-xl hover:shadow-2xl border border-slate-100 dark:border-slate-700/50 transition-all duration-300 transform hover:-translate-y-2 overflow-hidden"
         >
@@ -31,7 +36,8 @@ function Home() {
             Employee Portal
           </h2>
           <p className="text-slate-500 dark:text-slate-400 mb-8 flex-grow leading-relaxed">
-            Access your personal dashboard to view schedules, submit leave requests, and track your performance metrics securely.
+            Access your personal dashboard to view schedules, submit leave
+            requests, and track your performance metrics securely.
           </p>
           <div className="flex items-center text-ems-primary dark:text-ems-primary-dark font-semibold group-hover:gap-3 gap-2 transition-all">
             Continue to Login <ArrowRight className="w-5 h-5" />
@@ -39,7 +45,7 @@ function Home() {
         </Link>
 
         {/* Management Card */}
-        <Link 
+        <Link
           to="/management-login"
           className="group relative flex flex-col p-8 lg:p-12 bg-white dark:bg-slate-800 rounded-3xl shadow-xl hover:shadow-2xl border border-slate-100 dark:border-slate-700/50 transition-all duration-300 transform hover:-translate-y-2 overflow-hidden"
         >
@@ -51,7 +57,8 @@ function Home() {
             Management Portal
           </h2>
           <p className="text-slate-500 dark:text-slate-400 mb-8 flex-grow leading-relaxed">
-            Management login is strictly for the company management team to oversee operations, approve requests, and manage personnel.
+            Management login is strictly for the company management team to
+            oversee operations, approve requests, and manage personnel.
           </p>
           <div className="flex items-center text-indigo-600 dark:text-indigo-400 font-semibold group-hover:gap-3 gap-2 transition-all">
             Continue to Login <ArrowRight className="w-5 h-5" />
@@ -60,7 +67,8 @@ function Home() {
       </div>
 
       <div className="mt-16 text-center text-sm text-slate-400 dark:text-slate-500 font-medium tracking-wide">
-        &copy; {new Date().getFullYear()} COMPANY INTERNAL PROJECT. SECURE CONNECTION ESTABLISHED.
+        &copy; {new Date().getFullYear()} COMPANY INTERNAL PROJECT. SECURE
+        CONNECTION ESTABLISHED.
       </div>
     </div>
   );
