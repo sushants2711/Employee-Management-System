@@ -46,7 +46,14 @@ export const createDepartmentController = async (req, res) => {
 // get all department
 export const getAllDepartmentController = async (req, res) => {
   try {
-    const allDepartment = await departmentModel.find();
+    const { departmentName, departmentCode } = req.query;
+
+    let filterData = {};
+
+    if (departmentName) filterData.departmentName = departmentName;
+    if (departmentCode) filterData.departmentCode = departmentCode;
+
+    const allDepartment = await departmentModel.find(filterData);
 
     if (
       !allDepartment ||
