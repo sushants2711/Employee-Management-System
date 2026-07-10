@@ -5,10 +5,12 @@ const teamSchema = new mongoose.Schema(
     teamName: {
       type: String,
       required: true,
+      unique: true,
     },
     teamLead: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
+      unique: true,
       default: null,
     },
     manager: {
