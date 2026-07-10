@@ -41,7 +41,6 @@ export const createTeamController = async (req, res) => {
 // get all team controller
 export const getAllTeamController = async (req, res) => {
   try {
-
     const { teamName, teamLead, manager } = req.query;
 
     let filterData = {};
