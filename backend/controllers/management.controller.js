@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import managementModel from "../models/management.model.js";
 import { verifyPassword } from "../utils/comparePassword.js";
 import { hashPassword } from "../utils/hashedPassword.js";
@@ -95,6 +96,37 @@ export const loginManagement = async (req, res) => {
       "Management logged in successfully",
       managementData
     );
+  } catch (error) {
+    return internalServerErrorResponse(
+      error,
+      "Internal Server Error",
+      error.message
+    );
+  }
+};
+
+// get single management by id details
+export const getSingleManagementById = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    if (!id) {
+      return badRequestResponse(res, "Management ID is missing");
+    }
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return badRequestResponse(res, "Invalid management ID");
+    }
+
+    const management = await managementModel
+      .findById(id)
+      .select("-managementPassword");
+
+    if (!management) {
+      return badRequestResponse(res, "Management not found");
+    }
+
+    return successResponse(res, "Management found successfully", management);
   } catch (error) {
     return internalServerErrorResponse(
       error,

@@ -96,6 +96,10 @@ const userSchema = new mongoose.Schema(
       type: Date,
       default: null,
     },
+    createdByUser: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Management",
+    },
   },
   { timestamps: true, minimize: true }
 );
