@@ -16,6 +16,11 @@ const departmentSchema = new mongoose.Schema(
       type: String,
       default: null,
     },
+    status: {
+      type: String,
+      enum: ["ACTIVE", "INACTIVE"],
+      default: "ACTIVE",
+    },
   },
   { timestamps: true, minimize: true }
 );

@@ -1,0 +1,5 @@
+npm run check-all: Runs both the formatter and linter to check all files. Run this before pushing code to ensure the pipeline won't crash.
+npm run format:check: Checks all files for visual formatting issues but does NOT modify them (this is used internally by check-all).
+npm run format: Automatically fixes visual formatting issues in the code (such as semicolons, spacing, and quotes).
+npm run lint: Scans the code to catch bugs, bad practices, and logic errors.
+npm run lint:fix: Automatically fixes any safe logic errors caught by the linter.

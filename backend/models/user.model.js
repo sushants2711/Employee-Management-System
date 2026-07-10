@@ -22,7 +22,8 @@ const userSchema = new mongoose.Schema(
     },
     role: {
       type: String,
-      enum: ["Employee", "HR", "Manager", "Team Leader"],
+      enum: ["Employee", "Manager", "Team Leader", "Management"],
+      required: true,
     },
     status: {
       type: String,
@@ -78,8 +79,25 @@ const userSchema = new mongoose.Schema(
       ref: "Department",
       required: true,
     },
+    userType: {
+      type: String,
+      enum: ["SUPERUSER", "NORMALUSER"],
+      default: "NORMALUSER",
+    },
+    isSuperUserVerified: {
+      type: Boolean,
+      default: false,
+    },
+    superUserOtp: {
+      type: String,
+      default: null,
+    },
+    superUserOtpExpiredTime: {
+      type: Date,
+      default: null,
+    },
   },
-  { timestamps: true }
+  { timestamps: true, minimize: true }
 );
 
 export default mongoose.models.User || mongoose.model("User", userSchema);
