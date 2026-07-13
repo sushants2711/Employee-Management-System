@@ -82,7 +82,7 @@ const templateWrapper = (content) => `
 `;
 
 export const getSignupVerificationTemplate = (username, email, otp) => {
-    return templateWrapper(`
+  return templateWrapper(`
         <div class="header">
             <h1>Verify Your Email</h1>
         </div>
@@ -101,7 +101,7 @@ export const getSignupVerificationTemplate = (username, email, otp) => {
 };
 
 export const getRegistrationSuccessTemplate = (username, email) => {
-    return templateWrapper(`
+  return templateWrapper(`
         <div class="header" style="background-color: #2ecc71;">
             <h1>Registration Successful</h1>
         </div>
@@ -117,7 +117,7 @@ export const getRegistrationSuccessTemplate = (username, email) => {
 };
 
 export const getForgotPasswordTemplate = (username, email, resetLink) => {
-    return templateWrapper(`
+  return templateWrapper(`
         <div class="header" style="background-color: #e67e22;">
             <h1>Password Reset Request</h1>
         </div>
@@ -137,7 +137,7 @@ export const getForgotPasswordTemplate = (username, email, resetLink) => {
 };
 
 export const getPasswordResetSuccessTemplate = (username, email) => {
-    return templateWrapper(`
+  return templateWrapper(`
         <div class="header" style="background-color: #2ecc71;">
             <h1>Password Reset Successful</h1>
         </div>
@@ -153,8 +153,12 @@ export const getPasswordResetSuccessTemplate = (username, email) => {
     `);
 };
 
-export const getAccountDeletionRequestTemplate = (username, email, deletionLink) => {
-    return templateWrapper(`
+export const getAccountDeletionRequestTemplate = (
+  username,
+  email,
+  deletionLink
+) => {
+  return templateWrapper(`
         <div class="header" style="background-color: #e74c3c;">
             <h1>Account Deletion Request</h1>
         </div>
@@ -175,7 +179,7 @@ export const getAccountDeletionRequestTemplate = (username, email, deletionLink)
 };
 
 export const getAccountDeletionSuccessTemplate = (username, email) => {
-    return templateWrapper(`
+  return templateWrapper(`
         <div class="header" style="background-color: #34495e;">
             <h1>Account Deleted</h1>
         </div>
