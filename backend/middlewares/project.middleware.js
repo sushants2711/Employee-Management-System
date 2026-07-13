@@ -40,4 +40,5 @@ export const createProjectMiddleware = async (req, res, next) => {
     );
   }
 };
+
 // update project middleware

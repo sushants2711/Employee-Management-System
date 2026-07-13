@@ -11,3 +11,30 @@ indexing
 optimize the code according to logic 
 
 docker and start the locally and check
+
+
+
+
+
+this is used when we want to rollback the things from what we received 
+const session = await mongoose.startSession();
+
+try {
+    session.startTransaction();
+
+    const user = await User.create([userData], { session });
+
+    await Employee.create([employeeData], { session });
+
+    await Salary.create([salaryData], { session });
+
+    await session.commitTransaction();
+
+    console.log("Transaction successful");
+} catch (error) {
+    await session.abortTransaction();
+
+    console.log("Transaction rolled back");
+} finally {
+    session.endSession();
+}
