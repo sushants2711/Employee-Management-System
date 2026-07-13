@@ -229,6 +229,49 @@ export const updatePasswordCredentialsController = async (req, res) => {
 // delete the manager credentials
 // export const deleteManagerController = async (req, res) => {
 //   try {
+//     const { id } = req.params;
+
+//     const loggedInUser = req.user._id;
+
+//     if (!id) {
+//       return badRequestResponse(res, "Management ID is missing");
+//     }
+
+//     if (!mongoose.Types.ObjectId.isValid(id)) {
+//       return badRequestResponse(res, "Invalid management ID");
+//     }
+
+//     if (!loggedInUser) {
+//       return unauthorizedResponse(
+//         res,
+//         "You are not authorized to perform this action"
+//       );
+//     }
+
+//     if (!mongoose.Types.ObjectId.isValid(loggedInUser)) {
+//       return unauthorizedResponse(
+//         res,
+//         "You are not authorized to perform this action"
+//       );
+//     }
+
+//     if (id.toString() !== loggedInUser.toString()) {
+//       return unauthorizedResponse(
+//         res,
+//         "You are not authorized to perform this action"
+//       );
+//     }
+
+//     const findManagement = await managementModel.findById(id);
+
+//     if (!findManagement) {
+//       return badRequestResponse(res, "Management not found");
+//     }
+
+//     // send an email 
+
+//     return successResponse(res, "Mail Send Successfuly for account deactive", )
+
 //   } catch (error) {
 //     return internalServerErrorResponse(
 //       res,
