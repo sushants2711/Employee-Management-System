@@ -14,7 +14,7 @@ export const createTaskMiddleware = async (req, res, next) => {
       team: joi.string().hex().length(24).required(),
       priority: joi
         .string()
-        .enum(["LOW", "MEDIUM", "HIGH", "URGENT"])
+        .valid("LOW", "MEDIUM", "HIGH", "URGENT")
         .optional()
         .allow(""),
       startDate: joi.date().required(),
@@ -52,19 +52,12 @@ export const updateTaskMiddleware = async (req, res, next) => {
       team: joi.string().hex().length(24).optional().allow(""),
       status: joi
         .string()
-        .enum([
-          "TODO",
-          "IN_PROGRESS",
-          "IN_REVIEW",
-          "TESTING",
-          "COMPLETED",
-          "BLOCKED",
-        ])
+        .valid("TODO", "IN_PROGRESS", "IN_REVIEW", "TESTING", "COMPLETED", "BLOCKED")
         .optional()
         .allow(""),
       priority: joi
         .string()
-        .enum(["LOW", "MEDIUM", "HIGH", "URGENT"])
+        .valid("LOW", "MEDIUM", "HIGH", "URGENT")
         .optional()
         .allow(""),
       startDate: joi.date().optional().allow(""),
