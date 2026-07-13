@@ -82,7 +82,7 @@ const templateWrapper = (content) => `
 `;
 
 export const getSignupVerificationEmailTemplate = (username, email, otp) => {
-    return templateWrapper(`
+  return templateWrapper(`
         <div class="header">
             <h1>Verify Your Email</h1>
         </div>
@@ -101,7 +101,7 @@ export const getSignupVerificationEmailTemplate = (username, email, otp) => {
 };
 
 export const getSignupSuccessEmailTemplate = (username, email) => {
-    return templateWrapper(`
+  return templateWrapper(`
         <div class="header" style="background-color: #2ecc71;">
             <h1>Registration Successful</h1>
         </div>
@@ -117,7 +117,7 @@ export const getSignupSuccessEmailTemplate = (username, email) => {
 };
 
 export const getForgotPasswordEmailTemplate = (username, email, otp) => {
-    return templateWrapper(`
+  return templateWrapper(`
         <div class="header" style="background-color: #e67e22;">
             <h1>Password Reset Request</h1>
         </div>
@@ -137,7 +137,7 @@ export const getForgotPasswordEmailTemplate = (username, email, otp) => {
 };
 
 export const getPasswordResetSuccessEmailTemplate = (username, email) => {
-    return templateWrapper(`
+  return templateWrapper(`
         <div class="header" style="background-color: #2ecc71;">
             <h1>Password Reset Successful</h1>
         </div>
@@ -154,11 +154,11 @@ export const getPasswordResetSuccessEmailTemplate = (username, email) => {
 };
 
 export const getAccountDeletionRequestEmailTemplate = (
-    username,
-    email,
-    otp
+  username,
+  email,
+  otp
 ) => {
-    return templateWrapper(`
+  return templateWrapper(`
         <div class="header" style="background-color: #e74c3c;">
             <h1>Account Deletion Request</h1>
         </div>
@@ -179,7 +179,7 @@ export const getAccountDeletionRequestEmailTemplate = (
 };
 
 export const getAccountDeletionSuccessEmailTemplate = (username, email) => {
-    return templateWrapper(`
+  return templateWrapper(`
         <div class="header" style="background-color: #34495e;">
             <h1>Account Deleted</h1>
         </div>
