@@ -81,8 +81,8 @@ const templateWrapper = (content) => `
 </html>
 `;
 
-export const getSignupVerificationTemplate = (username, email, otp) => {
-  return templateWrapper(`
+export const getSignupVerificationEmailTemplate = (username, email, otp) => {
+    return templateWrapper(`
         <div class="header">
             <h1>Verify Your Email</h1>
         </div>
@@ -100,8 +100,8 @@ export const getSignupVerificationTemplate = (username, email, otp) => {
     `);
 };
 
-export const getRegistrationSuccessTemplate = (username, email) => {
-  return templateWrapper(`
+export const getSignupSuccessEmailTemplate = (username, email) => {
+    return templateWrapper(`
         <div class="header" style="background-color: #2ecc71;">
             <h1>Registration Successful</h1>
         </div>
@@ -116,18 +116,18 @@ export const getRegistrationSuccessTemplate = (username, email) => {
     `);
 };
 
-export const getForgotPasswordTemplate = (username, email, resetLink) => {
-  return templateWrapper(`
+export const getForgotPasswordEmailTemplate = (username, email, otp) => {
+    return templateWrapper(`
         <div class="header" style="background-color: #e67e22;">
             <h1>Password Reset Request</h1>
         </div>
         <div class="content">
             <h2>Hello ${username},</h2>
             <p>We received a request to reset the password for your account associated with <strong>${email}</strong>.</p>
-            <p>If you made this request, please click the button below to set a new password:</p>
-            <center>
-                <a href="${resetLink}" class="button" style="background-color: #e67e22;">Reset Password</a>
-            </center>
+            <p>If you made this request, please use the following One-Time Password (OTP) to reset your password:</p>
+            
+            <div class="otp-code">${otp}</div>
+            
             <p style="margin-top: 25px; font-size: 14px; color: #7f8c8d;">If you did not request a password reset, you can safely ignore this email. Your password will remain unchanged.</p>
         </div>
         <div class="footer">
@@ -136,8 +136,8 @@ export const getForgotPasswordTemplate = (username, email, resetLink) => {
     `);
 };
 
-export const getPasswordResetSuccessTemplate = (username, email) => {
-  return templateWrapper(`
+export const getPasswordResetSuccessEmailTemplate = (username, email) => {
+    return templateWrapper(`
         <div class="header" style="background-color: #2ecc71;">
             <h1>Password Reset Successful</h1>
         </div>
@@ -153,12 +153,12 @@ export const getPasswordResetSuccessTemplate = (username, email) => {
     `);
 };
 
-export const getAccountDeletionRequestTemplate = (
-  username,
-  email,
-  deletionLink
+export const getAccountDeletionRequestEmailTemplate = (
+    username,
+    email,
+    otp
 ) => {
-  return templateWrapper(`
+    return templateWrapper(`
         <div class="header" style="background-color: #e74c3c;">
             <h1>Account Deletion Request</h1>
         </div>
@@ -166,10 +166,10 @@ export const getAccountDeletionRequestTemplate = (
             <h2>Hello ${username},</h2>
             <p>We received a request to permanently delete your account associated with <strong>${email}</strong>.</p>
             <p>Please note that this action is <strong>irreversible</strong>. All your data will be permanently erased.</p>
-            <p>If you wish to proceed with the deletion, click the button below to confirm:</p>
-            <center>
-                <a href="${deletionLink}" class="button" style="background-color: #e74c3c;">Confirm Account Deletion</a>
-            </center>
+            <p>If you wish to proceed with the deletion, please use the following One-Time Password (OTP) to confirm:</p>
+            
+            <div class="otp-code">${otp}</div>
+            
             <p style="margin-top: 25px; font-size: 14px; color: #7f8c8d;">If you did not request this, please ignore this email and your account will remain active. We recommend changing your password if you suspect unauthorized access.</p>
         </div>
         <div class="footer">
@@ -178,8 +178,8 @@ export const getAccountDeletionRequestTemplate = (
     `);
 };
 
-export const getAccountDeletionSuccessTemplate = (username, email) => {
-  return templateWrapper(`
+export const getAccountDeletionSuccessEmailTemplate = (username, email) => {
+    return templateWrapper(`
         <div class="header" style="background-color: #34495e;">
             <h1>Account Deleted</h1>
         </div>
