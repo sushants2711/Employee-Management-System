@@ -2,12 +2,12 @@ import mongoose from "mongoose";
 
 const managementSchema = new mongoose.Schema(
   {
-    managementKey: {
+    email: {
       type: String,
       required: true,
       unique: true,
     },
-    managementPassword: {
+    password: {
       type: String,
       required: true,
     },
@@ -15,7 +15,7 @@ const managementSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
-    managementOtp: {
+    otp: {
       type: String,
       default: null,
     },
@@ -23,11 +23,11 @@ const managementSchema = new mongoose.Schema(
       type: Date,
       default: null,
     },
-    managementForgotOtp: {
+    forgotOtp: {
       type: String,
       default: null,
     },
-    managementForgotOtpExpiry: {
+    forgotOtpExpiry: {
       type: Date,
       default: null,
     },
