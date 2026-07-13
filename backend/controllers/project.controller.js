@@ -270,7 +270,6 @@ export const updateProjectController = async (req, res) => {
 };
 
 // delete the project
-
 export const deleteProjectController = async (req, res) => {
   try {
     const { id } = req.params;
