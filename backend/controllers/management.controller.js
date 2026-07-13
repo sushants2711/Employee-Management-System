@@ -138,13 +138,16 @@ export const getSingleManagementByIdController = async (req, res) => {
 };
 
 // update the manager credentials
-export const updateFullCredentialsController = async (req, res) => {
-  try {
-
-  } catch (error) {
-    return internalServerErrorResponse(res, "Internal Server Error", error.message);
-  }
-};
+// export const updateFullCredentialsController = async (req, res) => {
+//   try {
+//   } catch (error) {
+//     return internalServerErrorResponse(
+//       res,
+//       "Internal Server Error",
+//       error.message
+//     );
+//   }
+// };
 
 // update the manager password credentials
 export const updatePasswordCredentialsController = async (req, res) => {
@@ -164,15 +167,24 @@ export const updatePasswordCredentialsController = async (req, res) => {
     }
 
     if (!loggedInUser) {
-      return unauthorizedResponse(res, "You are not authorized to perform this action");
+      return unauthorizedResponse(
+        res,
+        "You are not authorized to perform this action"
+      );
     }
 
     if (!mongoose.Types.ObjectId.isValid(loggedInUser)) {
-      return unauthorizedResponse(res, "You are not authorized to perform this action");
+      return unauthorizedResponse(
+        res,
+        "You are not authorized to perform this action"
+      );
     }
 
     if (id.toString() !== loggedInUser.toString()) {
-      return unauthorizedResponse(res, "You are not authorized to perform this action");
+      return unauthorizedResponse(
+        res,
+        "You are not authorized to perform this action"
+      );
     }
 
     const findManagement = await managementModel.findById(id);
@@ -181,7 +193,10 @@ export const updatePasswordCredentialsController = async (req, res) => {
       return badRequestResponse(res, "Management not found");
     }
 
-    const isPasswordValid = await verifyPassword(oldPassword, findManagement.managementPassword);
+    const isPasswordValid = await verifyPassword(
+      oldPassword,
+      findManagement.managementPassword
+    );
 
     if (!isPasswordValid) {
       return badRequestResponse(res, "Invalid credentials");
@@ -189,24 +204,36 @@ export const updatePasswordCredentialsController = async (req, res) => {
 
     const hashedPassword = await hashPassword(password);
 
-    const updatedData = await managementModel.findByIdAndUpdate(id, { managementPassword: hashedPassword }, { new: true }).select("-managementPassword");
+    const updatedData = await managementModel
+      .findByIdAndUpdate(
+        id,
+        { managementPassword: hashedPassword },
+        { new: true }
+      )
+      .select("-managementPassword");
 
     if (!updatedData) {
       return badRequestResponse(res, "Failed to update password");
     }
 
     return successResponse(res, "Password updated successfully", updatedData);
-
   } catch (error) {
-    return internalServerErrorResponse(res, "Internal Server Error", error.message);
+    return internalServerErrorResponse(
+      res,
+      "Internal Server Error",
+      error.message
+    );
   }
 };
 
 // delete the manager credentials
-export const deleteManagerController = async (req, res) => {
-  try {
-
-  } catch (error) {
-    return internalServerErrorResponse(res, "Internal Server Error", error.message);
-  }
-};
+// export const deleteManagerController = async (req, res) => {
+//   try {
+//   } catch (error) {
+//     return internalServerErrorResponse(
+//       res,
+//       "Internal Server Error",
+//       error.message
+//     );
+//   }
+// };

@@ -13,25 +13,24 @@ const managementSchema = new mongoose.Schema(
     },
     isVerified: {
       type: Boolean,
-      default: false
+      default: false,
     },
     managementOtp: {
       type: String,
-      default: null
+      default: null,
     },
     otpExpiry: {
       type: Date,
-      default: null
+      default: null,
     },
     managementForgotOtp: {
       type: String,
-      default: null
+      default: null,
     },
     managementForgotOtpExpiry: {
       type: Date,
-      default: null
+      default: null,
     },
-
   },
   { timestamps: true, minimize: true }
 );
