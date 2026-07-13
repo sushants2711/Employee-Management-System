@@ -1,0 +1,13 @@
+install reddis for in memory storage 
+
+use Redis for caching user session and otp for faster authentication and reduce database load
+
+use also for data storage - for fast and efficient 
+
+web-push for notification or FCM (Firebase Cloud Messaging)
+
+indexing 
+
+optimize the code according to logic 
+
+docker and start the locally and check
