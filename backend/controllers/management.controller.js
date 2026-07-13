@@ -7,10 +7,11 @@ import {
   createdResponse,
   badRequestResponse,
   successResponse,
+  unauthorizedResponse,
 } from "../utils/response.handler.js";
 import { sendCookieToUser } from "../utils/send.cookie.js";
 
-// management signup
+// management signup via send email
 export const signupManagementController = async (req, res) => {
   try {
     const { managementKey, managementPassword } = req.body;
@@ -56,7 +57,7 @@ export const signupManagementController = async (req, res) => {
 };
 
 // management login
-export const loginManagement = async (req, res) => {
+export const loginManagementController = async (req, res) => {
   try {
     const { managementKey, managementPassword } = req.body;
 
@@ -106,7 +107,7 @@ export const loginManagement = async (req, res) => {
 };
 
 // get single management by id details
-export const getSingleManagementById = async (req, res) => {
+export const getSingleManagementByIdController = async (req, res) => {
   try {
     const { id } = req.params;
 
@@ -133,5 +134,79 @@ export const getSingleManagementById = async (req, res) => {
       "Internal Server Error",
       error.message
     );
+  }
+};
+
+// update the manager credentials
+export const updateFullCredentialsController = async (req, res) => {
+  try {
+
+  } catch (error) {
+    return internalServerErrorResponse(res, "Internal Server Error", error.message);
+  }
+};
+
+// update the manager password credentials
+export const updatePasswordCredentialsController = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const loggedInUser = req.user._id;
+
+    const { oldPassword, password } = req.body;
+
+    if (!id) {
+      return badRequestResponse(res, "Management ID is missing");
+    }
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return badRequestResponse(res, "Invalid management ID");
+    }
+
+    if (!loggedInUser) {
+      return unauthorizedResponse(res, "You are not authorized to perform this action");
+    }
+
+    if (!mongoose.Types.ObjectId.isValid(loggedInUser)) {
+      return unauthorizedResponse(res, "You are not authorized to perform this action");
+    }
+
+    if (id.toString() !== loggedInUser.toString()) {
+      return unauthorizedResponse(res, "You are not authorized to perform this action");
+    }
+
+    const findManagement = await managementModel.findById(id);
+
+    if (!findManagement) {
+      return badRequestResponse(res, "Management not found");
+    }
+
+    const isPasswordValid = await verifyPassword(oldPassword, findManagement.managementPassword);
+
+    if (!isPasswordValid) {
+      return badRequestResponse(res, "Invalid credentials");
+    }
+
+    const hashedPassword = await hashPassword(password);
+
+    const updatedData = await managementModel.findByIdAndUpdate(id, { managementPassword: hashedPassword }, { new: true }).select("-managementPassword");
+
+    if (!updatedData) {
+      return badRequestResponse(res, "Failed to update password");
+    }
+
+    return successResponse(res, "Password updated successfully", updatedData);
+
+  } catch (error) {
+    return internalServerErrorResponse(res, "Internal Server Error", error.message);
+  }
+};
+
+// delete the manager credentials
+export const deleteManagerController = async (req, res) => {
+  try {
+
+  } catch (error) {
+    return internalServerErrorResponse(res, "Internal Server Error", error.message);
   }
 };
