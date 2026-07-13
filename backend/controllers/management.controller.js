@@ -268,7 +268,7 @@ export const updatePasswordCredentialsController = async (req, res) => {
 //       return badRequestResponse(res, "Management not found");
 //     }
 
-//     // send an email 
+//     // send an email
 
 //     return successResponse(res, "Mail Send Successfuly for account deactive", )
 
