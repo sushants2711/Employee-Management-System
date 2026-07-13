@@ -52,7 +52,14 @@ export const updateTaskMiddleware = async (req, res, next) => {
       team: joi.string().hex().length(24).optional().allow(""),
       status: joi
         .string()
-        .valid("TODO", "IN_PROGRESS", "IN_REVIEW", "TESTING", "COMPLETED", "BLOCKED")
+        .valid(
+          "TODO",
+          "IN_PROGRESS",
+          "IN_REVIEW",
+          "TESTING",
+          "COMPLETED",
+          "BLOCKED"
+        )
         .optional()
         .allow(""),
       priority: joi
