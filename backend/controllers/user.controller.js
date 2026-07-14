@@ -260,10 +260,7 @@ export const managementLoginController = async (req, res) => {
       return badRequestResponse(res, "Invalid credentials");
     }
 
-    const isValidPassword = await verifyPassword(
-      password,
-      userExist.password
-    );
+    const isValidPassword = await verifyPassword(password, userExist.password);
 
     if (!isValidPassword) {
       return badRequestResponse(res, "Invalid email or password");
