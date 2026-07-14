@@ -1,0 +1,40 @@
+version: "3.9"
+
+services:
+	backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.dev
+    container_name: ems-backend
+    ports:
+      - "4000:3000"
+    env_file:
+      - ./backend/.env
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+    restart: unless-stopped
+    networks:
+      - ems-network
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
+    container_name: ems-frontend
+    ports:
+      - "5173:5173"
+    env_file:
+      - ./frontend/.env
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    restart: unless-stopped
+    networks:
+      - ems-network
+    depends_on:
+      - backend
+
+networks:
+  ems-network:
+    driver: bridge
