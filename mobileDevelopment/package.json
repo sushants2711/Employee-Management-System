@@ -16,7 +16,17 @@
     "start": "expo start",
     "android": "expo start --android",
     "ios": "expo start --ios",
-    "web": "expo start --web"
+    "web": "expo start --web",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "check-all": "npm run format:check && npm run lint"
+  },
+  "devDependencies": {
+    "eslint": "^9.39.4",
+    "globals": "^15.0.0",
+    "prettier": "^3.9.4"
   },
   "private": true
 }
