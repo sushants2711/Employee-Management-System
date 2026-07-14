@@ -85,11 +85,9 @@ const userSchema = new mongoose.Schema(
     },
     managementOtp: {
       type: String,
-      default: null,
     },
     managementOtpExpiredTime: {
       type: Date,
-      default: null,
     },
   },
   { timestamps: true, minimize: true }

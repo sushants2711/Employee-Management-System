@@ -1,4 +1,7 @@
-import { sendSignupVerificationEmail } from "../emails/email.send.js";
+import {
+  sendSignupSuccessEmail,
+  sendSignupVerificationEmail,
+} from "../emails/email.send.js";
 import userModel from "../models/user.model.js";
 import { verifyPassword } from "../utils/comparePassword.js";
 import { generateEmpId } from "../utils/generateEmpId.js";
@@ -74,7 +77,8 @@ export const signupManagementController = async (req, res) => {
       // save the otp first
       if (userExist) {
         userExist.managementOtp = otp;
-        userExist.managementOtpExpiredTime = Date.now() + Number(OTP_EXPIARY_TIME); // otp expire in 5 minutes
+        userExist.managementOtpExpiredTime =
+          Date.now() + Number(OTP_EXPIARY_TIME); // otp expire in 5 minutes
       }
 
       const savedData = await userExist.save();
@@ -172,7 +176,59 @@ export const signupManagementController = async (req, res) => {
   }
 };
 
-// otp checker
+// otp checker controller
+export const otpController = async (req, res) => {
+  try {
+    const { otp } = req.body;
+
+    const otpExist = await userModel.findOne({
+      managementOtp: otp,
+    });
+
+    // const otpExist = await userModel.findOne({
+    //   managementOtp: otp,
+    //   managementOtpExpiredTime: {$gte: Date.now()}
+    // });
+
+    if (!otpExist) {
+      return badRequestResponse(res, "Invalid OTP");
+    }
+
+    const currentTime = Date.now();
+
+    if (currentTime > otpExist.managementOtpExpiredTime) {
+      return badRequestResponse(res, "OTP has been expired");
+    }
+
+    otpExist.managementOtp = undefined;
+    otpExist.managementOtpExpiredTime = undefined;
+    otpExist.isManagementVerified = true;
+
+    const savedData = await otpExist.save();
+
+    if (!savedData) {
+      return badRequestResponse(res, "Failed to saved the data");
+    }
+
+    const dataSendToClient = savedData.toObject();
+    delete dataSendToClient.password;
+
+    // send a success email to the user that user is now verified
+    try {
+      await sendSignupSuccessEmail(otpExist.name, otpExist.email);
+    } catch (error) {
+      console.error("Failed to send welcome email:", error.message);
+    }
+
+    return successResponse(res, "OTP verified successfully", dataSendToClient);
+  } catch (error) {
+    return internalServerErrorResponse(
+      res,
+      "Internal Server Error",
+      error.message
+    );
+  }
+};
 
 // management login
 // employee and manager login
