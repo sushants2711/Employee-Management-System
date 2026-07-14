@@ -15,7 +15,7 @@ const designationSchema = new mongoose.Schema(
     description: {
       type: String,
       default: null,
-    }
+    },
   },
   { timestamps: true, minimize: true }
 );

@@ -20,19 +20,22 @@ const taskSchema = new mongoose.Schema(
       ref: "Team",
       required: true,
     },
-    assignedTo: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-      required: true,
-    },
     assignedBy: {
+      // manager only
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       required: true,
     },
     status: {
       type: String,
-      enum: ["TODO", "IN_PROGRESS", "IN_REVIEW", "COMPLETED", "BLOCKED"],
+      enum: [
+        "TODO",
+        "IN_PROGRESS",
+        "IN_REVIEW",
+        "TESTING",
+        "COMPLETED",
+        "BLOCKED",
+      ],
       default: "TODO",
     },
     priority: {

@@ -41,7 +41,15 @@ export const createTeamController = async (req, res) => {
 // get all team controller
 export const getAllTeamController = async (req, res) => {
   try {
-    const team = await teamModel.find();
+    const { teamName, teamLead, manager } = req.query;
+
+    let filterData = {};
+
+    if (teamName) filterData.teamName = teamName;
+    if (teamLead) filterData.teamLead = teamLead;
+    if (manager) filterData.manager = manager;
+
+    const team = await teamModel.find(filterData);
 
     if (!team || team.length === 0 || !Array.isArray(team)) {
       return notFoundResponse(res, "Team not found");

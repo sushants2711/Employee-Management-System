@@ -55,6 +55,10 @@ const projectSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
+    completedAt: {
+      type: Date,
+      default: null,
+    },
   },
   { timestamps: true, minimize: true }
 );
