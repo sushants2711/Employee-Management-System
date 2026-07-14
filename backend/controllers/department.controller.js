@@ -46,12 +46,13 @@ export const createDepartmentController = async (req, res) => {
 // get all department
 export const getAllDepartmentController = async (req, res) => {
   try {
-    const { departmentName, departmentCode } = req.query;
+    const { departmentName, departmentCode, status } = req.query;
 
     let filterData = {};
 
     if (departmentName) filterData.departmentName = departmentName;
     if (departmentCode) filterData.departmentCode = departmentCode;
+    if (status) filterData.status = status;
 
     const allDepartment = await departmentModel.find(filterData);
 
@@ -184,62 +185,6 @@ export const deleteTheDepartmentByIdController = async (req, res) => {
     const deleteData = await departmentModel.findByIdAndDelete(id);
 
     return successResponse(res, "Department deleted successfully", deleteData);
-  } catch (error) {
-    return internalServerErrorResponse(
-      res,
-      "Internal Server Error",
-      error.message
-    );
-  }
-};
-
-// get all active department
-export const getAllActiveDepartmentController = async (req, res) => {
-  try {
-    const activeDepartment = await departmentModel.find({ status: "ACTIVE" });
-
-    if (
-      !activeDepartment ||
-      activeDepartment.length === 0 ||
-      !Array.isArray(activeDepartment)
-    ) {
-      return notFoundResponse(res, "No active department found");
-    }
-
-    return successResponse(
-      res,
-      "Active department fetched successfully",
-      activeDepartment
-    );
-  } catch (error) {
-    return internalServerErrorResponse(
-      res,
-      "Internal Server Error",
-      error.message
-    );
-  }
-};
-
-// get all inActive department
-export const getAllInactiveDepartmentController = async (req, res) => {
-  try {
-    const inActiveDepartment = await departmentModel.find({
-      status: "INACTIVE",
-    });
-
-    if (
-      !inActiveDepartment ||
-      inActiveDepartment.length === 0 ||
-      !Array.isArray(inActiveDepartment)
-    ) {
-      return notFoundResponse(res, "No inactive department found");
-    }
-
-    return successResponse(
-      res,
-      "Inactive department fetched successfully",
-      inActiveDepartment
-    );
   } catch (error) {
     return internalServerErrorResponse(
       res,
