@@ -24,8 +24,8 @@ const departmentSchema = new mongoose.Schema(
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
-      required: true
-    }
+      required: true,
+    },
   },
   { timestamps: true, minimize: true }
 );

@@ -72,7 +72,7 @@ const userSchema = new mongoose.Schema(
     designation: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Designation",
-      default: null
+      default: null,
     },
     department: {
       type: mongoose.Schema.Types.ObjectId,
@@ -90,7 +90,7 @@ const userSchema = new mongoose.Schema(
     managementOtpExpiredTime: {
       type: Date,
       default: null,
-    }
+    },
   },
   { timestamps: true, minimize: true }
 );
