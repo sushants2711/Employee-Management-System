@@ -1,16 +1,13 @@
-// import userModel from "../models/user.model.js";
-// import { verifyPassword } from "../utils/comparePassword.js";
-// import { hashPassword } from "../utils/hashedPassword.js";
-// import { internalServerErrorResponse } from "../utils/response.handler.js";
-// import { sendCookieToUser } from "../utils/send.cookie.js";
-
-// export const superUserLoginController = async (req, res) => {
-//     try {
-//         const { employeeId, name, email, password, role, phoneNumber, designation, department } = req.body;
-
-//         // check email is already exists or not
-
-//     } catch (error) {
-//         return internalServerErrorResponse(res, "Internal Server Error", error.message);
-//     };
-// };
+// management signup (usign email otp)
+// management login
+// employee and manager login 
+// logout 
+// update the password 
+// reset the password
+// forgot password
+// otp checker
+// update the role by manager and management only
+// update the status
+// update isAvailable for every user
+// update the data 
+// delete the data
