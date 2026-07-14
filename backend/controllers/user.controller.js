@@ -13,6 +13,7 @@ import {
   successResponse,
 } from "../utils/response.handler.js";
 import { OTP_EXPIARY_TIME } from "../config/constant.js";
+import { sendCookieToUser } from "../utils/send.cookie.js";
 
 // management signup (usign email otp)
 export const signupManagementController = async (req, res) => {
@@ -231,6 +232,75 @@ export const otpController = async (req, res) => {
 };
 
 // management login
+export const managementLoginController = async (req, res) => {
+  try {
+    const { empId, email, password } = req.body;
+
+    let userExist;
+
+    if (empId) {
+      // login with empId
+      userExist = await userModel.findOne({
+        employeeId: empId,
+        isManagementVerified: true,
+        role: "Management",
+        status: "ACTIVE",
+      });
+    } else if (email) {
+      // login with email
+      userExist = await userModel.findOne({
+        email,
+        isManagementVerified: true,
+        role: "Management",
+        status: "ACTIVE",
+      });
+    }
+
+    if (!userExist) {
+      return badRequestResponse(res, "Invalid credentials");
+    }
+
+    const isValidPassword = await verifyPassword(
+      password,
+      userExist.password
+    );
+
+    if (!isValidPassword) {
+      return badRequestResponse(res, "Invalid email or password");
+    }
+
+    // update the last login
+    userExist.lastLogin = Date.now();
+
+    const savedData = await userExist.save();
+
+    if (!savedData) {
+      return badRequestResponse(res, "Failed to saved the data");
+    }
+
+    const dataSendToClient = savedData.toObject();
+    delete dataSendToClient.password;
+
+    // send a cookie to the user
+    try {
+      await sendCookieToUser(savedData._id, res);
+    } catch (error) {
+      return internalServerErrorResponse(
+        res,
+        "Failed to send cookie",
+        error.message
+      );
+    }
+
+    return successResponse(res, "Login successful", dataSendToClient);
+  } catch (error) {
+    return internalServerErrorResponse(
+      res,
+      "Internal Server Error",
+      error.message
+    );
+  }
+};
 // employee and manager login
 // logout
 // update the password
