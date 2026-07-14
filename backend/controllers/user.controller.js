@@ -331,13 +331,23 @@ export const managementLoginController = async (req, res) => {
     );
   }
 };
+
 // employee and manager login
+
 // logout
+
 // update the password
+
 // reset the password
+
 // forgot password
+
 // update the role by manager and management only
+
 // update the status
+
 // update isAvailable for every user
+
 // update the data
+
 // delete the data
