@@ -1,4 +1,175 @@
+import { sendSignupVerificationEmail } from "../emails/email.send.js";
+import userModel from "../models/user.model.js";
+import { verifyPassword } from "../utils/comparePassword.js";
+import { generateEmpId } from "../utils/generateEmpId.js";
+import { hashPassword } from "../utils/hashedPassword.js";
+import { generateOTP } from "../utils/otp.generator.js";
+import {
+  badRequestResponse,
+  internalServerErrorResponse,
+  successResponse,
+} from "../utils/response.handler.js";
+import { OTP_EXPIARY_TIME } from "../config/constant.js";
+
 // management signup (usign email otp)
+export const signupManagementController = async (req, res) => {
+  try {
+    const { name, email, password, phoneNumber } = req.body;
+
+    // check if the user is already exist using email or phone number
+    const userExist = await userModel.findOne({
+      $or: [{ email }, { phoneNumber }],
+    });
+
+    // if already 5 management exist in company
+    const managementCount = await userModel.countDocuments({
+      role: "Management",
+      isManagementVerified: true,
+    });
+
+    // if there is more than 5 management than return error
+    if (managementCount >= 5) {
+      return badRequestResponse(res, "Already 5 management exist in company");
+    }
+
+    // check if the email or phone number is exist than
+    if (userExist) {
+      // if email is already exist
+      if (email !== userExist.email) {
+        return badRequestResponse(res, "Email already exist");
+      }
+
+      // if phone number is already exist
+      if (phoneNumber !== userExist.phoneNumber) {
+        return badRequestResponse(res, "Phone number already exist");
+      }
+
+      // if user is verified than throw an error
+
+      if (userExist.isManagementVerified) {
+        return badRequestResponse(res, "Employee already exist");
+      }
+
+      // check the name of user
+      if (name !== userExist.name) {
+        userExist.name = name;
+      }
+
+      // check the password of user if its wrong than update the password
+      const isValidPassword = await verifyPassword(
+        password,
+        userExist.password
+      );
+
+      // if password is wrong than update the password
+      if (!isValidPassword) {
+        const hashedPassword = await hashPassword(password);
+
+        userExist.password = hashedPassword;
+      }
+
+      // if user is not verified than send otp again
+      const otp = generateOTP();
+
+      // save the otp first
+      if (userExist) {
+        userExist.managementOtp = otp;
+        userExist.managementOtpExpiredTime = Date.now() + OTP_EXPIARY_TIME; // otp expire in 5 minutes
+      }
+
+      const savedData = await userExist.save();
+
+      if (!savedData) {
+        return badRequestResponse(res, "Failed to saved the data");
+      }
+
+      // data send to client without password and otp and otp expired time
+      const dataSendToClient = savedData.select(
+        "-password, -managementOtp, -managementOtpExpiredTime"
+      );
+
+      // after otp generate than send the otp to user email
+      try {
+        await sendSignupVerificationEmail(name, email, otp);
+      } catch (error) {
+        return internalServerErrorResponse(
+          res,
+          "Failed to send email",
+          error.message
+        );
+      }
+
+      // success response
+      return successResponse(
+        res,
+        "A new OTP has been sent to your email address",
+        dataSendToClient
+      );
+    }
+
+    // if a totally fresh user is come than
+
+    // hashed the password
+    const hashedPassword = await hashPassword(password);
+
+    // generate the new otp
+    const otp = generateOTP();
+
+    // create the otp expired time (5 minutes)
+    const otpExpireTime = Date.now() + OTP_EXPIARY_TIME;
+
+    // generate the unique emp id
+    const empId = await generateEmpId();
+
+    const newUser = new userModel({
+      employeeId: empId,
+      name,
+      email,
+      password: hashedPassword,
+      role: "Management",
+      phoneNumber,
+      managementOtp: otp,
+      managementOtpExpiredTime: otpExpireTime,
+    });
+
+    // save the new user
+    const savedData = await newUser.save();
+
+    if (!savedData) {
+      return badRequestResponse(res, "Failed to saved the data");
+    }
+
+    // data send to client without password and otp and otp expired time
+    const dataSendToClient = savedData.select(
+      "-password, -managementOtp, -managementOtpExpiredTime"
+    );
+
+    // after otp generate than send the otp to user email
+    try {
+      await sendSignupVerificationEmail(name, email, otp);
+    } catch (error) {
+      return internalServerErrorResponse(
+        res,
+        "Failed to send email",
+        error.message
+      );
+    }
+
+    // success response
+    return successResponse(
+      res,
+      "A new OTP has been sent to your email address",
+      dataSendToClient
+    );
+  } catch (error) {
+    return internalServerErrorResponse(
+      res,
+      "Internal Server Error",
+      error.message
+    );
+  }
+};
+
 // management login
 // employee and manager login
 // logout

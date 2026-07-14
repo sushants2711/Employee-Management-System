@@ -18,3 +18,6 @@ export const SMTP_PASS = process.env.SMTP_PASS;
 export const SMTP_NAME = process.env.SMTP_NAME;
 export const ALLOWED_ORIGINS = process.env.ALLOWED_ORIGINS;
 export const OTP_LENGTH = process.env.OTP_LENGTH;
+export const OTP_EXPIARY_TIME = process.env.OTP_EXPIARY_TIME;
+export const EMPLOYEE_ID_LENGTH_STRING = process.env.EMPLOYEE_ID_LENGTH_STRING;
+export const EMPLOYEE_ID_LENGTH_NUMBER = process.env.EMPLOYEE_ID_LENGTH_NUMBER;
