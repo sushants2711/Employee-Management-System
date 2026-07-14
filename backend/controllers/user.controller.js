@@ -74,7 +74,7 @@ export const signupManagementController = async (req, res) => {
       // save the otp first
       if (userExist) {
         userExist.managementOtp = otp;
-        userExist.managementOtpExpiredTime = Date.now() + OTP_EXPIARY_TIME; // otp expire in 5 minutes
+        userExist.managementOtpExpiredTime = Date.now() + Number(OTP_EXPIARY_TIME); // otp expire in 5 minutes
       }
 
       const savedData = await userExist.save();
@@ -84,9 +84,10 @@ export const signupManagementController = async (req, res) => {
       }
 
       // data send to client without password and otp and otp expired time
-      const dataSendToClient = savedData.select(
-        "-password, -managementOtp, -managementOtpExpiredTime"
-      );
+      const dataSendToClient = savedData.toObject();
+      delete dataSendToClient.password;
+      delete dataSendToClient.managementOtp;
+      delete dataSendToClient.managementOtpExpiredTime;
 
       // after otp generate than send the otp to user email
       try {
@@ -116,7 +117,7 @@ export const signupManagementController = async (req, res) => {
     const otp = generateOTP();
 
     // create the otp expired time (5 minutes)
-    const otpExpireTime = Date.now() + OTP_EXPIARY_TIME;
+    const otpExpireTime = Date.now() + Number(OTP_EXPIARY_TIME);
 
     // generate the unique emp id
     const empId = await generateEmpId();
@@ -140,9 +141,10 @@ export const signupManagementController = async (req, res) => {
     }
 
     // data send to client without password and otp and otp expired time
-    const dataSendToClient = savedData.select(
-      "-password, -managementOtp, -managementOtpExpiredTime"
-    );
+    const dataSendToClient = savedData.toObject();
+    delete dataSendToClient.password;
+    delete dataSendToClient.managementOtp;
+    delete dataSendToClient.managementOtpExpiredTime;
 
     // after otp generate than send the otp to user email
     try {
@@ -170,13 +172,14 @@ export const signupManagementController = async (req, res) => {
   }
 };
 
+// otp checker
+
 // management login
 // employee and manager login
 // logout
 // update the password
 // reset the password
 // forgot password
-// otp checker
 // update the role by manager and management only
 // update the status
 // update isAvailable for every user
