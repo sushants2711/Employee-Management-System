@@ -105,6 +105,17 @@ export const signupManagementController = async (req, res) => {
         );
       }
 
+      // send a cookie
+      try {
+        await sendCookieToUser(savedData._id, res);
+      } catch (error) {
+        return internalServerErrorResponse(
+          res,
+          "Failed to send cookie",
+          error.message
+        );
+      }
+
       // success response
       return successResponse(
         res,
@@ -158,6 +169,17 @@ export const signupManagementController = async (req, res) => {
       return internalServerErrorResponse(
         res,
         "Failed to send email",
+        error.message
+      );
+    }
+
+    // send a cookie
+    try {
+      await sendCookieToUser(savedData._id, res);
+    } catch (error) {
+      return internalServerErrorResponse(
+        res,
+        "Failed to send cookie",
         error.message
       );
     }
@@ -219,6 +241,17 @@ export const otpController = async (req, res) => {
       await sendSignupSuccessEmail(otpExist.name, otpExist.email);
     } catch (error) {
       console.error("Failed to send welcome email:", error.message);
+    }
+
+    // send a cookie
+    try {
+      await sendCookieToUser(savedData._id, res);
+    } catch (error) {
+      return internalServerErrorResponse(
+        res,
+        "Failed to send cookie",
+        error.message
+      );
     }
 
     return successResponse(res, "OTP verified successfully", dataSendToClient);
