@@ -1,0 +1,40 @@
+install reddis for in memory storage 
+
+use Redis for caching user session and otp for faster authentication and reduce database load
+
+use also for data storage - for fast and efficient 
+
+web-push for notification or FCM (Firebase Cloud Messaging)
+
+indexing 
+
+optimize the code according to logic 
+
+docker and start the locally and check
+
+
+
+
+
+this is used when we want to rollback the things from what we received 
+const session = await mongoose.startSession();
+
+try {
+    session.startTransaction();
+
+    const user = await User.create([userData], { session });
+
+    await Employee.create([employeeData], { session });
+
+    await Salary.create([salaryData], { session });
+
+    await session.commitTransaction();
+
+    console.log("Transaction successful");
+} catch (error) {
+    await session.abortTransaction();
+
+    console.log("Transaction rolled back");
+} finally {
+    session.endSession();
+}

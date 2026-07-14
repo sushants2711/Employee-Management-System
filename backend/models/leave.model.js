@@ -45,7 +45,7 @@ const leaveSchema = new mongoose.Schema(
     },
     remarks: {
       type: String,
-      required: true,
+      default: null,
     },
     paidLeaveUsed: {
       type: Number,
