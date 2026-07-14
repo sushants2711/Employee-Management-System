@@ -20,7 +20,7 @@ export default [
       camelcase: ["error", { properties: "never" }],
       "no-multiple-empty-lines": ["error", { max: 1, maxEOF: 0 }],
       "react/react-in-jsx-scope": "off",
-      "no-unused-vars": "warn"
+      "no-unused-vars": "warn",
     },
   },
 ];

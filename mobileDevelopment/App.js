@@ -1,6 +1,13 @@
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View, TouchableOpacity, ScrollView, SafeAreaView } from 'react-native';
-import { Feather } from '@expo/vector-icons';
+import { StatusBar } from "expo-status-bar";
+import {
+  StyleSheet,
+  Text,
+  View,
+  TouchableOpacity,
+  ScrollView,
+  SafeAreaView,
+} from "react-native";
+import { Feather } from "@expo/vector-icons";
 
 export default function App() {
   return (
@@ -11,7 +18,8 @@ export default function App() {
             Enterprise <Text style={styles.titleHighlight}>Workforce</Text> Hub
           </Text>
           <Text style={styles.subtitle}>
-            Internal portal for employee management, analytics, and operational tracking. Please select your designated access level.
+            Internal portal for employee management, analytics, and operational
+            tracking. Please select your designated access level.
           </Text>
         </View>
 
@@ -24,26 +32,37 @@ export default function App() {
             </View>
             <Text style={styles.cardTitle}>Employee Portal</Text>
             <Text style={styles.cardDescription}>
-              Access your personal dashboard to view schedules, submit leave requests, and track your performance metrics securely.
+              Access your personal dashboard to view schedules, submit leave
+              requests, and track your performance metrics securely.
             </Text>
             <View style={styles.cardFooter}>
-              <Text style={[styles.cardFooterText, { color: '#007bff' }]}>Continue to Login</Text>
+              <Text style={[styles.cardFooterText, { color: "#007bff" }]}>
+                Continue to Login
+              </Text>
               <Feather name="arrow-right" size={20} color="#007bff" />
             </View>
           </TouchableOpacity>
 
           {/* Management Card */}
-          <TouchableOpacity style={[styles.card, { marginTop: 24 }]} activeOpacity={0.8}>
+          <TouchableOpacity
+            style={[styles.card, { marginTop: 24 }]}
+            activeOpacity={0.8}
+          >
             <View style={styles.cardTopIndicatorManagement} />
-            <View style={[styles.iconContainer, styles.iconContainerManagement]}>
+            <View
+              style={[styles.iconContainer, styles.iconContainerManagement]}
+            >
               <Feather name="shield" size={32} color="#4f46e5" />
             </View>
             <Text style={styles.cardTitle}>Management Portal</Text>
             <Text style={styles.cardDescription}>
-              Management login is strictly for the company management team to oversee operations, approve requests, and manage personnel.
+              Management login is strictly for the company management team to
+              oversee operations, approve requests, and manage personnel.
             </Text>
             <View style={styles.cardFooter}>
-              <Text style={[styles.cardFooterText, { color: '#4f46e5' }]}>Continue to Login</Text>
+              <Text style={[styles.cardFooterText, { color: "#4f46e5" }]}>
+                Continue to Login
+              </Text>
               <Feather name="arrow-right" size={20} color="#4f46e5" />
             </View>
           </TouchableOpacity>
@@ -51,7 +70,8 @@ export default function App() {
 
         <View style={styles.footer}>
           <Text style={styles.footerText}>
-            © {new Date().getFullYear()} COMPANY INTERNAL PROJECT.{"\n"}SECURE CONNECTION ESTABLISHED.
+            © {new Date().getFullYear()} COMPANY INTERNAL PROJECT.{"\n"}SECURE
+            CONNECTION ESTABLISHED.
           </Text>
         </View>
         <StatusBar style="auto" />
@@ -63,48 +83,48 @@ export default function App() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#f8fafc',
+    backgroundColor: "#f8fafc",
   },
   container: {
     flexGrow: 1,
     padding: 20,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   header: {
-    alignItems: 'center',
+    alignItems: "center",
     marginTop: 60,
     marginBottom: 40,
     maxWidth: 400,
   },
   title: {
     fontSize: 34,
-    fontWeight: 'bold',
-    color: '#0f172a',
-    textAlign: 'center',
+    fontWeight: "bold",
+    color: "#0f172a",
+    textAlign: "center",
     lineHeight: 42,
     marginBottom: 16,
   },
   titleHighlight: {
-    color: '#007bff',
+    color: "#007bff",
   },
   subtitle: {
     fontSize: 16,
-    color: '#64748b',
-    textAlign: 'center',
+    color: "#64748b",
+    textAlign: "center",
     lineHeight: 24,
   },
   cardsContainer: {
-    width: '100%',
+    width: "100%",
     maxWidth: 500,
-    alignItems: 'center',
+    alignItems: "center",
   },
   card: {
-    width: '100%',
-    backgroundColor: '#ffffff',
+    width: "100%",
+    backgroundColor: "#ffffff",
     borderRadius: 24,
     padding: 24,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: {
       width: 0,
       height: 4,
@@ -112,57 +132,57 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 12,
     elevation: 5,
-    overflow: 'hidden',
+    overflow: "hidden",
   },
   cardTopIndicatorEmployee: {
-    position: 'absolute',
+    position: "absolute",
     top: 0,
     left: 0,
     right: 0,
     height: 6,
-    backgroundColor: '#007bff',
+    backgroundColor: "#007bff",
   },
   cardTopIndicatorManagement: {
-    position: 'absolute',
+    position: "absolute",
     top: 0,
     left: 0,
     right: 0,
     height: 6,
-    backgroundColor: '#4f46e5',
+    backgroundColor: "#4f46e5",
   },
   iconContainer: {
     width: 64,
     height: 64,
     borderRadius: 16,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     marginBottom: 20,
   },
   iconContainerEmployee: {
-    backgroundColor: '#eff6ff',
+    backgroundColor: "#eff6ff",
   },
   iconContainerManagement: {
-    backgroundColor: '#eef2ff',
+    backgroundColor: "#eef2ff",
   },
   cardTitle: {
     fontSize: 22,
-    fontWeight: 'bold',
-    color: '#0f172a',
+    fontWeight: "bold",
+    color: "#0f172a",
     marginBottom: 12,
   },
   cardDescription: {
     fontSize: 15,
-    color: '#64748b',
+    color: "#64748b",
     lineHeight: 22,
     marginBottom: 24,
   },
   cardFooter: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
   },
   cardFooterText: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: "600",
     marginRight: 8,
   },
   footer: {
@@ -171,9 +191,9 @@ const styles = StyleSheet.create({
   },
   footerText: {
     fontSize: 11,
-    color: '#94a3b8',
-    textAlign: 'center',
+    color: "#94a3b8",
+    textAlign: "center",
     letterSpacing: 0.5,
     lineHeight: 18,
-  }
+  },
 });
