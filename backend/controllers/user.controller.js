@@ -12,8 +12,9 @@ import {
   internalServerErrorResponse,
   successResponse,
 } from "../utils/response.handler.js";
-import { OTP_EXPIARY_TIME } from "../config/constant.js";
+import { OTP_EXPIARY_TIME, COOKIE_NAME } from "../config/constant.js";
 import { sendCookieToUser } from "../utils/send.cookie.js";
+import { cookieOptionsSetting } from "../utils/cookieOptions.js";
 
 // management signup (usign email otp)
 export const signupManagementController = async (req, res) => {
@@ -335,6 +336,21 @@ export const managementLoginController = async (req, res) => {
 // employee and manager login
 
 // logout
+export const logoutController = async (req, res) => {
+  try {
+    // clear both potential cookies
+    res.clearCookie(COOKIE_NAME, cookieOptionsSetting);
+
+    // send a response
+    return successResponse(res, "Logout successfully");
+  } catch (error) {
+    return internalServerErrorResponse(
+      res,
+      "Internal Server Error",
+      error.message
+    );
+  }
+};
 
 // update the password
 
