@@ -4,6 +4,7 @@ import { Moon, Sun } from "lucide-react";
 import Home from "./pages/Home";
 import EmployeeLogin from "./pages/EmployeeLogin";
 import ManagementLogin from "./pages/ManagementLogin";
+import ManagementSignup from "./pages/ManagementSignup";
 
 function App() {
   const [isDarkMode, setIsDarkMode] = useState(() => {
@@ -44,6 +45,7 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/employee-login" element={<EmployeeLogin />} />
           <Route path="/management-login" element={<ManagementLogin />} />
+          <Route path="/management-signup" element={<ManagementSignup />} />
         </Routes>
       </div>
     </Router>

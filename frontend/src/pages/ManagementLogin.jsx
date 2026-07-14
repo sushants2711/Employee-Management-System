@@ -97,6 +97,18 @@ function ManagementLogin() {
               Authenticate
             </button>
           </form>
+
+          <div className="mt-6 text-center">
+            <p className="text-sm text-slate-600 dark:text-slate-400">
+              Don't have an account?{" "}
+              <Link
+                to="/management-signup"
+                className="font-medium text-indigo-600 dark:text-indigo-400 hover:underline"
+              >
+                Sign Up
+              </Link>
+            </p>
+          </div>
         </div>
       </div>
     </div>
