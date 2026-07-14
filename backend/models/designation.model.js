@@ -16,6 +16,11 @@ const designationSchema = new mongoose.Schema(
       type: String,
       default: null,
     },
+    createdBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
   },
   { timestamps: true, minimize: true }
 );

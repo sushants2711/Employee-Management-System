@@ -1,4 +1,3 @@
-import mongoose from "mongoose";
 import departmentModel from "../models/department.model.js";
 import {
   internalServerErrorResponse,
@@ -7,11 +6,18 @@ import {
   successResponse,
   notFoundResponse,
 } from "../utils/response.handler.js";
+import { verifyMongoDBId } from "../utils/verifyMongoId.js";
 
 // create a department
 export const createDepartmentController = async (req, res) => {
   try {
+    const loggedInUser = req.user._id;
+
     const { departmentName, departmentCode, description } = req.body;
+
+    const isValid = verifyMongoDBId(loggedInUser, res);
+
+    if (isValid !== true) return isValid;
 
     const departmentNameExist = await departmentModel.findOne({
       departmentName,
@@ -29,6 +35,7 @@ export const createDepartmentController = async (req, res) => {
       departmentName,
       departmentCode,
       description: description,
+      createdBy: loggedInUser,
     });
 
     const saveData = await department.save();
@@ -46,12 +53,13 @@ export const createDepartmentController = async (req, res) => {
 // get all department
 export const getAllDepartmentController = async (req, res) => {
   try {
-    const { departmentName, departmentCode } = req.query;
+    const { departmentName, departmentCode, status } = req.query;
 
     let filterData = {};
 
     if (departmentName) filterData.departmentName = departmentName;
     if (departmentCode) filterData.departmentCode = departmentCode;
+    if (status) filterData.status = status;
 
     const allDepartment = await departmentModel.find(filterData);
 
@@ -82,13 +90,8 @@ export const getSingleDepartmentController = async (req, res) => {
   try {
     const { id } = req.params;
 
-    if (!id) {
-      return badRequestResponse(res, "Department ID is missing");
-    }
-
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      return badRequestResponse(res, "Invalid department ID");
-    }
+    const isValid = verifyMongoDBId(id, res);
+    if (isValid !== true) return isValid;
 
     const singleDepartment = await departmentModel.findById(id);
 
@@ -110,20 +113,16 @@ export const getSingleDepartmentController = async (req, res) => {
   }
 };
 
-// update the department
+// update the department - either update the deparment by management or manager that is created that department
+// fix the api
 export const updateTheDepartmentController = async (req, res) => {
   try {
     const { id } = req.params;
 
     const { departmentName, departmentCode, description, status } = req.body;
 
-    if (!id) {
-      return badRequestResponse(res, "Department ID is missing");
-    }
-
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      return badRequestResponse(res, "Invalid department ID");
-    }
+    const isValid = verifyMongoDBId(id, res);
+    if (isValid !== true) return isValid;
 
     const singleDepartment = await departmentModel.findById(id);
 
@@ -163,17 +162,13 @@ export const updateTheDepartmentController = async (req, res) => {
 };
 
 // delete the department
+// only delete the department either manager that is created or the one who is in management
 export const deleteTheDepartmentByIdController = async (req, res) => {
   try {
     const { id } = req.params;
 
-    if (!id) {
-      return badRequestResponse(res, "Department ID is missing");
-    }
-
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      return badRequestResponse(res, "Invalid department ID");
-    }
+    const isValid = verifyMongoDBId(id, res);
+    if (isValid !== true) return isValid;
 
     const singleDepartment = await departmentModel.findById(id);
 
@@ -184,62 +179,6 @@ export const deleteTheDepartmentByIdController = async (req, res) => {
     const deleteData = await departmentModel.findByIdAndDelete(id);
 
     return successResponse(res, "Department deleted successfully", deleteData);
-  } catch (error) {
-    return internalServerErrorResponse(
-      res,
-      "Internal Server Error",
-      error.message
-    );
-  }
-};
-
-// get all active department
-export const getAllActiveDepartmentController = async (req, res) => {
-  try {
-    const activeDepartment = await departmentModel.find({ status: "ACTIVE" });
-
-    if (
-      !activeDepartment ||
-      activeDepartment.length === 0 ||
-      !Array.isArray(activeDepartment)
-    ) {
-      return notFoundResponse(res, "No active department found");
-    }
-
-    return successResponse(
-      res,
-      "Active department fetched successfully",
-      activeDepartment
-    );
-  } catch (error) {
-    return internalServerErrorResponse(
-      res,
-      "Internal Server Error",
-      error.message
-    );
-  }
-};
-
-// get all inActive department
-export const getAllInactiveDepartmentController = async (req, res) => {
-  try {
-    const inActiveDepartment = await departmentModel.find({
-      status: "INACTIVE",
-    });
-
-    if (
-      !inActiveDepartment ||
-      inActiveDepartment.length === 0 ||
-      !Array.isArray(inActiveDepartment)
-    ) {
-      return notFoundResponse(res, "No inactive department found");
-    }
-
-    return successResponse(
-      res,
-      "Inactive department fetched successfully",
-      inActiveDepartment
-    );
   } catch (error) {
     return internalServerErrorResponse(
       res,

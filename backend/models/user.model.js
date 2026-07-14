@@ -72,33 +72,24 @@ const userSchema = new mongoose.Schema(
     designation: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Designation",
-      required: true,
+      default: null,
     },
     department: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Department",
-      required: true,
+      default: null,
     },
-    userType: {
-      type: String,
-      enum: ["SUPERUSER", "NORMALUSER"],
-      default: "NORMALUSER",
-    },
-    isSuperUserVerified: {
+    isManagementVerified: {
       type: Boolean,
       default: false,
     },
-    superUserOtp: {
+    managementOtp: {
       type: String,
       default: null,
     },
-    superUserOtpExpiredTime: {
+    managementOtpExpiredTime: {
       type: Date,
       default: null,
-    },
-    createdByUser: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Management",
     },
   },
   { timestamps: true, minimize: true }
