@@ -1,4 +1,3 @@
-import mongoose from "mongoose";
 import departmentModel from "../models/department.model.js";
 import {
   internalServerErrorResponse,
@@ -7,11 +6,18 @@ import {
   successResponse,
   notFoundResponse,
 } from "../utils/response.handler.js";
+import { verifyMongoDBId } from "../utils/verifyMongoId.js";
 
 // create a department
 export const createDepartmentController = async (req, res) => {
   try {
+    const loggedInUser = req.user._id;
+
     const { departmentName, departmentCode, description } = req.body;
+
+    const isValid = verifyMongoDBId(loggedInUser, res);
+
+    if (isValid !== true) return isValid;
 
     const departmentNameExist = await departmentModel.findOne({
       departmentName,
@@ -29,6 +35,7 @@ export const createDepartmentController = async (req, res) => {
       departmentName,
       departmentCode,
       description: description,
+      createdBy: loggedInUser,
     });
 
     const saveData = await department.save();
@@ -83,13 +90,8 @@ export const getSingleDepartmentController = async (req, res) => {
   try {
     const { id } = req.params;
 
-    if (!id) {
-      return badRequestResponse(res, "Department ID is missing");
-    }
-
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      return badRequestResponse(res, "Invalid department ID");
-    }
+    const isValid = verifyMongoDBId(id, res);
+    if (isValid !== true) return isValid;
 
     const singleDepartment = await departmentModel.findById(id);
 
@@ -111,20 +113,16 @@ export const getSingleDepartmentController = async (req, res) => {
   }
 };
 
-// update the department
+// update the department - either update the deparment by management or manager that is created that department
+// fix the api
 export const updateTheDepartmentController = async (req, res) => {
   try {
     const { id } = req.params;
 
     const { departmentName, departmentCode, description, status } = req.body;
 
-    if (!id) {
-      return badRequestResponse(res, "Department ID is missing");
-    }
-
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      return badRequestResponse(res, "Invalid department ID");
-    }
+    const isValid = verifyMongoDBId(id, res);
+    if (isValid !== true) return isValid;
 
     const singleDepartment = await departmentModel.findById(id);
 
@@ -164,17 +162,13 @@ export const updateTheDepartmentController = async (req, res) => {
 };
 
 // delete the department
+// only delete the department either manager that is created or the one who is in management
 export const deleteTheDepartmentByIdController = async (req, res) => {
   try {
     const { id } = req.params;
 
-    if (!id) {
-      return badRequestResponse(res, "Department ID is missing");
-    }
-
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      return badRequestResponse(res, "Invalid department ID");
-    }
+    const isValid = verifyMongoDBId(id, res);
+    if (isValid !== true) return isValid;
 
     const singleDepartment = await departmentModel.findById(id);
 
