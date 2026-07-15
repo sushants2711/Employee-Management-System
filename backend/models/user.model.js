@@ -56,7 +56,10 @@ const userSchema = new mongoose.Schema(
     forgotPasswordExpireTime: {
       type: Date,
     },
-    profilePic: {
+    profilePicId: {
+      type: String,
+    },
+    profilePicUrl: {
       type: String,
     },
     phoneNumber: {
@@ -72,33 +75,38 @@ const userSchema = new mongoose.Schema(
     designation: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Designation",
-      required: true,
+      default: null,
     },
     department: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Department",
-      required: true,
+      default: null,
     },
-    userType: {
-      type: String,
-      enum: ["SUPERUSER", "NORMALUSER"],
-      default: "NORMALUSER",
-    },
-    isSuperUserVerified: {
+    isManagementVerified: {
       type: Boolean,
       default: false,
     },
-    superUserOtp: {
+    managementOtp: {
       type: String,
-      default: null,
     },
-    superUserOtpExpiredTime: {
+    managementOtpExpiredTime: {
       type: Date,
-      default: null,
     },
-    createdByUser: {
+    isChangedPasswordCount: {
+      type: Number,
+      default: 0,
+    },
+    updateByRole: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Management",
+      ref: "User",
+    },
+    updateByStatus: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+    },
+    createdAccount: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
     },
   },
   { timestamps: true, minimize: true }

@@ -1,5 +1,6 @@
 import js from "@eslint/js";
 import globals from "globals";
+import reactPlugin from "eslint-plugin-react";
 
 export default [
   js.configs.recommended,
@@ -8,6 +9,9 @@ export default [
   },
   {
     files: ["**/*.js", "**/*.jsx"],
+    plugins: {
+      react: reactPlugin,
+    },
     languageOptions: {
       ecmaVersion: "latest",
       sourceType: "module",
@@ -25,6 +29,8 @@ export default [
       camelcase: ["error", { properties: "never" }],
       "no-multiple-empty-lines": ["error", { max: 1, maxEOF: 0 }],
       "react/react-in-jsx-scope": "off",
+      "react/jsx-uses-vars": "error",
+      "react/jsx-uses-react": "error",
       "no-unused-vars": "warn",
     },
   },
