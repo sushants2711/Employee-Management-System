@@ -701,12 +701,64 @@ export const resetPasswordController = async (req, res) => {
   }
 };
 
-// update the role by manager and management only
+// update the role by management only
+export const updateTheRoleController = async (req, res) => {
+  try {
+    const loggedInUser = req.user._id;
 
-// update the status
+    const { role } = req.body;
+
+    const { id } = req.params;
+
+    const checkId = verifyMongoDBId(id, res);
+
+    if (!checkId) {
+      return checkId;
+    }
+
+    const result = verifyMongoDBId(loggedInUser, res);
+
+    if (!result) {
+      return result;
+    }
+
+    if (loggedInUser.status !== "ACTIVE") {
+      return badRequestResponse(res, "Your account is not active");
+    }
+
+    if (loggedInUser.role !== "Management") {
+      return badRequestResponse(
+        res,
+        "You are not authorized to perform this action"
+      );
+    }
+
+    const userExist = await userModel.findById(id);
+
+    if (!userExist) {
+      return badRequestResponse(res, "User not found");
+    }
+
+    userExist.role = role;
+    userExist.updateByRole = loggedInUser;
+
+    const savedData = await userExist.save();
+
+    const dataSendToClient = savedData.toObject();
+    delete dataSendToClient.password;
+  } catch (error) {
+    return internalServerErrorResponse(
+      res,
+      "Internal Server Error",
+      error.message
+    );
+  }
+};
+
+// update the status by manager and management only
 
 // update isAvailable for every user
 
 // update the data
 
-// delete the data
+// delete the data by management and manager only
