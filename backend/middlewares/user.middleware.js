@@ -13,7 +13,7 @@ export const userRegistrationForManagerMiddleware = async (req, res, next) => {
       email: joi.string().email().min(10).max(50).trim().required(),
       password: joi.string().min(8).max(100).required(),
       confirmPassword: joi.string().min(8).max(100).required(),
-      phoneNumber: joi.string().min(13).max(13).trim().required(),
+      phoneNumber: joi.string().length(10).trim().required(),
     });
 
     const { error } = schema.validate(req.body);

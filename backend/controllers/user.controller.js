@@ -1065,3 +1065,84 @@ export const singleUserDetailsController = async (req, res) => {
     );
   }
 };
+
+// account create for employee and manager by management
+export const createAccountForUserController = async (req, res) => {
+  try {
+    const loggedInUser = req.user;
+
+    const id = loggedInUser._id;
+
+    const {
+      name,
+      email,
+      password,
+      role,
+      phoneNumber,
+      teamName,
+      designation,
+      department,
+    } = req.body;
+
+    const checkId = verifyMongoDBId(id, res);
+
+    if (!checkId) {
+      return checkId;
+    }
+
+    const userExist = await userModel.findById(id);
+
+    if (!userExist) {
+      return notFoundResponse(res, "User not found");
+    }
+
+    if (loggedInUser.role !== "Management" || loggedInUser.role !== "Manager") {
+      return badRequestResponse(
+        res,
+        "You are not authorized to perform this action"
+      );
+    }
+
+    const emailOrPhoneNumberExist = await userModel.findOne({
+      $or: [{ email }, { phoneNumber }],
+    });
+
+    if (emailOrPhoneNumberExist) {
+      return badRequestResponse(res, "Email or Phone number already exist");
+    }
+
+    const hashedPassword = await hashPassword(password);
+
+    const empId = generateEmpId();
+
+    const newUserAccount = new userModel({
+      employeeId: empId,
+      name,
+      email,
+      password: hashedPassword,
+      role,
+      phoneNumber,
+      teamName,
+      designation,
+      department,
+      createdAccount: id,
+    });
+
+    const savedData = await newUserAccount.save();
+
+    const dataSendToClient = savedData.toObject();
+    delete dataSendToClient.password;
+
+    return successResponse(
+      res,
+      `${role.toLowerCase()} account created successfully`,
+      dataSendToClient
+    );
+  } catch (error) {
+    return internalServerErrorResponse(
+      res,
+      "Internal Server Error",
+      error.message
+    );
+  }
+};
