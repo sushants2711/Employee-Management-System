@@ -56,7 +56,10 @@ const userSchema = new mongoose.Schema(
     forgotPasswordExpireTime: {
       type: Date,
     },
-    profilePic: {
+    profilePicId: {
+      type: String,
+    },
+    profilePicUrl: {
       type: String,
     },
     phoneNumber: {
@@ -88,6 +91,22 @@ const userSchema = new mongoose.Schema(
     },
     managementOtpExpiredTime: {
       type: Date,
+    },
+    isChangedPasswordCount: {
+      type: Number,
+      default: 0,
+    },
+    updateByRole: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+    },
+    updateByStatus: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+    },
+    createdAccount: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
     },
   },
   { timestamps: true, minimize: true }
