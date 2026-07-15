@@ -5,7 +5,7 @@ import {
   validationErrorResponse,
 } from "../utils/response.handler";
 
-// user registration for manager 
+// user registration for manager
 export const userRegistrationForManagerMiddleware = async (req, res, next) => {
   try {
     const schema = joi.object({
