@@ -381,3 +381,45 @@ export const updateUserIsAvailableMiddleware = async (req, res, next) => {
     );
   }
 };
+
+// create the account
+export const createAccountMiddleware = async (req, res, next) => {
+  try {
+    const schema = joi.object({
+      name: joi.string().min(3).max(50).trim().required(),
+      email: joi.string().email().min(10).max(50).trim().required(),
+      password: joi.string().min(8).max(100).required(),
+      confirmPassword: joi.string().min(8).max(100).required(),
+      role: joi.string().valid("Employee", "Manager", "Team Leader").required(),
+      phoneNumber: joi.string().length(10).trim().required(),
+      teamName: joi.string().required(),
+      designation: joi.string().required(),
+      department: joi.string().required(),
+    });
+
+    const { error } = schema.validate(req.body);
+
+    if (error) {
+      return validationErrorResponse(
+        res,
+        "Error Occured at Create Account Validation",
+        error?.details?.[0]?.message
+      );
+    }
+
+    if (req.body.password !== req.body.confirmPassword) {
+      return badRequestResponse(
+        res,
+        "Password and Confirm Password do not match"
+      );
+    }
+
+    next();
+  } catch (error) {
+    return internalServerErrorResponse(
+      res,
+      "Internal Server Error",
+      error.message
+    );
+  }
+};
