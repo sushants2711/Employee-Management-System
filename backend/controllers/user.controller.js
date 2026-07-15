@@ -18,6 +18,7 @@ import { OTP_EXPIARY_TIME, COOKIE_NAME } from "../config/constant.js";
 import { sendCookieToUser } from "../utils/send.cookie.js";
 import { cookieOptionsSetting } from "../utils/cookieOptions.js";
 import { verifyMongoDBId } from "../utils/verifyMongoId.js";
+import cloudinary from "../config/cloudinary.config.js";
 
 // management signup (usign email otp)
 export const signupManagementController = async (req, res) => {
@@ -835,6 +836,13 @@ export const isAvailableUpdateController = async (req, res) => {
       return badRequestResponse(res, "User not found");
     }
 
+    if (userExist._id.toString() !== loggedInUser._id.toString()) {
+      return badRequestResponse(
+        res,
+        "You are not authorized to perform this action"
+      );
+    }
+
     if (userExist.status !== "ACTIVE") {
       return badRequestResponse(res, "Your account is not active");
     }
@@ -860,7 +868,75 @@ export const isAvailableUpdateController = async (req, res) => {
   }
 };
 
-// update the data
+// update the profile Image
+export const updateTheProfileImageController = async (req, res) => {
+  try {
+    const loggedInUser = req.user;
+
+    const image = req.file;
+
+    if (!image) {
+      return badRequestResponse(res, "Please upload an image");
+    }
+
+    const result = verifyMongoDBId(loggedInUser._id, res);
+
+    if (!result) {
+      return result;
+    }
+
+    const userExist = await userModel.findById(loggedInUser._id);
+
+    if (!userExist) {
+      return badRequestResponse(res, "User not found");
+    }
+
+    if (userExist._id.toString() !== loggedInUser._id.toString()) {
+      return badRequestResponse(
+        res,
+        "You are not authorized to perform this action"
+      );
+    }
+
+    if (userExist.profilePicId) {
+      try {
+        const deleteImage = await cloudinary.uploader.destroy(
+          userExist.profilePicId
+        );
+
+        if (deleteImage.result !== "ok") {
+          return badRequestResponse(res, "Failed to delete image");
+        }
+      } catch (error) {
+        return internalServerErrorResponse(
+          res,
+          "Failed to delete old image",
+          error.message
+        );
+      }
+    }
+
+    userExist.profilePicUrl = image.path;
+    userExist.profilePicId = image.filename;
+
+    const savedData = await userExist.save();
+
+    const dataSendToClient = savedData.toObject();
+    delete dataSendToClient.password;
+
+    return successResponse(
+      res,
+      "Profile image updated successfully",
+      dataSendToClient
+    );
+  } catch (error) {
+    return internalServerErrorResponse(
+      res,
+      "Internal Server Error",
+      error.message
+    );
+  }
+};
 
 // delete the data by management and manager only
 

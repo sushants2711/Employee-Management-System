@@ -56,7 +56,10 @@ const userSchema = new mongoose.Schema(
     forgotPasswordExpireTime: {
       type: Date,
     },
-    profilePic: {
+    profilePicId: {
+      type: String,
+    },
+    profilePicUrl: {
       type: String,
     },
     phoneNumber: {
