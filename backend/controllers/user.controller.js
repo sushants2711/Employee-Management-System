@@ -1,4 +1,5 @@
 import {
+  getForgotPasswordEmail,
   sendSignupSuccessEmail,
   sendSignupVerificationEmail,
 } from "../emails/email.send.js";
@@ -575,9 +576,69 @@ export const updatePassword = async (req, res) => {
   }
 };
 
-// reset the password
+// forgot the password
+export const forgotPasswordController = async (req, res) => {
+  try {
+    const { email, empId } = req.body;
 
-// forgot password
+    let userExist;
+
+    if (empId) {
+      userExist = await userModel.findOne({ employeeId: empId });
+    } else if (email) {
+      userExist = await userModel.findOne({ email });
+    }
+
+    if (!userExist) {
+      return badRequestResponse(res, "User not found");
+    }
+
+    if (userExist.role === "Management" && !userExist.isManagementVerified) {
+      return badRequestResponse(res, "Verified your account first");
+    }
+
+    if (userExist.status !== "ACTIVE") {
+      return badRequestResponse(res, "User is not Active");
+    }
+
+    const otp = generateOTP();
+
+    userExist.forgotPasswordToken = otp;
+    userExist.forgotPasswordExpireTime = Date.now() + Number(OTP_EXPIARY_TIME);
+
+    const savedData = await userExist.save();
+
+    if (!savedData) {
+      return badRequestResponse(res, "Failed to generate OTP");
+    }
+
+    // send a email to the user
+    try {
+      await getForgotPasswordEmail(userExist.name, userExist.email, otp);
+    } catch (error) {
+      return internalServerErrorResponse(
+        res,
+        "Failed to send an email",
+        error.message
+      );
+    }
+
+    const dataSendToClient = savedData.toObject();
+    delete dataSendToClient.password;
+    delete dataSendToClient.forgotPasswordToken;
+    delete dataSendToClient.forgotPasswordExpireTime;
+
+    return successResponse(res, "OTP generated successfully", dataSendToClient);
+  } catch (error) {
+    return internalServerErrorResponse(
+      res,
+      "Internal Server Error",
+      error.message
+    );
+  }
+};
+
+// reset password
 
 // update the role by manager and management only
 
