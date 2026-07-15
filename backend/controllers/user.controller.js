@@ -457,7 +457,123 @@ export const countPasswordChangeAfterFirstLoginController = async (
   }
 };
 
+// update the password for the first time
+export const updatePasswordFirstTime = async (req, res) => {
+  try {
+    const loggedInUserId = req.user._id;
+
+    const { oldPassword, newPassword } = req.body;
+
+    const result = verifyMongoDBId(loggedInUserId, res);
+
+    if (!result) {
+      return result;
+    }
+
+    const userExist = await userModel.findById(loggedInUserId);
+
+    if (!userExist) {
+      return badRequestResponse(res, "User not found");
+    }
+
+    if (userExist.role === "Management") {
+      return badRequestResponse(res, "Management user cannot access this API");
+    }
+
+    if (userExist.isChangedPasswordCount >= 1) {
+      return badRequestResponse(res, "Password has already been updated once");
+    }
+
+    // check the old password
+    const checkPassword = await verifyPassword(oldPassword, userExist.password);
+
+    if (!checkPassword) {
+      return badRequestResponse(res, "Invalid old password");
+    }
+
+    // hash the new password
+    const hashedPassword = await hashPassword(newPassword);
+
+    userExist.password = hashedPassword;
+    userExist.isChangedPasswordCount = userExist.isChangedPasswordCount + 1;
+
+    const updatedUser = await userExist.save();
+
+    if (!updatedUser) {
+      return badRequestResponse(res, "Failed to update password");
+    }
+
+    const dataSendToClient = updatedUser.toObject();
+    delete dataSendToClient.password;
+
+    return successResponse(
+      res,
+      "Password updated successfully",
+      dataSendToClient
+    );
+  } catch (error) {
+    return internalServerErrorResponse(
+      res,
+      "Internal Server Error",
+      error.message
+    );
+  }
+};
+
 // update the password
+export const updatePassword = async (req, res) => {
+  try {
+    const loggedInUserId = req.user._id;
+
+    const { oldPassword, newPassword } = req.body;
+
+    const result = verifyMongoDBId(loggedInUserId, res);
+
+    if (!result) {
+      return result;
+    }
+
+    const userExist = await userModel.findById(loggedInUserId);
+
+    if (!userExist) {
+      return badRequestResponse(res, "User not found");
+    }
+
+    // check the old password
+    const checkPassword = await verifyPassword(oldPassword, userExist.password);
+
+    if (!checkPassword) {
+      return badRequestResponse(res, "Invalid old password");
+    }
+
+    // hash the new password
+    const hashedPassword = await hashPassword(newPassword);
+
+    userExist.password = hashedPassword;
+    userExist.isChangedPasswordCount = userExist.isChangedPasswordCount + 1;
+
+    const updatedUser = await userExist.save();
+
+    if (!updatedUser) {
+      return badRequestResponse(res, "Failed to update password");
+    }
+
+    const dataSendToClient = updatedUser.toObject();
+    delete dataSendToClient.password;
+
+    return successResponse(
+      res,
+      "Password updated successfully",
+      dataSendToClient
+    );
+  } catch (error) {
+    return internalServerErrorResponse(
+      res,
+      "Internal Server Error",
+      error.message
+    );
+  }
+};
 
 // reset the password
 
