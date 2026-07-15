@@ -988,5 +988,80 @@ export const allUsers = async (req, res) => {
 };
 
 // get single user details and all the information required for manager and management
+export const getUserDetailsForManagerController = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const loggedInUser = req.user;
+
+    const verifyId = verifyMongoDBId(loggedInUser._id, res);
+
+    if (verifyId) {
+      return verifyId;
+    }
+
+    const checkId = verifyMongoDBId(id, res);
+
+    if (!checkId) {
+      return checkId;
+    }
+
+    if (loggedInUser.role !== "Management" || loggedInUser.role !== "Manager") {
+      return badRequestResponse(
+        res,
+        "You are not authorized to perform this action"
+      );
+    }
+
+    const singleUserData = await userModel
+      .findById(id)
+      .populate("teamName", "teamName teamLead manager")
+      .populate("designation", "designationName designationCode")
+      .populate("department", "departmentName departmentCode status")
+      .select("-password");
+
+    if (!singleUserData) {
+      return notFoundResponse(res, "User not found");
+    }
+
+    return successResponse(res, "Data fetched successfully", singleUserData);
+  } catch (error) {
+    return internalServerErrorResponse(
+      res,
+      "Internal Server Error",
+      error.message
+    );
+  }
+};
 
 // get single user details for user itself
+export const singleUserDetailsController = async (req, res) => {
+  try {
+    const loggedInUser = req.user._id;
+
+    const checkId = verifyMongoDBId(loggedInUser, res);
+
+    if (!checkId) {
+      return checkId;
+    }
+
+    const singleUserData = await userModel
+      .findById(loggedInUser)
+      .populate("teamName", "teamName teamLead manager")
+      .populate("designation", "designationName designationCode")
+      .populate("department", "departmentName departmentCode status")
+      .select("-password");
+
+    if (!singleUserData) {
+      return notFoundResponse(res, "User not found");
+    }
+
+    return successResponse(res, "Data fetched successfully", singleUserData);
+  } catch (error) {
+    return internalServerErrorResponse(
+      res,
+      "Internal Server Error",
+      error.message
+    );
+  }
+};
