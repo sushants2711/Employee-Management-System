@@ -89,6 +89,10 @@ const userSchema = new mongoose.Schema(
     managementOtpExpiredTime: {
       type: Date,
     },
+    isChangedPasswordCount: {
+      type: Number,
+      default: 0,
+    },
   },
   { timestamps: true, minimize: true }
 );

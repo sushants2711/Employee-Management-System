@@ -297,7 +297,7 @@ export const managementLoginController = async (req, res) => {
     const isValidPassword = await verifyPassword(password, userExist.password);
 
     if (!isValidPassword) {
-      return badRequestResponse(res, "Invalid email or password");
+      return badRequestResponse(res, "Invalid password");
     }
 
     // update the last login
@@ -334,6 +334,70 @@ export const managementLoginController = async (req, res) => {
 };
 
 // employee and manager login
+export const normalUserLoginController = async (req, res) => {
+  try {
+    const { empId, email, password } = req.body;
+
+    let userExist;
+
+    if (empId) {
+      // login with empId
+      userExist = await userModel.findOne({
+        employeeId: empId,
+        status: "ACTIVE",
+        role: { $in: ["Employee", "Manager", "Team Leader"] },
+      });
+    } else if (email) {
+      // login with email
+      userExist = await userModel.findOne({
+        email,
+        status: "ACTIVE",
+        role: { $in: ["Employee", "Manager", "Team Leader"] },
+      });
+    }
+
+    if (!userExist) {
+      return badRequestResponse(res, "Invalid credentials");
+    }
+
+    const isValidPassword = await verifyPassword(password, userExist.password);
+
+    if (!isValidPassword) {
+      return badRequestResponse(res, "Invalid password");
+    }
+
+    // update the last login
+    userExist.lastLogin = Date.now();
+
+    const savedData = await userExist.save();
+
+    if (!savedData) {
+      return badRequestResponse(res, "Failed to saved the data");
+    }
+
+    const dataSendToClient = savedData.toObject();
+    delete dataSendToClient.password;
+
+    // send a cookie to the user
+    try {
+      await sendCookieToUser(savedData._id, res);
+    } catch (error) {
+      return internalServerErrorResponse(
+        res,
+        "Failed to send cookie",
+        error.message
+      );
+    }
+
+    return successResponse(res, "Login successful", dataSendToClient);
+  } catch (error) {
+    return internalServerErrorResponse(
+      res,
+      "Internal Server Error",
+      error.message
+    );
+  }
+};
 
 // logout
 export const logoutController = async (req, res) => {
@@ -351,6 +415,8 @@ export const logoutController = async (req, res) => {
     );
   }
 };
+
+// this api endpoints is basically check the normal user login after change their password or not if the password is change than this api is not works else first force the frontend to show that page where user change the password
 
 // update the password
 
