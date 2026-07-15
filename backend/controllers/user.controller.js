@@ -817,6 +817,42 @@ export const updateTheStatusController = async (req, res) => {
 };
 
 // update isAvailable for every user
+export const isAvailableUpdateController = async (req, res) => {
+  try {
+    const loggedInUser = req.user;
+
+    const { isAvailable } = req.body;
+
+    const result = verifyMongoDBId(loggedInUser._id, res);
+
+    if (!result) {
+      return result;
+    }
+
+    if (loggedInUser.status !== "ACTIVE") {
+      return badRequestResponse(res, "Your account is not active");
+    }
+
+    loggedInUser.isAvailable = isAvailable;
+
+    const savedData = await loggedInUser.save();
+
+    const dataSendToClient = savedData.toObject();
+    delete dataSendToClient.password;
+
+    return successResponse(
+      res,
+      "Status updated successfully",
+      dataSendToClient
+    );
+  } catch (error) {
+    return internalServerErrorResponse(
+      res,
+      "Internal Server Error",
+      error.message
+    );
+  }
+};
 
 // update the data
 
