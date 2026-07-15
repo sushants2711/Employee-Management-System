@@ -402,7 +402,7 @@ export const normalUserLoginController = async (req, res) => {
   }
 };
 
-// logout
+// logout controller
 export const logoutController = async (req, res) => {
   try {
     // clear both potential cookies
@@ -756,9 +756,72 @@ export const updateTheRoleController = async (req, res) => {
 };
 
 // update the status by manager and management only
+export const updateTheStatusController = async (req, res) => {
+  try {
+    const loggedInUser = req.user._id;
+
+    const { status } = req.body;
+
+    const { id } = req.params;
+
+    // check the id is valid
+    const checkId = verifyMongoDBId(id, res);
+
+    if (!checkId) {
+      return checkId;
+    }
+
+    const result = verifyMongoDBId(loggedInUser, res);
+
+    if (!result) {
+      return result;
+    }
+
+    if (loggedInUser.status !== "ACTIVE") {
+      return badRequestResponse(res, "Your account is not active");
+    }
+
+    if (loggedInUser.role !== "Management") {
+      return badRequestResponse(
+        res,
+        "You are not authorized to perform this action"
+      );
+    }
+
+    const userExist = await userModel.findById(id);
+
+    if (!userExist) {
+      return badRequestResponse(res, "User not found");
+    }
+
+    userExist.status = status;
+    userExist.updateByStatus = loggedInUser;
+
+    const savedData = await userExist.save();
+
+    const dataSendToClient = savedData.toObject();
+    delete dataSendToClient.password;
+
+    return successResponse(
+      res,
+      "Status updated successfully",
+      dataSendToClient
+    );
+  } catch (error) {
+    return internalServerErrorResponse(
+      res,
+      "Internal Server Error",
+      error.message
+    );
+  }
+};
 
 // update isAvailable for every user
 
 // update the data
 
 // delete the data by management and manager only
+
+// all user that are active
+
+// all user that is inActive
