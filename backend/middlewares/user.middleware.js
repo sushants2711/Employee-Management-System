@@ -5,22 +5,15 @@ import {
   validationErrorResponse,
 } from "../utils/response.handler";
 
-// user registration middleware
-export const userRegistrationMiddleware = async (req, res, next) => {
+// user registration for manager 
+export const userRegistrationForManagerMiddleware = async (req, res, next) => {
   try {
     const schema = joi.object({
-      employeeId: joi.string().min(6).max(6).trim().required(),
       name: joi.string().min(3).max(50).trim().required(),
       email: joi.string().email().min(10).max(50).trim().required(),
       password: joi.string().min(8).max(100).required(),
       confirmPassword: joi.string().min(8).max(100).required(),
-      role: joi
-        .string()
-        .valid("Employee", "Manager", "Team Leader", "Management")
-        .required(),
       phoneNumber: joi.string().min(13).max(13).trim().required(),
-      designation: joi.string().trim().required(),
-      department: joi.string().trim().required(),
     });
 
     const { error } = schema.validate(req.body);
@@ -37,6 +30,33 @@ export const userRegistrationMiddleware = async (req, res, next) => {
       return badRequestResponse(
         res,
         "Password and Confirm Password do not match"
+      );
+    }
+
+    next();
+  } catch (error) {
+    return internalServerErrorResponse(
+      res,
+      "Internal Server Error",
+      error.message
+    );
+  }
+};
+
+// otp checker middleware
+export const otpCheckerMiddleware = async (req, res, next) => {
+  try {
+    const schema = joi.object({
+      otp: joi.string().length(4).trim().required(),
+    });
+
+    const { error } = schema.validate(req.body);
+
+    if (error) {
+      return validationErrorResponse(
+        res,
+        "Error Occured at OTP Checker Validation",
+        error?.details?.[0]?.message
       );
     }
 
