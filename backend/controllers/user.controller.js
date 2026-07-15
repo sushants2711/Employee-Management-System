@@ -12,6 +12,7 @@ import { generateOTP } from "../utils/otp.generator.js";
 import {
   badRequestResponse,
   internalServerErrorResponse,
+  notFoundResponse,
   successResponse,
 } from "../utils/response.handler.js";
 import { OTP_EXPIARY_TIME, COOKIE_NAME } from "../config/constant.js";
@@ -943,4 +944,49 @@ export const updateTheProfileImageController = async (req, res) => {
   }
 };
 
-// delete the data by management and manager only
+// all users in the company
+export const allUsers = async (req, res) => {
+  try {
+    const {
+      role,
+      status,
+      name,
+      employeeId,
+      teamName,
+      designation,
+      department,
+    } = req.query;
+
+    let query = {};
+
+    if (role) query.role = role;
+    if (status) query.status = status;
+    if (name) query.name = name;
+    if (employeeId) query.employeeId = employeeId;
+    if (teamName) query.teamName = teamName;
+    if (designation) query.designation = designation;
+    if (department) query.department = department;
+
+    const allData = await userModel
+      .find(query)
+      .populate("teamName", "teamName")
+      .populate("designation", "designationName")
+      .populate("department", "departmentName");
+
+    if (!allData || allData.length === 0 || !Array.isArray(allData)) {
+      return notFoundResponse(res, "No data found");
+    }
+
+    return successResponse(res, "Data fetched successfully", allData);
+  } catch (error) {
+    return internalServerErrorResponse(
+      res,
+      "Internal Server Error",
+      error.message
+    );
+  }
+};
+
+// get single user details and all the information required for manager and management
+
+// get single user details for user itself
