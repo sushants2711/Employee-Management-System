@@ -881,17 +881,26 @@ export const updateTheProfileImageController = async (req, res) => {
 
     const result = verifyMongoDBId(loggedInUser._id, res);
 
-    if (!result) {
+    if (result !== true) {
+      if (image && image.filename) {
+        await cloudinary.uploader.destroy(image.filename);
+      }
       return result;
     }
 
     const userExist = await userModel.findById(loggedInUser._id);
 
     if (!userExist) {
+      if (image && image.filename) {
+        await cloudinary.uploader.destroy(image.filename);
+      }
       return badRequestResponse(res, "User not found");
     }
 
     if (userExist._id.toString() !== loggedInUser._id.toString()) {
+      if (image && image.filename) {
+        await cloudinary.uploader.destroy(image.filename);
+      }
       return badRequestResponse(
         res,
         "You are not authorized to perform this action"
@@ -900,17 +909,10 @@ export const updateTheProfileImageController = async (req, res) => {
 
     if (userExist.profilePicId) {
       try {
-        const deleteImage = await cloudinary.uploader.destroy(
-          userExist.profilePicId
-        );
-
-        if (deleteImage.result !== "ok") {
-          return badRequestResponse(res, "Failed to delete image");
-        }
+        await cloudinary.uploader.destroy(userExist.profilePicId);
       } catch (error) {
-        return internalServerErrorResponse(
-          res,
-          "Failed to delete old image",
+        console.error(
+          "Failed to delete old image from cloudinary:",
           error.message
         );
       }
@@ -930,6 +932,9 @@ export const updateTheProfileImageController = async (req, res) => {
       dataSendToClient
     );
   } catch (error) {
+    if (req.file && req.file.filename) {
+      await cloudinary.uploader.destroy(req.file.filename);
+    }
     return internalServerErrorResponse(
       res,
       "Internal Server Error",
@@ -939,7 +944,3 @@ export const updateTheProfileImageController = async (req, res) => {
 };
 
 // delete the data by management and manager only
-
-// all user that are active
-
-// all user that is inActive
