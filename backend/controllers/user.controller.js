@@ -460,7 +460,7 @@ export const countPasswordChangeAfterFirstLoginController = async (
 };
 
 // update the password for the first time
-export const updatePasswordFirstTime = async (req, res) => {
+export const updatePasswordFirstTimeController = async (req, res) => {
   try {
     const loggedInUserId = req.user._id;
 
@@ -523,7 +523,7 @@ export const updatePasswordFirstTime = async (req, res) => {
 };
 
 // update the password
-export const updatePassword = async (req, res) => {
+export const updatePasswordController = async (req, res) => {
   try {
     const loggedInUserId = req.user._id;
 
