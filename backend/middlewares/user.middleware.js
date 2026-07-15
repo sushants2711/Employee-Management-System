@@ -126,11 +126,75 @@ export const loginUserByEmployeeIdMiddleware = async (req, res, next) => {
   }
 };
 
-// user forgot password middleware
-export const userForgotPasswordMiddleware = async (req, res, next) => {
+// change the password
+export const changePasswordMiddleware = async (req, res, next) => {
+  try {
+    const schema = joi.object({
+      oldPassword: joi.string().min(8).max(100).required(),
+      newPassword: joi.string().min(8).max(100).required(),
+      confirmPassword: joi.string().min(8).max(100).required(),
+    });
+
+    const { error } = schema.validate(req.body);
+
+    if (error) {
+      return validationErrorResponse(
+        res,
+        "Error Occured at Change Password Validation",
+        error?.details?.[0]?.message
+      );
+    }
+
+    if (req.body.newPassword !== req.body.confirmPassword) {
+      return badRequestResponse(res, "Wrong Password Credentials");
+    }
+
+    next();
+  } catch (error) {
+    return internalServerErrorResponse(
+      res,
+      "Internal Server Error",
+      error.message
+    );
+  }
+};
+
+// user forgot password middleware with email
+export const userForgotPasswordEmailMiddleware = async (req, res, next) => {
   try {
     const schema = joi.object({
       email: joi.string().email().min(10).max(50).trim().required(),
+    });
+
+    const { error } = schema.validate(req.body);
+
+    if (error) {
+      return validationErrorResponse(
+        res,
+        "Error Occured at Forgot Password Validation",
+        error?.details?.[0]?.message
+      );
+    }
+
+    next();
+  } catch (error) {
+    return internalServerErrorResponse(
+      res,
+      "Internal Server Error",
+      error.message
+    );
+  }
+};
+
+// user forgot password with employee id
+export const userForgotPasswordEmployeeIdMiddleware = async (
+  req,
+  res,
+  next
+) => {
+  try {
+    const schema = joi.object({
+      empId: joi.string().length(6).trim().required(),
     });
 
     const { error } = schema.validate(req.body);
@@ -157,7 +221,7 @@ export const userForgotPasswordMiddleware = async (req, res, next) => {
 export const resetPasswordMiddleware = async (req, res, next) => {
   try {
     const schema = joi.object({
-      otp: joi.string().min(6).max(6).trim().required(),
+      otp: joi.string().length(4).trim().required(),
       password: joi.string().min(8).max(100).required(),
       confirmPassword: joi.string().min(8).max(100).required(),
     });
@@ -304,141 +368,6 @@ export const updateUserIsAvailableMiddleware = async (req, res, next) => {
       return validationErrorResponse(
         res,
         "Error Occured at Update User IsAvailable Validation",
-        error?.details?.[0]?.message
-      );
-    }
-
-    next();
-  } catch (error) {
-    return internalServerErrorResponse(
-      res,
-      "Internal Server Error",
-      error.message
-    );
-  }
-};
-
-// update the designation
-export const updateUserDesignationMiddleware = async (req, res, next) => {
-  try {
-    const schema = joi.object({
-      designation: joi.string().trim().required(),
-    });
-
-    const { error } = schema.validate(req.body);
-
-    if (error) {
-      return validationErrorResponse(
-        res,
-        "Error Occured at Update User Designation Validation",
-        error?.details?.[0]?.message
-      );
-    }
-
-    next();
-  } catch (error) {
-    return internalServerErrorResponse(
-      res,
-      "Internal Server Error",
-      error.message
-    );
-  }
-};
-
-// update the department
-export const updateUserDepartmentMiddleware = async (req, res, next) => {
-  try {
-    const schema = joi.object({
-      department: joi.string().trim().required(),
-    });
-
-    const { error } = schema.validate(req.body);
-
-    if (error) {
-      return validationErrorResponse(
-        res,
-        "Error Occured at Update User Department Validation",
-        error?.details?.[0]?.message
-      );
-    }
-
-    next();
-  } catch (error) {
-    return internalServerErrorResponse(
-      res,
-      "Internal Server Error",
-      error.message
-    );
-  }
-};
-
-// update the teamName
-export const updateUserTeamNameMiddleware = async (req, res, next) => {
-  try {
-    const schema = joi.object({
-      teamName: joi.string().trim().required(),
-    });
-
-    const { error } = schema.validate(req.body);
-
-    if (error) {
-      return validationErrorResponse(
-        res,
-        "Error Occured at Update User TeamName Validation",
-        error?.details?.[0]?.message
-      );
-    }
-
-    next();
-  } catch (error) {
-    return internalServerErrorResponse(
-      res,
-      "Internal Server Error",
-      error.message
-    );
-  }
-};
-
-// update the phoneNumber
-export const updateUserPhoneNumberMiddleware = async (req, res, next) => {
-  try {
-    const schema = joi.object({
-      phoneNumber: joi.string().min(13).max(13).trim().required(),
-    });
-
-    const { error } = schema.validate(req.body);
-
-    if (error) {
-      return validationErrorResponse(
-        res,
-        "Error Occured at Update User PhoneNumber Validation",
-        error?.details?.[0]?.message
-      );
-    }
-
-    next();
-  } catch (error) {
-    return internalServerErrorResponse(
-      res,
-      "Internal Server Error",
-      error.message
-    );
-  }
-};
-
-// update the userType
-export const updateUserTypeMiddleware = async (req, res, next) => {
-  try {
-    const schema = joi.object({
-      userType: joi.string().valid("SUPERUSER", "NORMALUSER").required(),
-    });
-
-    const { error } = schema.validate(req.body);
-
-    if (error) {
-      return validationErrorResponse(
-        res,
-        "Error Occured at Update User Type Validation",
         error?.details?.[0]?.message
       );
     }
