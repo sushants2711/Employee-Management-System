@@ -829,13 +829,19 @@ export const isAvailableUpdateController = async (req, res) => {
       return result;
     }
 
-    if (loggedInUser.status !== "ACTIVE") {
+    const userExist = await userModel.findById(loggedInUser._id);
+
+    if (!userExist) {
+      return badRequestResponse(res, "User not found");
+    }
+
+    if (userExist.status !== "ACTIVE") {
       return badRequestResponse(res, "Your account is not active");
     }
 
-    loggedInUser.isAvailable = isAvailable;
+    userExist.isAvailable = isAvailable;
 
-    const savedData = await loggedInUser.save();
+    const savedData = await userExist.save();
 
     const dataSendToClient = savedData.toObject();
     delete dataSendToClient.password;
