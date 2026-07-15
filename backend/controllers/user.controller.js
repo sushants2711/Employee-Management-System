@@ -545,7 +545,7 @@ export const updatePassword = async (req, res) => {
     const checkPassword = await verifyPassword(oldPassword, userExist.password);
 
     if (!checkPassword) {
-      return badRequestResponse(res, "Invalid old password");
+      return badRequestResponse(res, "Invalid credentials");
     }
 
     // hash the new password
@@ -704,7 +704,7 @@ export const resetPasswordController = async (req, res) => {
 // update the role by management only
 export const updateTheRoleController = async (req, res) => {
   try {
-    const loggedInUser = req.user._id;
+    const loggedInUser = req.user;
 
     const { role } = req.body;
 
@@ -716,7 +716,7 @@ export const updateTheRoleController = async (req, res) => {
       return checkId;
     }
 
-    const result = verifyMongoDBId(loggedInUser, res);
+    const result = verifyMongoDBId(loggedInUser._id, res);
 
     if (!result) {
       return result;
@@ -740,7 +740,7 @@ export const updateTheRoleController = async (req, res) => {
     }
 
     userExist.role = role;
-    userExist.updateByRole = loggedInUser;
+    userExist.updateByRole = loggedInUser._id;
 
     const savedData = await userExist.save();
 
@@ -758,7 +758,7 @@ export const updateTheRoleController = async (req, res) => {
 // update the status by manager and management only
 export const updateTheStatusController = async (req, res) => {
   try {
-    const loggedInUser = req.user._id;
+    const loggedInUser = req.user;
 
     const { status } = req.body;
 
@@ -771,7 +771,7 @@ export const updateTheStatusController = async (req, res) => {
       return checkId;
     }
 
-    const result = verifyMongoDBId(loggedInUser, res);
+    const result = verifyMongoDBId(loggedInUser._id, res);
 
     if (!result) {
       return result;
@@ -795,7 +795,7 @@ export const updateTheStatusController = async (req, res) => {
     }
 
     userExist.status = status;
-    userExist.updateByStatus = loggedInUser;
+    userExist.updateByStatus = loggedInUser._id;
 
     const savedData = await userExist.save();
 
