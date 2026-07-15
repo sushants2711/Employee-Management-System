@@ -70,11 +70,39 @@ export const otpCheckerMiddleware = async (req, res, next) => {
   }
 };
 
-// user login middleware
-export const loginUserMiddleware = async (req, res, next) => {
+// login middleware via email
+export const loginUserByEmailMiddleware = async (req, res, next) => {
   try {
     const schema = joi.object({
       email: joi.string().email().min(10).max(50).trim().required(),
+      password: joi.string().min(8).max(100).required(),
+    });
+
+    const { error } = schema.validate(req.body);
+
+    if (error) {
+      return validationErrorResponse(
+        res,
+        "Error Occured at Login Validation",
+        error?.details?.[0]?.message
+      );
+    }
+
+    next();
+  } catch (error) {
+    return internalServerErrorResponse(
+      res,
+      "Internal Server Error",
+      error.message
+    );
+  }
+};
+
+// login middleware via emp id
+export const loginUserByEmployeeIdMiddleware = async (req, res, next) => {
+  try {
+    const schema = joi.object({
+      employeeId: joi.string().length(6).trim().required(),
       password: joi.string().min(8).max(100).required(),
     });
 
