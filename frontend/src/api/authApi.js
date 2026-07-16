@@ -26,3 +26,10 @@ export const managementLoginEmpId = async (loginData) => {
     body: JSON.stringify(loginData),
   });
 };
+
+export const verifyOtp = async (otpData) => {
+  return await apiClient("/user/otp", {
+    method: "POST",
+    body: JSON.stringify(otpData),
+  });
+};

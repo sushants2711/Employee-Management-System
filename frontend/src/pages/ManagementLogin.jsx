@@ -51,7 +51,7 @@ function ManagementLogin() {
       };
 
       login(userData, "mg0");
-      navigate("/"); // Navigate to dashboard
+      navigate("/home"); // Navigate to dashboard
     } catch (error) {
       showError(error.message || "An error occurred during login");
     } finally {

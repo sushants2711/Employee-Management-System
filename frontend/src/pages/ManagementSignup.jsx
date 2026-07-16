@@ -7,7 +7,6 @@ import {
   validateManagementSignupField,
   validateManagementSignupForm,
 } from "../utils/validators/managementAuthValidators";
-import { useAuth } from "../context/AuthContext";
 import AuthCard from "../components/AuthCard";
 import InputField from "../components/InputField";
 import SubmitButton from "../components/SubmitButton";
@@ -27,7 +26,6 @@ function ManagementSignup() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const navigate = useNavigate();
-  const { login } = useAuth();
 
   useEffect(() => {
     const fetchLimit = async () => {
@@ -77,10 +75,6 @@ function ManagementSignup() {
         response.message ||
           "Signup successful! Please check your email for OTP."
       );
-
-      // Store in auth context and local storage as requested
-      const userData = response.data || formData;
-      login(userData, "mg0");
 
       // Route to OTP page
       navigate("/otp");

@@ -1,10 +1,22 @@
 import { useState, useRef, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { KeyRound } from "lucide-react";
+import { verifyOtp } from "../api/authApi";
+import { useAuth } from "../context/AuthContext";
+import {
+  showSuccess,
+  showError,
+  showLoading,
+  dismissToast,
+} from "../toastMessage/toastDeliver";
 import AuthCard from "../components/AuthCard";
 
 function OTP() {
   const [otp, setOtp] = useState(["", "", "", ""]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const inputRefs = useRef([]);
+  const navigate = useNavigate();
+  const { login } = useAuth();
 
   useEffect(() => {
     if (inputRefs.current[0]) {
@@ -39,14 +51,34 @@ function OTP() {
     }
   };
 
-  const handleVerify = (e) => {
+  const handleVerify = async (e) => {
     e.preventDefault();
     const otpValue = otp.join("");
     if (otpValue.length !== 4) {
-      alert("Please enter a 4-digit OTP.");
+      showError("Please enter a 4-digit OTP.");
       return;
     }
-    console.log("Verifying OTP:", otpValue);
+
+    setIsSubmitting(true);
+    const loadingToastId = showLoading("Verifying your OTP...");
+
+    try {
+      const response = await verifyOtp({ otp: otpValue });
+      dismissToast(loadingToastId);
+      showSuccess(response.message || "OTP Verified Successfully!");
+
+      // Log the user in and save to local storage now that they are verified
+      const userData = response.data;
+      login(userData, "mg0"); // Using mg0 as default manager role marker
+
+      // Redirect to home dashboard
+      navigate("/home");
+    } catch (error) {
+      dismissToast(loadingToastId);
+      showError(error.message || "Failed to verify OTP.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -73,9 +105,10 @@ function OTP() {
 
         <button
           type="submit"
-          className="w-full flex justify-center py-3 px-4 rounded-xl shadow-md text-base font-semibold text-white bg-ems-primary hover:bg-blue-700 dark:bg-ems-primary-dark dark:hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-ems-primary transition-all cursor-pointer transform hover:-translate-y-0.5"
+          disabled={isSubmitting}
+          className="w-full flex justify-center py-3 px-4 rounded-xl shadow-md text-base font-semibold text-white bg-ems-primary hover:bg-blue-700 dark:bg-ems-primary-dark dark:hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-ems-primary transition-all cursor-pointer transform hover:-translate-y-0.5 disabled:opacity-70 disabled:cursor-not-allowed"
         >
-          Verify OTP
+          {isSubmitting ? "Verifying..." : "Verify OTP"}
         </button>
       </form>
 

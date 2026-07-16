@@ -9,6 +9,7 @@ import ManagementLogin from "./pages/ManagementLogin";
 import ManagementSignup from "./pages/ManagementSignup";
 import OTP from "./pages/OTP";
 import ChangePassword from "./pages/ChangePassword";
+import DashboardHome from "./pages/DashboardHome";
 import Footer from "./components/Footer";
 import ScrollToTop from "./components/ScrollToTop";
 
@@ -58,6 +59,7 @@ function App() {
               <Route path="/management-signup" element={<ManagementSignup />} />
               <Route path="/otp" element={<OTP />} />
               <Route path="/change-password" element={<ChangePassword />} />
+              <Route path="/home" element={<DashboardHome />} />
             </Routes>
           </main>
           <Footer />
