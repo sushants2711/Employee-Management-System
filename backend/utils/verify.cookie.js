@@ -9,7 +9,7 @@ import userModel from "../models/user.model.js";
 
 export const verifyCookie = async (req, res, next) => {
   try {
-    const token = req.cookies?.(COOKIE_NAME);
+    const token = req.cookies?.[COOKIE_NAME];
 
     if (!token) {
       return unauthorizedResponse(res, "Unauthorized User");

@@ -4,7 +4,7 @@ import {
   forbiddenResponse,
 } from "./response.handler.js";
 
-export const isManager = async (req, res, next) => {
+export const verifyManager = async (req, res, next) => {
   try {
     const user = req.user;
 
@@ -12,8 +12,7 @@ export const isManager = async (req, res, next) => {
       return unauthorizedResponse(res, "Unauthorized User");
     }
 
-    // Check both userType and role
-    if (user.userType !== "NORMALUSER" || user.role !== "Manager") {
+    if (user.role !== "Manager") {
       return forbiddenResponse(res, "Access denied");
     }
 
