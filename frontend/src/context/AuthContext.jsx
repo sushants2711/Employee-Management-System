@@ -1,20 +1,15 @@
-import { createContext, useContext, useState, useEffect } from "react";
+/* eslint-disable react-refresh/only-export-components */
+import { createContext, useContext, useState } from "react";
 
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
-
-  useEffect(() => {
-    // Check local storage for existing session
+  const [user, setUser] = useState(() => {
     const role = localStorage.getItem("role");
     const name = localStorage.getItem("name");
     const email = localStorage.getItem("email");
-
-    if (role && name && email) {
-      setUser({ role, name, email });
-    }
-  }, []);
+    return role && name && email ? { role, name, email } : null;
+  });
 
   const login = (userData, role) => {
     localStorage.setItem("role", role);

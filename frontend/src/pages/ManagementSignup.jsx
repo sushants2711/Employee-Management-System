@@ -39,7 +39,7 @@ function ManagementSignup() {
         if (response.data?.isFull) {
           setIsLimitReached(true);
         }
-      } catch (error) {
+      } catch {
         toast.error("Failed to check management limit");
       } finally {
         setIsLoading(false);

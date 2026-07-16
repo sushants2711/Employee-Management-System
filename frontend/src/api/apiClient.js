@@ -15,16 +15,12 @@ export const apiClient = async (endpoint, options = {}) => {
     // credentials: "include",
   };
 
-  try {
-    const response = await fetch(url, config);
-    const data = await response.json();
+  const response = await fetch(url, config);
+  const data = await response.json();
 
-    if (!response.ok) {
-      throw new Error(data.message || "An error occurred");
-    }
-
-    return data;
-  } catch (error) {
-    throw error;
+  if (!response.ok) {
+    throw new Error(data.message || "An error occurred");
   }
+
+  return data;
 };
