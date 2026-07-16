@@ -945,7 +945,7 @@ export const updateTheProfileImageController = async (req, res) => {
 };
 
 // all users in the company
-export const allUsers = async (req, res) => {
+export const allUsersControllers = async (req, res) => {
   try {
     const {
       role,
@@ -987,53 +987,6 @@ export const allUsers = async (req, res) => {
   }
 };
 
-// get single user details and all the information required for manager and management
-export const getUserDetailsForManagerController = async (req, res) => {
-  try {
-    const { id } = req.params;
-
-    const loggedInUser = req.user;
-
-    const verifyId = verifyMongoDBId(loggedInUser._id, res);
-
-    if (verifyId) {
-      return verifyId;
-    }
-
-    const checkId = verifyMongoDBId(id, res);
-
-    if (!checkId) {
-      return checkId;
-    }
-
-    if (loggedInUser.role !== "Management" || loggedInUser.role !== "Manager") {
-      return badRequestResponse(
-        res,
-        "You are not authorized to perform this action"
-      );
-    }
-
-    const singleUserData = await userModel
-      .findById(id)
-      .populate("teamName", "teamName teamLead manager")
-      .populate("designation", "designationName designationCode")
-      .populate("department", "departmentName departmentCode status")
-      .select("-password");
-
-    if (!singleUserData) {
-      return notFoundResponse(res, "User not found");
-    }
-
-    return successResponse(res, "Data fetched successfully", singleUserData);
-  } catch (error) {
-    return internalServerErrorResponse(
-      res,
-      "Internal Server Error",
-      error.message
-    );
-  }
-};
-
 // get single user details for user itself
 export const singleUserDetailsController = async (req, res) => {
   try {
@@ -1056,6 +1009,13 @@ export const singleUserDetailsController = async (req, res) => {
       return notFoundResponse(res, "User not found");
     }
 
+    if (loggedInUser.toString() !== singleUserData._id.toString()) {
+      return badRequestResponse(
+        res,
+        "You are not authorized to perform this action"
+      );
+    }
+
     return successResponse(res, "Data fetched successfully", singleUserData);
   } catch (error) {
     return internalServerErrorResponse(
@@ -1066,7 +1026,7 @@ export const singleUserDetailsController = async (req, res) => {
   }
 };
 
-// account create for employee and manager by management
+// account create for employee and manager by management and manager only
 export const createAccountForUserController = async (req, res) => {
   try {
     const loggedInUser = req.user;

@@ -1,10 +1,10 @@
 import {
   internalServerErrorResponse,
-  forbiddenResponse,
   unauthorizedResponse,
+  forbiddenResponse,
 } from "./response.handler.js";
 
-export const verifyManagerOrManagement = async (req, res, next) => {
+export const verifyEmployeeOrManager = async (req, res, next) => {
   try {
     const user = req.user;
 
@@ -12,7 +12,7 @@ export const verifyManagerOrManagement = async (req, res, next) => {
       return unauthorizedResponse(res, "Unauthorized User");
     }
 
-    if (user.role !== "Manager" && user.role !== "Management") {
+    if (user.role !== "Employee" && user.role !== "Manager") {
       return forbiddenResponse(res, "Access denied");
     }
 
