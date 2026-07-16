@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import toast from "react-hot-toast";
+import { showSuccess, showError } from "../toastMessage/toastDeliver";
 import { Mail, Lock, ShieldCheck, User } from "lucide-react";
 import { managementLoginEmail, managementLoginEmpId } from "../api/authApi";
 import { useAuth } from "../context/AuthContext";
@@ -43,7 +43,7 @@ function ManagementLogin() {
         });
       }
 
-      toast.success(response.message || "Login successful!");
+      showSuccess(response.message || "Login successful!");
 
       const userData = response.data || {
         email: loginMethod === "email" ? formData.identifier : "",
@@ -53,7 +53,7 @@ function ManagementLogin() {
       login(userData, "mg0");
       navigate("/"); // Navigate to dashboard
     } catch (error) {
-      toast.error(error.message || "An error occurred during login");
+      showError(error.message || "An error occurred during login");
     } finally {
       setIsSubmitting(false);
     }

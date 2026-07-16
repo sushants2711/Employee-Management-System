@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import toast from "react-hot-toast";
+import { showSuccess, showError } from "../toastMessage/toastDeliver";
 import { Mail, Lock, ShieldCheck, User, Phone } from "lucide-react";
 import { checkManagementLimit, managementSignup } from "../api/authApi";
 import { useAuth } from "../context/AuthContext";
@@ -32,7 +32,7 @@ function ManagementSignup() {
           setIsLimitReached(true);
         }
       } catch {
-        toast.error("Failed to check management limit");
+        showError("Failed to check management limit");
       } finally {
         setIsLoading(false);
       }
@@ -48,14 +48,14 @@ function ManagementSignup() {
   const handleSignup = async (e) => {
     e.preventDefault();
     if (formData.password !== formData.confirmPassword) {
-      toast.error("Passwords do not match!");
+      showError("Passwords do not match!");
       return;
     }
 
     setIsSubmitting(true);
     try {
       const response = await managementSignup(formData);
-      toast.success(
+      showSuccess(
         response.message ||
           "Signup successful! Please check your email for OTP."
       );
@@ -67,7 +67,7 @@ function ManagementSignup() {
       // Route to OTP page
       navigate("/otp");
     } catch (error) {
-      toast.error(error.message || "An error occurred during signup");
+      showError(error.message || "An error occurred during signup");
     } finally {
       setIsSubmitting(false);
     }
