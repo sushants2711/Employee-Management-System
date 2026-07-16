@@ -1,13 +1,60 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import toast from "react-hot-toast";
 import { Mail, Lock, ShieldCheck, User, Eye, EyeOff } from "lucide-react";
+import { managementLoginEmail, managementLoginEmpId } from "../api/authApi";
+import { useAuth } from "../context/AuthContext";
 
 function ManagementLogin() {
   const [loginMethod, setLoginMethod] = useState("email");
   const [showPassword, setShowPassword] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleLogin = (e) => {
+  const [formData, setFormData] = useState({
+    identifier: "", // This will hold either email or empId
+    password: "",
+  });
+
+  const navigate = useNavigate();
+  const { login } = useAuth();
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleLogin = async (e) => {
     e.preventDefault();
+    setIsSubmitting(true);
+
+    try {
+      let response;
+      if (loginMethod === "email") {
+        response = await managementLoginEmail({
+          email: formData.identifier,
+          password: formData.password,
+        });
+      } else {
+        response = await managementLoginEmpId({
+          employeeId: formData.identifier,
+          password: formData.password,
+        });
+      }
+
+      toast.success(response.message || "Login successful!");
+
+      const userData = response.data || {
+        email: loginMethod === "email" ? formData.identifier : "",
+        name: response.data?.name || "Management User",
+      };
+
+      login(userData, "mg0");
+      navigate("/"); // Navigate to dashboard
+    } catch (error) {
+      toast.error(error.message || "An error occurred during login");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -28,7 +75,10 @@ function ManagementLogin() {
 
           <div className="flex bg-slate-100 dark:bg-slate-900 rounded-xl p-1 mb-6">
             <button
-              onClick={() => setLoginMethod("email")}
+              onClick={() => {
+                setLoginMethod("email");
+                setFormData({ identifier: "", password: "" });
+              }}
               className={`flex-1 py-2 text-sm font-medium rounded-lg transition-colors cursor-pointer ${
                 loginMethod === "email"
                   ? "bg-white dark:bg-slate-800 text-ems-primary dark:text-ems-primary-dark shadow"
@@ -38,7 +88,10 @@ function ManagementLogin() {
               Email
             </button>
             <button
-              onClick={() => setLoginMethod("empid")}
+              onClick={() => {
+                setLoginMethod("empid");
+                setFormData({ identifier: "", password: "" });
+              }}
               className={`flex-1 py-2 text-sm font-medium rounded-lg transition-colors cursor-pointer ${
                 loginMethod === "empid"
                   ? "bg-white dark:bg-slate-800 text-ems-primary dark:text-ems-primary-dark shadow"
@@ -64,8 +117,12 @@ function ManagementLogin() {
                 </div>
                 <input
                   type={loginMethod === "email" ? "email" : "text"}
+                  name="identifier"
+                  value={formData.identifier}
+                  onChange={handleInputChange}
                   required
-                  className="block w-full pl-10 pr-3 py-3 border border-slate-200 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-900/50 text-ems-text-light dark:text-ems-text-dark focus:outline-none focus:ring-2 focus:ring-ems-primary dark:focus:ring-ems-primary-dark transition-colors"
+                  disabled={isSubmitting}
+                  className="block w-full pl-10 pr-3 py-3 border border-slate-200 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-900/50 text-ems-text-light dark:text-ems-text-dark focus:outline-none focus:ring-2 focus:ring-ems-primary dark:focus:ring-ems-primary-dark transition-colors disabled:opacity-50"
                   placeholder={
                     loginMethod === "email" ? "admin@company.com" : "EMP12345"
                   }
@@ -83,14 +140,19 @@ function ManagementLogin() {
                 </div>
                 <input
                   type={showPassword ? "text" : "password"}
+                  name="password"
+                  value={formData.password}
+                  onChange={handleInputChange}
                   required
-                  className="block w-full pl-10 pr-10 py-3 border border-slate-200 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-900/50 text-ems-text-light dark:text-ems-text-dark focus:outline-none focus:ring-2 focus:ring-ems-primary dark:focus:ring-ems-primary-dark transition-colors"
+                  disabled={isSubmitting}
+                  className="block w-full pl-10 pr-10 py-3 border border-slate-200 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-900/50 text-ems-text-light dark:text-ems-text-dark focus:outline-none focus:ring-2 focus:ring-ems-primary dark:focus:ring-ems-primary-dark transition-colors disabled:opacity-50"
                   placeholder="••••••••"
                 />
                 <button
                   type="button"
+                  disabled={isSubmitting}
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-ems-primary cursor-pointer transition-colors"
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-ems-primary cursor-pointer transition-colors disabled:opacity-50"
                 >
                   {showPassword ? (
                     <EyeOff className="h-5 w-5" />
@@ -119,9 +181,10 @@ function ManagementLogin() {
 
             <button
               type="submit"
-              className="w-full flex justify-center py-3 px-4 rounded-xl shadow-md text-base font-semibold text-white bg-ems-primary hover:bg-blue-700 dark:bg-ems-primary-dark dark:hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-ems-primary transition-all cursor-pointer transform hover:-translate-y-0.5"
+              disabled={isSubmitting}
+              className="w-full flex justify-center py-3 px-4 rounded-xl shadow-md text-base font-semibold text-white bg-ems-primary hover:bg-blue-700 dark:bg-ems-primary-dark dark:hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-ems-primary transition-all cursor-pointer transform hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
             >
-              Login
+              {isSubmitting ? "Logging in..." : "Login"}
             </button>
           </form>
 

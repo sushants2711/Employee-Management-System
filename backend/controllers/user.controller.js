@@ -1106,3 +1106,23 @@ export const createAccountForUserController = async (req, res) => {
     );
   }
 };
+
+export const checkManagementCountController = async (req, res) => {
+  try {
+    const managementCount = await userModel.countDocuments({
+      role: "Management",
+      isManagementVerified: true,
+    });
+    
+    return successResponse(res, "Management count retrieved", {
+      count: managementCount,
+      isFull: managementCount >= 5,
+    });
+  } catch (error) {
+    return internalServerErrorResponse(
+      res,
+      "Internal Server Error",
+      error.message
+    );
+  }
+};

@@ -1,5 +1,6 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import toast from "react-hot-toast";
 import {
   Mail,
   Lock,
@@ -9,6 +10,8 @@ import {
   Eye,
   EyeOff,
 } from "lucide-react";
+import { checkManagementLimit, managementSignup } from "../api/authApi";
+import { useAuth } from "../context/AuthContext";
 
 function ManagementSignup() {
   const [formData, setFormData] = useState({
@@ -22,19 +25,60 @@ function ManagementSignup() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
+  const [isLimitReached, setIsLimitReached] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const navigate = useNavigate();
+  const { login } = useAuth();
+
+  useEffect(() => {
+    const fetchLimit = async () => {
+      try {
+        const response = await checkManagementLimit();
+        if (response.data?.isFull) {
+          setIsLimitReached(true);
+        }
+      } catch (error) {
+        toast.error("Failed to check management limit");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchLimit();
+  }, []);
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSignup = (e) => {
+  const handleSignup = async (e) => {
     e.preventDefault();
     if (formData.password !== formData.confirmPassword) {
-      alert("Passwords do not match!");
+      toast.error("Passwords do not match!");
       return;
     }
-    // Handle signup API call here
-    console.log("Signup data:", formData);
+
+    setIsSubmitting(true);
+    try {
+      const response = await managementSignup(formData);
+      toast.success(
+        response.message ||
+          "Signup successful! Please check your email for OTP."
+      );
+
+      // Store in auth context and local storage as requested
+      const userData = response.data || formData;
+      login(userData, "mg0");
+
+      // Route to OTP page
+      navigate("/otp");
+    } catch (error) {
+      toast.error(error.message || "An error occurred during signup");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -53,6 +97,12 @@ function ManagementSignup() {
             </p>
           </div>
 
+          {!isLoading && isLimitReached && (
+            <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl text-red-600 text-sm font-medium text-center dark:bg-red-900/20 dark:border-red-800 dark:text-red-400">
+              Management accounts limit reached. No more signups allowed.
+            </div>
+          )}
+
           <form onSubmit={handleSignup} className="space-y-6">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
               <div>
@@ -69,7 +119,8 @@ function ManagementSignup() {
                     value={formData.name}
                     onChange={handleInputChange}
                     required
-                    className="block w-full pl-10 pr-3 py-3 border border-slate-200 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-900/50 text-ems-text-light dark:text-ems-text-dark focus:outline-none focus:ring-2 focus:ring-ems-primary dark:focus:ring-ems-primary-dark transition-colors"
+                    disabled={isLimitReached || isLoading || isSubmitting}
+                    className="block w-full pl-10 pr-3 py-3 border border-slate-200 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-900/50 text-ems-text-light dark:text-ems-text-dark focus:outline-none focus:ring-2 focus:ring-ems-primary dark:focus:ring-ems-primary-dark transition-colors disabled:opacity-50"
                     placeholder="John Doe"
                   />
                 </div>
@@ -89,7 +140,8 @@ function ManagementSignup() {
                     value={formData.email}
                     onChange={handleInputChange}
                     required
-                    className="block w-full pl-10 pr-3 py-3 border border-slate-200 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-900/50 text-ems-text-light dark:text-ems-text-dark focus:outline-none focus:ring-2 focus:ring-ems-primary dark:focus:ring-ems-primary-dark transition-colors"
+                    disabled={isLimitReached || isLoading || isSubmitting}
+                    className="block w-full pl-10 pr-3 py-3 border border-slate-200 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-900/50 text-ems-text-light dark:text-ems-text-dark focus:outline-none focus:ring-2 focus:ring-ems-primary dark:focus:ring-ems-primary-dark transition-colors disabled:opacity-50"
                     placeholder="admin@company.com"
                   />
                 </div>
@@ -109,7 +161,8 @@ function ManagementSignup() {
                     value={formData.phoneNumber}
                     onChange={handleInputChange}
                     required
-                    className="block w-full pl-10 pr-3 py-3 border border-slate-200 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-900/50 text-ems-text-light dark:text-ems-text-dark focus:outline-none focus:ring-2 focus:ring-ems-primary dark:focus:ring-ems-primary-dark transition-colors"
+                    disabled={isLimitReached || isLoading || isSubmitting}
+                    className="block w-full pl-10 pr-3 py-3 border border-slate-200 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-900/50 text-ems-text-light dark:text-ems-text-dark focus:outline-none focus:ring-2 focus:ring-ems-primary dark:focus:ring-ems-primary-dark transition-colors disabled:opacity-50"
                     placeholder="+1 (555) 000-0000"
                   />
                 </div>
@@ -129,13 +182,15 @@ function ManagementSignup() {
                     value={formData.password}
                     onChange={handleInputChange}
                     required
-                    className="block w-full pl-10 pr-10 py-3 border border-slate-200 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-900/50 text-ems-text-light dark:text-ems-text-dark focus:outline-none focus:ring-2 focus:ring-ems-primary dark:focus:ring-ems-primary-dark transition-colors"
+                    disabled={isLimitReached || isLoading || isSubmitting}
+                    className="block w-full pl-10 pr-10 py-3 border border-slate-200 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-900/50 text-ems-text-light dark:text-ems-text-dark focus:outline-none focus:ring-2 focus:ring-ems-primary dark:focus:ring-ems-primary-dark transition-colors disabled:opacity-50"
                     placeholder="••••••••"
                   />
                   <button
                     type="button"
+                    disabled={isLimitReached || isLoading || isSubmitting}
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-ems-primary cursor-pointer transition-colors"
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-ems-primary cursor-pointer transition-colors disabled:opacity-50"
                   >
                     {showPassword ? (
                       <EyeOff className="h-5 w-5" />
@@ -160,13 +215,15 @@ function ManagementSignup() {
                     value={formData.confirmPassword}
                     onChange={handleInputChange}
                     required
-                    className="block w-full pl-10 pr-10 py-3 border border-slate-200 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-900/50 text-ems-text-light dark:text-ems-text-dark focus:outline-none focus:ring-2 focus:ring-ems-primary dark:focus:ring-ems-primary-dark transition-colors"
+                    disabled={isLimitReached || isLoading || isSubmitting}
+                    className="block w-full pl-10 pr-10 py-3 border border-slate-200 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-900/50 text-ems-text-light dark:text-ems-text-dark focus:outline-none focus:ring-2 focus:ring-ems-primary dark:focus:ring-ems-primary-dark transition-colors disabled:opacity-50"
                     placeholder="••••••••"
                   />
                   <button
                     type="button"
+                    disabled={isLimitReached || isLoading || isSubmitting}
                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-ems-primary cursor-pointer transition-colors"
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-ems-primary cursor-pointer transition-colors disabled:opacity-50"
                   >
                     {showConfirmPassword ? (
                       <EyeOff className="h-5 w-5" />
@@ -180,9 +237,10 @@ function ManagementSignup() {
 
             <button
               type="submit"
-              className="w-full flex justify-center py-3 px-4 rounded-xl shadow-md text-base font-semibold text-white bg-ems-primary hover:bg-blue-700 dark:bg-ems-primary-dark dark:hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-ems-primary transition-all cursor-pointer transform hover:-translate-y-0.5"
+              disabled={isLimitReached || isLoading || isSubmitting}
+              className="w-full flex justify-center py-3 px-4 rounded-xl shadow-md text-base font-semibold text-white bg-ems-primary hover:bg-blue-700 dark:bg-ems-primary-dark dark:hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-ems-primary transition-all cursor-pointer transform hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
             >
-              Sign Up
+              {isSubmitting ? "Signing up..." : "Sign Up"}
             </button>
           </form>
 

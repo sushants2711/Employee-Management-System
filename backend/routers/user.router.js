@@ -16,6 +16,7 @@ import {
 } from "../middlewares/user.middleware.js";
 import {
   allUsersControllers,
+  checkManagementCountController,
   countPasswordChangeAfterFirstLoginController,
   createAccountForUserController,
   forgotPasswordController,
@@ -138,6 +139,10 @@ userRouter.route("/all-users").get(verifyCookie, allUsersControllers);
 userRouter
   .route("/manager-signup")
   .post(userRegistrationForManagerMiddleware, signupManagementController);
+
+// management count
+userRouter.route("/manager-count").get(checkManagementCountController);
+
 
 // otp verification
 userRouter.route("/otp").post(otpCheckerMiddleware, otpController);

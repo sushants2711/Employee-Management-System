@@ -1,0 +1,28 @@
+import { apiClient } from "./apiClient";
+
+export const checkManagementLimit = async () => {
+  return await apiClient("/user/manager-count", {
+    method: "GET",
+  });
+};
+
+export const managementSignup = async (userData) => {
+  return await apiClient("/user/manager-signup", {
+    method: "POST",
+    body: JSON.stringify(userData),
+  });
+};
+
+export const managementLoginEmail = async (loginData) => {
+  return await apiClient("/user/management-email-login", {
+    method: "POST",
+    body: JSON.stringify(loginData),
+  });
+};
+
+export const managementLoginEmpId = async (loginData) => {
+  return await apiClient("/user/management-empid-login", {
+    method: "POST",
+    body: JSON.stringify(loginData),
+  });
+};
