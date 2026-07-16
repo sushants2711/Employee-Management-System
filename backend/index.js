@@ -10,6 +10,7 @@ import { PORT } from "./config/constant.js";
 import { validateEnv } from "./config/env.validation.js";
 import { ALLOWED_ORIGINS } from "./config/constant.js";
 import { connectDb } from "./config/db.connect.js";
+import userRouter from "./routers/user.router.js";
 
 // dotenv config
 dotenv.config();
@@ -83,6 +84,9 @@ app.get("/", (req, res) => {
     timestamp: new Date().toISOString(),
   });
 });
+
+// api end points
+app.use("/api/v1/user", userRouter);
 
 // server start
 app.listen(PORTNUMBER, () => {
