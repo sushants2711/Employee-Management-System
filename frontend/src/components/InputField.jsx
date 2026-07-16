@@ -10,6 +10,7 @@ const InputField = ({
   onChange,
   placeholder,
   disabled = false,
+  error,
 }) => {
   const [showPassword, setShowPassword] = useState(false);
   const isPassword = type === "password";
@@ -30,7 +31,11 @@ const InputField = ({
           value={value}
           onChange={onChange}
           disabled={disabled}
-          className={`block w-full pl-10 ${isPassword ? "pr-10" : "pr-3"} py-3 border border-slate-200 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-900/50 text-ems-text-light dark:text-ems-text-dark focus:outline-none focus:ring-2 focus:ring-ems-primary dark:focus:ring-ems-primary-dark transition-colors disabled:opacity-50`}
+          className={`block w-full pl-10 ${isPassword ? "pr-10" : "pr-3"} py-3 border rounded-xl bg-slate-50 dark:bg-slate-900/50 text-ems-text-light dark:text-ems-text-dark focus:outline-none focus:ring-2 transition-colors disabled:opacity-50 ${
+            error
+              ? "border-red-500 dark:border-red-500 focus:ring-red-500 dark:focus:ring-red-500"
+              : "border-slate-200 dark:border-slate-700 focus:ring-ems-primary dark:focus:ring-ems-primary-dark"
+          }`}
           placeholder={placeholder}
         />
         {isPassword && (
@@ -48,6 +53,9 @@ const InputField = ({
           </button>
         )}
       </div>
+      {error && (
+        <p className="mt-1.5 text-sm text-red-500 dark:text-red-400">{error}</p>
+      )}
     </div>
   );
 };
