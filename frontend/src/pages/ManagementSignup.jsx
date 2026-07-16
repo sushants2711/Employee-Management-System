@@ -1,9 +1,12 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import toast from "react-hot-toast";
+import { showSuccess, showError } from "../toastMessage/toastDeliver";
 import { Mail, Lock, ShieldCheck, User, Phone } from "lucide-react";
 import { checkManagementLimit, managementSignup } from "../api/authApi";
-import { useAuth } from "../context/AuthContext";
+import {
+  validateSignupField,
+  validateSignupForm,
+} from "../validators/userAuthValidators";
 import AuthCard from "../components/AuthCard";
 import InputField from "../components/InputField";
 import SubmitButton from "../components/SubmitButton";
@@ -16,13 +19,13 @@ function ManagementSignup() {
     password: "",
     confirmPassword: "",
   });
+  const [errors, setErrors] = useState({});
 
   const [isLimitReached, setIsLimitReached] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const navigate = useNavigate();
-  const { login } = useAuth();
 
   useEffect(() => {
     const fetchLimit = async () => {
@@ -32,7 +35,7 @@ function ManagementSignup() {
           setIsLimitReached(true);
         }
       } catch {
-        toast.error("Failed to check management limit");
+        showError("Failed to check management limit");
       } finally {
         setIsLoading(false);
       }
@@ -42,32 +45,40 @@ function ManagementSignup() {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+
+    // Update the form data state
+    const updatedFormData = { ...formData, [name]: value };
+    setFormData(updatedFormData);
+
+    // Validate the specific field as the user types
+    const error = validateSignupField(name, value, updatedFormData);
+    setErrors((prev) => ({ ...prev, [name]: error }));
   };
 
   const handleSignup = async (e) => {
     e.preventDefault();
-    if (formData.password !== formData.confirmPassword) {
-      toast.error("Passwords do not match!");
+
+    // Run full form validation before submission
+    const { isValid, errors: formErrors } = validateSignupForm(formData);
+
+    if (!isValid) {
+      setErrors(formErrors);
+      showError("Please fix the errors in the form before submitting.");
       return;
     }
 
     setIsSubmitting(true);
     try {
       const response = await managementSignup(formData);
-      toast.success(
+      showSuccess(
         response.message ||
           "Signup successful! Please check your email for OTP."
       );
 
-      // Store in auth context and local storage as requested
-      const userData = response.data || formData;
-      login(userData, "mg0");
-
       // Route to OTP page
       navigate("/otp");
     } catch (error) {
-      toast.error(error.message || "An error occurred during signup");
+      showError(error.message || "An error occurred during signup");
     } finally {
       setIsSubmitting(false);
     }
@@ -94,9 +105,9 @@ function ManagementSignup() {
             name="name"
             value={formData.name}
             onChange={handleInputChange}
-            required
             disabled={isLimitReached || isLoading || isSubmitting}
             placeholder="John Doe"
+            error={errors.name}
           />
 
           <InputField
@@ -106,9 +117,9 @@ function ManagementSignup() {
             name="email"
             value={formData.email}
             onChange={handleInputChange}
-            required
             disabled={isLimitReached || isLoading || isSubmitting}
             placeholder="admin@company.com"
+            error={errors.email}
           />
 
           <InputField
@@ -118,9 +129,9 @@ function ManagementSignup() {
             name="phoneNumber"
             value={formData.phoneNumber}
             onChange={handleInputChange}
-            required
             disabled={isLimitReached || isLoading || isSubmitting}
-            placeholder="+1 (555) 000-0000"
+            placeholder="5550000000"
+            error={errors.phoneNumber}
           />
 
           <InputField
@@ -130,9 +141,9 @@ function ManagementSignup() {
             name="password"
             value={formData.password}
             onChange={handleInputChange}
-            required
             disabled={isLimitReached || isLoading || isSubmitting}
             placeholder="••••••••"
+            error={errors.password}
           />
 
           <div className="sm:col-span-2">
@@ -143,9 +154,9 @@ function ManagementSignup() {
               name="confirmPassword"
               value={formData.confirmPassword}
               onChange={handleInputChange}
-              required
               disabled={isLimitReached || isLoading || isSubmitting}
               placeholder="••••••••"
+              error={errors.confirmPassword}
             />
           </div>
         </div>

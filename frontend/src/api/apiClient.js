@@ -12,7 +12,7 @@ export const apiClient = async (endpoint, options = {}) => {
     ...options,
     headers,
     // Add credentials if cookies are needed
-    // credentials: "include",
+    credentials: "include",
   };
 
   const response = await fetch(url, config);

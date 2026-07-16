@@ -1,9 +1,22 @@
 import { useState, useRef, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { KeyRound } from "lucide-react";
+import { verifyOtp } from "../api/authApi";
+import { useAuth } from "../context/AuthContext";
+import {
+  showSuccess,
+  showError,
+  showLoading,
+  dismissToast,
+} from "../toastMessage/toastDeliver";
+import AuthCard from "../components/AuthCard";
 
 function OTP() {
   const [otp, setOtp] = useState(["", "", "", ""]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const inputRefs = useRef([]);
+  const navigate = useNavigate();
+  const { login } = useAuth();
 
   useEffect(() => {
     if (inputRefs.current[0]) {
@@ -38,70 +51,79 @@ function OTP() {
     }
   };
 
-  const handleVerify = (e) => {
+  const handleVerify = async (e) => {
     e.preventDefault();
     const otpValue = otp.join("");
     if (otpValue.length !== 4) {
-      alert("Please enter a 4-digit OTP.");
+      showError("Please enter a 4-digit OTP.");
       return;
     }
-    console.log("Verifying OTP:", otpValue);
+
+    setIsSubmitting(true);
+    const loadingToastId = showLoading("Verifying your OTP...");
+
+    try {
+      const response = await verifyOtp({ otp: otpValue });
+      dismissToast(loadingToastId);
+      showSuccess(response.message || "OTP Verified Successfully!");
+
+      // Log the user in and save to local storage now that they are verified
+      const userData = response.data;
+      login(userData, "mg0"); // Using mg0 as default manager role marker
+
+      // Redirect to home dashboard
+      navigate("/home");
+    } catch (error) {
+      dismissToast(loadingToastId);
+      showError(error.message || "Failed to verify OTP.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-6 relative overflow-hidden w-full">
-      <div className="w-full max-w-md relative z-10">
-        <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-2xl p-8 border border-slate-100 dark:border-slate-700/50 relative overflow-hidden">
-          <div className="mb-8 text-center mt-2">
-            <div className="w-16 h-16 bg-slate-50 dark:bg-slate-700/50 rounded-2xl flex items-center justify-center mx-auto mb-6">
-              <KeyRound className="w-8 h-8 text-ems-primary dark:text-ems-primary-dark" />
-            </div>
-            <h1 className="text-2xl font-bold text-ems-text-light dark:text-ems-text-dark mb-2">
-              Verification Code
-            </h1>
-            <p className="text-slate-500 dark:text-slate-400 text-sm">
-              Please enter the 4-digit code sent to your email.
-            </p>
-          </div>
-
-          <form onSubmit={handleVerify} className="space-y-8">
-            <div className="flex justify-center gap-4">
-              {otp.map((digit, index) => (
-                <input
-                  key={index}
-                  ref={(el) => (inputRefs.current[index] = el)}
-                  type="text"
-                  maxLength={1}
-                  value={digit}
-                  onChange={(e) => handleChange(index, e)}
-                  onKeyDown={(e) => handleKeyDown(index, e)}
-                  className="w-14 h-14 text-center text-2xl font-bold border border-slate-200 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-900/50 text-ems-text-light dark:text-ems-text-dark focus:outline-none focus:ring-2 focus:ring-ems-primary dark:focus:ring-ems-primary-dark transition-colors"
-                />
-              ))}
-            </div>
-
-            <button
-              type="submit"
-              className="w-full flex justify-center py-3 px-4 rounded-xl shadow-md text-base font-semibold text-white bg-ems-primary hover:bg-blue-700 dark:bg-ems-primary-dark dark:hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-ems-primary transition-all cursor-pointer transform hover:-translate-y-0.5"
-            >
-              Verify OTP
-            </button>
-          </form>
-
-          <div className="mt-6 text-center">
-            <p className="text-sm text-slate-600 dark:text-slate-400">
-              Didn't receive a code?{" "}
-              <button
-                type="button"
-                className="font-medium text-ems-primary dark:text-ems-primary-dark hover:underline cursor-pointer"
-              >
-                Resend OTP
-              </button>
-            </p>
-          </div>
+    <AuthCard
+      icon={KeyRound}
+      title="Verification Code"
+      subtitle="Please enter the 4-digit code sent to your email."
+    >
+      <form onSubmit={handleVerify} className="space-y-8">
+        <div className="flex justify-center gap-4">
+          {otp.map((digit, index) => (
+            <input
+              key={index}
+              ref={(el) => (inputRefs.current[index] = el)}
+              type="text"
+              maxLength={1}
+              value={digit}
+              onChange={(e) => handleChange(index, e)}
+              onKeyDown={(e) => handleKeyDown(index, e)}
+              className="w-14 h-14 text-center text-2xl font-bold border border-slate-200 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-900/50 text-ems-text-light dark:text-ems-text-dark focus:outline-none focus:ring-2 focus:ring-ems-primary dark:focus:ring-ems-primary-dark transition-colors"
+            />
+          ))}
         </div>
+
+        <button
+          type="submit"
+          disabled={isSubmitting}
+          className="w-full flex justify-center py-3 px-4 rounded-xl shadow-md text-base font-semibold text-white bg-ems-primary hover:bg-blue-700 dark:bg-ems-primary-dark dark:hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-ems-primary transition-all cursor-pointer transform hover:-translate-y-0.5 disabled:opacity-70 disabled:cursor-not-allowed"
+        >
+          {isSubmitting ? "Verifying..." : "Verify OTP"}
+        </button>
+      </form>
+
+      <div className="mt-6 text-center">
+        <p className="text-sm text-slate-600 dark:text-slate-400">
+          Didn't receive a code?{" "}
+          <button
+            type="button"
+            className="font-medium text-ems-primary dark:text-ems-primary-dark hover:underline cursor-pointer"
+          >
+            Resend OTP
+          </button>
+        </p>
       </div>
-    </div>
+    </AuthCard>
   );
 }
 

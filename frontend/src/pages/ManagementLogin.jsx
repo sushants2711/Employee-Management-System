@@ -1,9 +1,13 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import toast from "react-hot-toast";
+import { showSuccess, showError } from "../toastMessage/toastDeliver";
 import { Mail, Lock, ShieldCheck, User } from "lucide-react";
 import { managementLoginEmail, managementLoginEmpId } from "../api/authApi";
 import { useAuth } from "../context/AuthContext";
+import {
+  validateLoginField,
+  validateLoginForm,
+} from "../validators/userAuthValidators";
 import AuthCard from "../components/AuthCard";
 import InputField from "../components/InputField";
 import SubmitButton from "../components/SubmitButton";
@@ -16,6 +20,7 @@ function ManagementLogin() {
     identifier: "", // This will hold either email or empId
     password: "",
   });
+  const [errors, setErrors] = useState({});
 
   const navigate = useNavigate();
   const { login } = useAuth();
@@ -23,10 +28,27 @@ function ManagementLogin() {
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+
+    // Real-time validation
+    const error = validateLoginField(name, value, loginMethod);
+    setErrors((prev) => ({ ...prev, [name]: error }));
   };
 
   const handleLogin = async (e) => {
     e.preventDefault();
+
+    // Final full-form validation before API call
+    const { isValid, errors: formErrors } = validateLoginForm(
+      formData,
+      loginMethod
+    );
+
+    if (!isValid) {
+      setErrors(formErrors);
+      showError("Please fix the errors in the form before submitting.");
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
@@ -43,7 +65,7 @@ function ManagementLogin() {
         });
       }
 
-      toast.success(response.message || "Login successful!");
+      showSuccess(response.message || "Login successful!");
 
       const userData = response.data || {
         email: loginMethod === "email" ? formData.identifier : "",
@@ -51,9 +73,9 @@ function ManagementLogin() {
       };
 
       login(userData, "mg0");
-      navigate("/"); // Navigate to dashboard
+      navigate("/home"); // Navigate to dashboard
     } catch (error) {
-      toast.error(error.message || "An error occurred during login");
+      showError(error.message || "An error occurred during login");
     } finally {
       setIsSubmitting(false);
     }
@@ -70,6 +92,7 @@ function ManagementLogin() {
           onClick={() => {
             setLoginMethod("email");
             setFormData({ identifier: "", password: "" });
+            setErrors({});
           }}
           className={`flex-1 py-2 text-sm font-medium rounded-lg transition-colors cursor-pointer ${
             loginMethod === "email"
@@ -83,6 +106,7 @@ function ManagementLogin() {
           onClick={() => {
             setLoginMethod("empid");
             setFormData({ identifier: "", password: "" });
+            setErrors({});
           }}
           className={`flex-1 py-2 text-sm font-medium rounded-lg transition-colors cursor-pointer ${
             loginMethod === "empid"
@@ -102,8 +126,8 @@ function ManagementLogin() {
           name="identifier"
           value={formData.identifier}
           onChange={handleInputChange}
-          required
           disabled={isSubmitting}
+          error={errors.identifier}
           placeholder={
             loginMethod === "email" ? "admin@company.com" : "EMP12345"
           }
@@ -116,8 +140,8 @@ function ManagementLogin() {
           name="password"
           value={formData.password}
           onChange={handleInputChange}
-          required
           disabled={isSubmitting}
+          error={errors.password}
           placeholder="••••••••"
         />
 
