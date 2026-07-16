@@ -102,7 +102,6 @@ function ManagementLogin() {
           name="identifier"
           value={formData.identifier}
           onChange={handleInputChange}
-          required
           disabled={isSubmitting}
           placeholder={
             loginMethod === "email" ? "admin@company.com" : "EMP12345"
@@ -116,7 +115,6 @@ function ManagementLogin() {
           name="password"
           value={formData.password}
           onChange={handleInputChange}
-          required
           disabled={isSubmitting}
           placeholder="••••••••"
         />

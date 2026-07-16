@@ -48,7 +48,6 @@ function ChangePassword() {
               name="oldPassword"
               value={formData.oldPassword}
               onChange={handleInputChange}
-              required
               className="block w-full pl-10 pr-10 py-3 border border-slate-200 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-900/50 text-ems-text-light dark:text-ems-text-dark focus:outline-none focus:ring-2 focus:ring-ems-primary dark:focus:ring-ems-primary-dark transition-colors"
               placeholder="••••••••"
             />
@@ -80,7 +79,6 @@ function ChangePassword() {
               name="newPassword"
               value={formData.newPassword}
               onChange={handleInputChange}
-              required
               className="block w-full pl-10 pr-10 py-3 border border-slate-200 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-900/50 text-ems-text-light dark:text-ems-text-dark focus:outline-none focus:ring-2 focus:ring-ems-primary dark:focus:ring-ems-primary-dark transition-colors"
               placeholder="••••••••"
             />
@@ -112,7 +110,6 @@ function ChangePassword() {
               name="confirmPassword"
               value={formData.confirmPassword}
               onChange={handleInputChange}
-              required
               className="block w-full pl-10 pr-10 py-3 border border-slate-200 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-900/50 text-ems-text-light dark:text-ems-text-dark focus:outline-none focus:ring-2 focus:ring-ems-primary dark:focus:ring-ems-primary-dark transition-colors"
               placeholder="••••••••"
             />

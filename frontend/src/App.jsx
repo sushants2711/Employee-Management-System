@@ -38,7 +38,7 @@ function App() {
       <Router>
         <ScrollToTop />
         <div className="min-h-screen flex flex-col bg-ems-bg-light dark:bg-ems-bg-dark transition-colors duration-300 relative">
-          <Toaster position="top-right" />
+          <Toaster position="top-center" />
           <button
             onClick={toggleDarkMode}
             className="absolute top-4 right-4 p-2 rounded-full bg-ems-surface-light dark:bg-ems-surface-dark shadow-md hover:shadow-lg transition-all z-50 text-slate-700 dark:text-yellow-500 cursor-pointer"

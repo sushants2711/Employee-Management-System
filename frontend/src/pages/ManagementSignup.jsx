@@ -94,7 +94,6 @@ function ManagementSignup() {
             name="name"
             value={formData.name}
             onChange={handleInputChange}
-            required
             disabled={isLimitReached || isLoading || isSubmitting}
             placeholder="John Doe"
           />
@@ -106,7 +105,6 @@ function ManagementSignup() {
             name="email"
             value={formData.email}
             onChange={handleInputChange}
-            required
             disabled={isLimitReached || isLoading || isSubmitting}
             placeholder="admin@company.com"
           />
@@ -118,7 +116,6 @@ function ManagementSignup() {
             name="phoneNumber"
             value={formData.phoneNumber}
             onChange={handleInputChange}
-            required
             disabled={isLimitReached || isLoading || isSubmitting}
             placeholder="+1 (555) 000-0000"
           />
@@ -130,7 +127,6 @@ function ManagementSignup() {
             name="password"
             value={formData.password}
             onChange={handleInputChange}
-            required
             disabled={isLimitReached || isLoading || isSubmitting}
             placeholder="••••••••"
           />
@@ -143,7 +139,6 @@ function ManagementSignup() {
               name="confirmPassword"
               value={formData.confirmPassword}
               onChange={handleInputChange}
-              required
               disabled={isLimitReached || isLoading || isSubmitting}
               placeholder="••••••••"
             />

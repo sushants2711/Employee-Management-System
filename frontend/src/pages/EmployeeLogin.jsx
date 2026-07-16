@@ -64,7 +64,6 @@ function EmployeeLogin() {
           value={formData.identifier}
           onChange={handleInputChange}
           placeholder={loginMethod === "email" ? "you@company.com" : "EMP12345"}
-          required
         />
 
         <InputField
@@ -75,7 +74,6 @@ function EmployeeLogin() {
           value={formData.password}
           onChange={handleInputChange}
           placeholder="••••••••"
-          required
         />
 
         <div className="flex items-center justify-between pt-2">

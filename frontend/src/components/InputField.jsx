@@ -9,7 +9,6 @@ const InputField = ({
   value,
   onChange,
   placeholder,
-  required = false,
   disabled = false,
 }) => {
   const [showPassword, setShowPassword] = useState(false);
@@ -30,7 +29,6 @@ const InputField = ({
           name={name}
           value={value}
           onChange={onChange}
-          required={required}
           disabled={disabled}
           className={`block w-full pl-10 ${isPassword ? "pr-10" : "pr-3"} py-3 border border-slate-200 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-900/50 text-ems-text-light dark:text-ems-text-dark focus:outline-none focus:ring-2 focus:ring-ems-primary dark:focus:ring-ems-primary-dark transition-colors disabled:opacity-50`}
           placeholder={placeholder}
