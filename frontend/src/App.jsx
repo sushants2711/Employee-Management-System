@@ -5,6 +5,7 @@ import Home from "./pages/Home";
 import EmployeeLogin from "./pages/EmployeeLogin";
 import ManagementLogin from "./pages/ManagementLogin";
 import ManagementSignup from "./pages/ManagementSignup";
+import OTP from "./pages/OTP";
 
 function App() {
   const [isDarkMode, setIsDarkMode] = useState(() => {
@@ -46,6 +47,7 @@ function App() {
           <Route path="/employee-login" element={<EmployeeLogin />} />
           <Route path="/management-login" element={<ManagementLogin />} />
           <Route path="/management-signup" element={<ManagementSignup />} />
+          <Route path="/otp" element={<OTP />} />
         </Routes>
       </div>
     </Router>

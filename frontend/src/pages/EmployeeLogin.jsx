@@ -1,50 +1,74 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
-import { Mail, Lock, Users, ArrowLeft } from "lucide-react";
+import { Mail, Lock, Users, ArrowLeft, User, Eye, EyeOff } from "lucide-react";
 
 function EmployeeLogin() {
+  const [loginMethod, setLoginMethod] = useState("email");
+  const [showPassword, setShowPassword] = useState(false);
+
   const handleLogin = (e) => {
     e.preventDefault();
   };
 
   return (
     <div className="min-h-screen flex items-center justify-center p-6 relative overflow-hidden w-full">
-      <div className="absolute top-[-20%] left-[-10%] w-96 h-96 bg-blue-500 opacity-10 rounded-full blur-[100px] pointer-events-none"></div>
-
       <div className="w-full max-w-md relative z-10">
-        <Link
-          to="/"
-          className="inline-flex items-center gap-2 text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 mb-8 font-medium transition-colors"
-        >
-          <ArrowLeft className="w-5 h-5" /> Back to Portal
-        </Link>
-
-        <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-2xl p-8 border border-slate-100 dark:border-slate-700/50">
-          <div className="mb-8 text-center">
-            <div className="w-16 h-16 bg-blue-50 dark:bg-blue-900/30 rounded-2xl flex items-center justify-center mx-auto mb-6">
+        <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-2xl p-8 border border-slate-100 dark:border-slate-700/50 relative overflow-hidden">
+          <div className="mb-8 text-center mt-2">
+            <div className="w-16 h-16 bg-slate-50 dark:bg-slate-700/50 rounded-2xl flex items-center justify-center mx-auto mb-6">
               <Users className="w-8 h-8 text-ems-primary dark:text-ems-primary-dark" />
             </div>
             <h1 className="text-2xl font-bold text-ems-text-light dark:text-ems-text-dark mb-2">
-              Employee Sign In
+              Employee Login
             </h1>
             <p className="text-slate-500 dark:text-slate-400 text-sm">
-              Enter your company email and password.
+              Enter your credentials to access the portal.
             </p>
+          </div>
+
+          <div className="flex bg-slate-100 dark:bg-slate-900 rounded-xl p-1 mb-6">
+            <button
+              onClick={() => setLoginMethod("email")}
+              className={`flex-1 py-2 text-sm font-medium rounded-lg transition-colors cursor-pointer ${
+                loginMethod === "email"
+                  ? "bg-white dark:bg-slate-800 text-ems-primary dark:text-ems-primary-dark shadow"
+                  : "text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
+              }`}
+            >
+              Email
+            </button>
+            <button
+              onClick={() => setLoginMethod("empid")}
+              className={`flex-1 py-2 text-sm font-medium rounded-lg transition-colors cursor-pointer ${
+                loginMethod === "empid"
+                  ? "bg-white dark:bg-slate-800 text-ems-primary dark:text-ems-primary-dark shadow"
+                  : "text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
+              }`}
+            >
+              Employee ID
+            </button>
           </div>
 
           <form onSubmit={handleLogin} className="space-y-5">
             <div>
               <label className="block text-sm font-medium text-ems-text-light dark:text-ems-text-dark mb-2">
-                Company Email
+                {loginMethod === "email" ? "Company Email" : "Employee ID"}
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Mail className="h-5 w-5 text-slate-400" />
+                  {loginMethod === "email" ? (
+                    <Mail className="h-5 w-5 text-slate-400" />
+                  ) : (
+                    <User className="h-5 w-5 text-slate-400" />
+                  )}
                 </div>
                 <input
-                  type="email"
+                  type={loginMethod === "email" ? "email" : "text"}
                   required
                   className="block w-full pl-10 pr-3 py-3 border border-slate-200 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-900/50 text-ems-text-light dark:text-ems-text-dark focus:outline-none focus:ring-2 focus:ring-ems-primary dark:focus:ring-ems-primary-dark transition-colors"
-                  placeholder="you@company.com"
+                  placeholder={
+                    loginMethod === "email" ? "you@company.com" : "EMP12345"
+                  }
                 />
               </div>
             </div>
@@ -58,11 +82,22 @@ function EmployeeLogin() {
                   <Lock className="h-5 w-5 text-slate-400" />
                 </div>
                 <input
-                  type="password"
+                  type={showPassword ? "text" : "password"}
                   required
-                  className="block w-full pl-10 pr-3 py-3 border border-slate-200 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-900/50 text-ems-text-light dark:text-ems-text-dark focus:outline-none focus:ring-2 focus:ring-ems-primary dark:focus:ring-ems-primary-dark transition-colors"
+                  className="block w-full pl-10 pr-10 py-3 border border-slate-200 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-900/50 text-ems-text-light dark:text-ems-text-dark focus:outline-none focus:ring-2 focus:ring-ems-primary dark:focus:ring-ems-primary-dark transition-colors"
                   placeholder="••••••••"
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-ems-primary cursor-pointer transition-colors"
+                >
+                  {showPassword ? (
+                    <EyeOff className="h-5 w-5" />
+                  ) : (
+                    <Eye className="h-5 w-5" />
+                  )}
+                </button>
               </div>
             </div>
 
@@ -80,19 +115,13 @@ function EmployeeLogin() {
                   Remember me
                 </label>
               </div>
-              <a
-                href="#"
-                className="text-sm font-medium text-ems-primary dark:text-ems-primary-dark hover:underline"
-              >
-                Forgot password?
-              </a>
             </div>
 
             <button
               type="submit"
               className="w-full flex justify-center py-3 px-4 rounded-xl shadow-md text-base font-semibold text-white bg-ems-primary hover:bg-blue-700 dark:bg-ems-primary-dark dark:hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-ems-primary transition-all cursor-pointer transform hover:-translate-y-0.5"
             >
-              Sign In
+              Login
             </button>
           </form>
         </div>
