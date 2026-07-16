@@ -1113,7 +1113,7 @@ export const checkManagementCountController = async (req, res) => {
       role: "Management",
       isManagementVerified: true,
     });
-    
+
     return successResponse(res, "Management count retrieved", {
       count: managementCount,
       isFull: managementCount >= 5,

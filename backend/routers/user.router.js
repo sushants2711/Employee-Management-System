@@ -143,7 +143,6 @@ userRouter
 // management count
 userRouter.route("/manager-count").get(checkManagementCountController);
 
-
 // otp verification
 userRouter.route("/otp").post(otpCheckerMiddleware, otpController);
 
