@@ -1,6 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { Link } from "react-router-dom";
-import { KeyRound, ArrowLeft } from "lucide-react";
+import { KeyRound } from "lucide-react";
 
 function OTP() {
   const [otp, setOtp] = useState(["", "", "", ""]);

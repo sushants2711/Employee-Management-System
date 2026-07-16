@@ -4,7 +4,6 @@ import {
   Mail,
   Lock,
   ShieldCheck,
-  ArrowLeft,
   User,
   Eye,
   EyeOff,

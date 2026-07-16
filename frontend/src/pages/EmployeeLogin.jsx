@@ -1,6 +1,5 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
-import { Mail, Lock, Users, ArrowLeft, User, Eye, EyeOff } from "lucide-react";
+import { Mail, Lock, Users, User, Eye, EyeOff } from "lucide-react";
 
 function EmployeeLogin() {
   const [loginMethod, setLoginMethod] = useState("email");
