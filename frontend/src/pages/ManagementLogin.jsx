@@ -1,117 +1,157 @@
-import { Link } from "react-router-dom";
-import { Mail, Lock, ShieldCheck, ArrowLeft } from "lucide-react";
+import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import toast from "react-hot-toast";
+import { Mail, Lock, ShieldCheck, User } from "lucide-react";
+import { managementLoginEmail, managementLoginEmpId } from "../api/authApi";
+import { useAuth } from "../context/AuthContext";
+import AuthCard from "../components/AuthCard";
+import InputField from "../components/InputField";
+import SubmitButton from "../components/SubmitButton";
 
 function ManagementLogin() {
-  const handleLogin = (e) => {
+  const [loginMethod, setLoginMethod] = useState("email");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const [formData, setFormData] = useState({
+    identifier: "", // This will hold either email or empId
+    password: "",
+  });
+
+  const navigate = useNavigate();
+  const { login } = useAuth();
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleLogin = async (e) => {
     e.preventDefault();
+    setIsSubmitting(true);
+
+    try {
+      let response;
+      if (loginMethod === "email") {
+        response = await managementLoginEmail({
+          email: formData.identifier,
+          password: formData.password,
+        });
+      } else {
+        response = await managementLoginEmpId({
+          employeeId: formData.identifier,
+          password: formData.password,
+        });
+      }
+
+      toast.success(response.message || "Login successful!");
+
+      const userData = response.data || {
+        email: loginMethod === "email" ? formData.identifier : "",
+        name: response.data?.name || "Management User",
+      };
+
+      login(userData, "mg0");
+      navigate("/"); // Navigate to dashboard
+    } catch (error) {
+      toast.error(error.message || "An error occurred during login");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-6 relative overflow-hidden w-full">
-      <div className="absolute top-[-20%] right-[-10%] w-96 h-96 bg-indigo-500 opacity-10 rounded-full blur-[100px] pointer-events-none"></div>
-
-      <div className="w-full max-w-md relative z-10">
-        <Link
-          to="/"
-          className="inline-flex items-center gap-2 text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 mb-8 font-medium transition-colors"
+    <AuthCard
+      icon={ShieldCheck}
+      title="Management Login"
+      subtitle="Restricted access: Only for company management team."
+    >
+      <div className="flex bg-slate-100 dark:bg-slate-900 rounded-xl p-1 mb-6">
+        <button
+          onClick={() => {
+            setLoginMethod("email");
+            setFormData({ identifier: "", password: "" });
+          }}
+          className={`flex-1 py-2 text-sm font-medium rounded-lg transition-colors cursor-pointer ${
+            loginMethod === "email"
+              ? "bg-white dark:bg-slate-800 text-ems-primary dark:text-ems-primary-dark shadow"
+              : "text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
+          }`}
         >
-          <ArrowLeft className="w-5 h-5" /> Back to Portal
-        </Link>
+          Email
+        </button>
+        <button
+          onClick={() => {
+            setLoginMethod("empid");
+            setFormData({ identifier: "", password: "" });
+          }}
+          className={`flex-1 py-2 text-sm font-medium rounded-lg transition-colors cursor-pointer ${
+            loginMethod === "empid"
+              ? "bg-white dark:bg-slate-800 text-ems-primary dark:text-ems-primary-dark shadow"
+              : "text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
+          }`}
+        >
+          Employee ID
+        </button>
+      </div>
 
-        <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-2xl p-8 border border-slate-100 dark:border-slate-700/50 relative overflow-hidden">
-          <div className="absolute top-0 left-0 w-full h-2 bg-indigo-600 dark:bg-indigo-500"></div>
+      <form onSubmit={handleLogin} className="space-y-5">
+        <InputField
+          label={loginMethod === "email" ? "Email" : "Employee ID"}
+          icon={loginMethod === "email" ? Mail : User}
+          type={loginMethod === "email" ? "email" : "text"}
+          name="identifier"
+          value={formData.identifier}
+          onChange={handleInputChange}
+          required
+          disabled={isSubmitting}
+          placeholder={
+            loginMethod === "email" ? "admin@company.com" : "EMP12345"
+          }
+        />
 
-          <div className="mb-8 text-center mt-2">
-            <div className="w-16 h-16 bg-indigo-50 dark:bg-indigo-900/30 rounded-2xl flex items-center justify-center mx-auto mb-6">
-              <ShieldCheck className="w-8 h-8 text-indigo-600 dark:text-indigo-400" />
-            </div>
-            <h1 className="text-2xl font-bold text-ems-text-light dark:text-ems-text-dark mb-2">
-              Management Sign In
-            </h1>
-            <p className="text-slate-500 dark:text-slate-400 text-sm">
-              Restricted access: Only for company management team.
-            </p>
-          </div>
+        <InputField
+          label="Password"
+          icon={Lock}
+          type="password"
+          name="password"
+          value={formData.password}
+          onChange={handleInputChange}
+          required
+          disabled={isSubmitting}
+          placeholder="••••••••"
+        />
 
-          <form onSubmit={handleLogin} className="space-y-5">
-            <div>
-              <label className="block text-sm font-medium text-ems-text-light dark:text-ems-text-dark mb-2">
-                Admin Email
-              </label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Mail className="h-5 w-5 text-slate-400" />
-                </div>
-                <input
-                  type="email"
-                  required
-                  className="block w-full pl-10 pr-3 py-3 border border-slate-200 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-900/50 text-ems-text-light dark:text-ems-text-dark focus:outline-none focus:ring-2 focus:ring-indigo-600 dark:focus:ring-indigo-400 transition-colors"
-                  placeholder="admin@company.com"
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-ems-text-light dark:text-ems-text-dark mb-2">
-                Security Password
-              </label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Lock className="h-5 w-5 text-slate-400" />
-                </div>
-                <input
-                  type="password"
-                  required
-                  className="block w-full pl-10 pr-3 py-3 border border-slate-200 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-900/50 text-ems-text-light dark:text-ems-text-dark focus:outline-none focus:ring-2 focus:ring-indigo-600 dark:focus:ring-indigo-400 transition-colors"
-                  placeholder="••••••••"
-                />
-              </div>
-            </div>
-
-            <div className="flex items-center justify-between pt-2">
-              <div className="flex items-center">
-                <input
-                  id="remember-me-admin"
-                  type="checkbox"
-                  className="h-4 w-4 text-indigo-600 focus:ring-indigo-600 border-slate-300 rounded cursor-pointer"
-                />
-                <label
-                  htmlFor="remember-me-admin"
-                  className="ml-2 block text-sm text-slate-600 dark:text-slate-400 cursor-pointer"
-                >
-                  Remember me
-                </label>
-              </div>
-              <a
-                href="#"
-                className="text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:underline"
-              >
-                Forgot password?
-              </a>
-            </div>
-
-            <button
-              type="submit"
-              className="w-full flex justify-center py-3 px-4 rounded-xl shadow-md text-base font-semibold text-white bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-600 transition-all cursor-pointer transform hover:-translate-y-0.5"
+        <div className="flex items-center justify-between pt-2">
+          <div className="flex items-center">
+            <input
+              id="remember-me-admin"
+              type="checkbox"
+              className="h-4 w-4 text-ems-primary focus:ring-ems-primary border-slate-300 rounded cursor-pointer"
+            />
+            <label
+              htmlFor="remember-me-admin"
+              className="ml-2 block text-sm text-slate-600 dark:text-slate-400 cursor-pointer"
             >
-              Authenticate
-            </button>
-          </form>
-
-          <div className="mt-6 text-center">
-            <p className="text-sm text-slate-600 dark:text-slate-400">
-              Don't have an account?{" "}
-              <Link
-                to="/management-signup"
-                className="font-medium text-indigo-600 dark:text-indigo-400 hover:underline"
-              >
-                Sign Up
-              </Link>
-            </p>
+              Remember me
+            </label>
           </div>
         </div>
+
+        <SubmitButton isSubmitting={isSubmitting}>Login</SubmitButton>
+      </form>
+
+      <div className="mt-6 text-center">
+        <p className="text-sm text-slate-600 dark:text-slate-400">
+          Don't have an account?{" "}
+          <Link
+            to="/management-signup"
+            className="font-medium text-ems-primary dark:text-ems-primary-dark hover:underline"
+          >
+            Sign Up
+          </Link>
+        </p>
       </div>
-    </div>
+    </AuthCard>
   );
 }
 export default ManagementLogin;
