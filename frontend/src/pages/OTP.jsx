@@ -69,7 +69,8 @@ function OTP() {
 
       // Log the user in and save to local storage now that they are verified
       const userData = response.data;
-      login(userData, "mg0"); // Using mg0 as default manager role marker
+      const userRole = response.data?.role || "Management";
+      login(userData, userRole);
 
       // Redirect to home dashboard
       navigate("/home");
