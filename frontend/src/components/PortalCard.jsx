@@ -1,7 +1,6 @@
 import { Link } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
 
-/* eslint-disable react/prop-types */
 const PortalCard = ({ to, icon: Icon, title, description }) => {
   return (
     <Link
