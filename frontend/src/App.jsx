@@ -12,6 +12,8 @@ import ChangePassword from "./pages/ChangePassword";
 import DashboardHome from "./pages/DashboardHome";
 import Footer from "./components/Footer";
 import ScrollToTop from "./components/ScrollToTop";
+import ProtectedRoute from "./components/ProtectedRoute";
+import PublicRoute from "./components/PublicRoute";
 
 function App() {
   const [isDarkMode, setIsDarkMode] = useState(() => {
@@ -54,12 +56,54 @@ function App() {
           <main className="flex-grow flex flex-col w-full">
             <Routes>
               <Route path="/" element={<Home />} />
-              <Route path="/employee-login" element={<EmployeeLogin />} />
-              <Route path="/management-login" element={<ManagementLogin />} />
-              <Route path="/management-signup" element={<ManagementSignup />} />
-              <Route path="/otp" element={<OTP />} />
-              <Route path="/change-password" element={<ChangePassword />} />
-              <Route path="/home" element={<DashboardHome />} />
+              <Route
+                path="/employee-login"
+                element={
+                  <PublicRoute>
+                    <EmployeeLogin />
+                  </PublicRoute>
+                }
+              />
+              <Route
+                path="/management-login"
+                element={
+                  <PublicRoute>
+                    <ManagementLogin />
+                  </PublicRoute>
+                }
+              />
+              <Route
+                path="/management-signup"
+                element={
+                  <PublicRoute>
+                    <ManagementSignup />
+                  </PublicRoute>
+                }
+              />
+              <Route
+                path="/otp"
+                element={
+                  <PublicRoute>
+                    <OTP />
+                  </PublicRoute>
+                }
+              />
+              <Route
+                path="/change-password"
+                element={
+                  <ProtectedRoute>
+                    <ChangePassword />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/home"
+                element={
+                  <ProtectedRoute>
+                    <DashboardHome />
+                  </ProtectedRoute>
+                }
+              />
             </Routes>
           </main>
           <Footer />
