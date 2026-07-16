@@ -96,7 +96,7 @@ function ManagementLogin() {
 
       <form onSubmit={handleLogin} className="space-y-5">
         <InputField
-          label={loginMethod === "email" ? "Admin Email" : "Employee ID"}
+          label={loginMethod === "email" ? "Email" : "Employee ID"}
           icon={loginMethod === "email" ? Mail : User}
           type={loginMethod === "email" ? "email" : "text"}
           name="identifier"
