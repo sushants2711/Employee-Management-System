@@ -10,6 +10,7 @@ import ManagementSignup from "./pages/ManagementSignup";
 import OTP from "./pages/OTP";
 import ChangePassword from "./pages/ChangePassword";
 import DashboardHome from "./pages/DashboardHome";
+import NotFound from "./pages/NotFound";
 import Footer from "./components/Footer";
 import ScrollToTop from "./components/ScrollToTop";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -104,6 +105,7 @@ function App() {
                   </ProtectedRoute>
                 }
               />
+              <Route path="*" element={<NotFound />} />
             </Routes>
           </main>
           <Footer />
