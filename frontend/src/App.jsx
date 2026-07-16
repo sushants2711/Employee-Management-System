@@ -10,6 +10,7 @@ import ManagementSignup from "./pages/ManagementSignup";
 import OTP from "./pages/OTP";
 import ChangePassword from "./pages/ChangePassword";
 import Footer from "./components/Footer";
+import ScrollToTop from "./components/ScrollToTop";
 
 function App() {
   const [isDarkMode, setIsDarkMode] = useState(() => {
@@ -35,6 +36,7 @@ function App() {
   return (
     <AuthProvider>
       <Router>
+        <ScrollToTop />
         <div className="min-h-screen flex flex-col bg-ems-bg-light dark:bg-ems-bg-dark transition-colors duration-300 relative">
           <Toaster position="top-right" />
           <button
