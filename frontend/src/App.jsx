@@ -8,6 +8,8 @@ import EmployeeLogin from "./pages/EmployeeLogin";
 import ManagementLogin from "./pages/ManagementLogin";
 import ManagementSignup from "./pages/ManagementSignup";
 import OTP from "./pages/OTP";
+import ChangePassword from "./pages/ChangePassword";
+import Footer from "./components/Footer";
 
 function App() {
   const [isDarkMode, setIsDarkMode] = useState(() => {
@@ -33,7 +35,7 @@ function App() {
   return (
     <AuthProvider>
       <Router>
-        <div className="min-h-screen bg-ems-bg-light dark:bg-ems-bg-dark transition-colors duration-300">
+        <div className="min-h-screen flex flex-col bg-ems-bg-light dark:bg-ems-bg-dark transition-colors duration-300 relative">
           <Toaster position="top-right" />
           <button
             onClick={toggleDarkMode}
@@ -46,13 +48,17 @@ function App() {
               <Moon className="w-6 h-6" />
             )}
           </button>
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/employee-login" element={<EmployeeLogin />} />
-            <Route path="/management-login" element={<ManagementLogin />} />
-            <Route path="/management-signup" element={<ManagementSignup />} />
-            <Route path="/otp" element={<OTP />} />
-          </Routes>
+          <main className="flex-grow flex flex-col w-full">
+            <Routes>
+              <Route path="/" element={<Home />} />
+              <Route path="/employee-login" element={<EmployeeLogin />} />
+              <Route path="/management-login" element={<ManagementLogin />} />
+              <Route path="/management-signup" element={<ManagementSignup />} />
+              <Route path="/otp" element={<OTP />} />
+              <Route path="/change-password" element={<ChangePassword />} />
+            </Routes>
+          </main>
+          <Footer />
         </div>
       </Router>
     </AuthProvider>
