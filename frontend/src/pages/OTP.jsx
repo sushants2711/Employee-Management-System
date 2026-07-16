@@ -29,7 +29,12 @@ function OTP() {
 
   const handleKeyDown = (index, e) => {
     // Move to previous input on backspace if current field is empty
-    if (e.key === "Backspace" && !otp[index] && index > 0 && inputRefs.current[index - 1]) {
+    if (
+      e.key === "Backspace" &&
+      !otp[index] &&
+      index > 0 &&
+      inputRefs.current[index - 1]
+    ) {
       inputRefs.current[index - 1].focus();
     }
   };
@@ -48,7 +53,6 @@ function OTP() {
     <div className="min-h-screen flex items-center justify-center p-6 relative overflow-hidden w-full">
       <div className="w-full max-w-md relative z-10">
         <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-2xl p-8 border border-slate-100 dark:border-slate-700/50 relative overflow-hidden">
-
           <div className="mb-8 text-center mt-2">
             <div className="w-16 h-16 bg-slate-50 dark:bg-slate-700/50 rounded-2xl flex items-center justify-center mx-auto mb-6">
               <KeyRound className="w-8 h-8 text-ems-primary dark:text-ems-primary-dark" />

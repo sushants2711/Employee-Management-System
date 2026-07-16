@@ -1,6 +1,13 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { Lock, LockKeyhole, ArrowLeft, Eye, EyeOff, ShieldCheck } from "lucide-react";
+import {
+  Lock,
+  LockKeyhole,
+  ArrowLeft,
+  Eye,
+  EyeOff,
+  ShieldCheck,
+} from "lucide-react";
 
 function ChangePassword() {
   const [formData, setFormData] = useState({
