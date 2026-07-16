@@ -11,6 +11,7 @@ import { validateEnv } from "./config/env.validation.js";
 import { ALLOWED_ORIGINS } from "./config/constant.js";
 import { connectDb } from "./config/db.connect.js";
 import userRouter from "./routers/user.router.js";
+import departmentRouter from "./routers/department.router.js";
 
 // dotenv config
 dotenv.config();
@@ -87,6 +88,7 @@ app.get("/", (req, res) => {
 
 // api end points
 app.use("/api/v1/user", userRouter);
+app.use("/api/v1/department", departmentRouter);
 
 // server start
 app.listen(PORTNUMBER, () => {
