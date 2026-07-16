@@ -4,9 +4,9 @@ import { showSuccess, showError } from "../toastMessage/toastDeliver";
 import { Mail, Lock, ShieldCheck, User, Phone } from "lucide-react";
 import { checkManagementLimit, managementSignup } from "../api/authApi";
 import {
-  validateManagementSignupField,
-  validateManagementSignupForm,
-} from "../utils/validators/managementAuthValidators";
+  validateSignupField,
+  validateSignupForm,
+} from "../validators/userAuthValidators";
 import AuthCard from "../components/AuthCard";
 import InputField from "../components/InputField";
 import SubmitButton from "../components/SubmitButton";
@@ -51,7 +51,7 @@ function ManagementSignup() {
     setFormData(updatedFormData);
 
     // Validate the specific field as the user types
-    const error = validateManagementSignupField(name, value, updatedFormData);
+    const error = validateSignupField(name, value, updatedFormData);
     setErrors((prev) => ({ ...prev, [name]: error }));
   };
 
@@ -59,8 +59,7 @@ function ManagementSignup() {
     e.preventDefault();
 
     // Run full form validation before submission
-    const { isValid, errors: formErrors } =
-      validateManagementSignupForm(formData);
+    const { isValid, errors: formErrors } = validateSignupForm(formData);
 
     if (!isValid) {
       setErrors(formErrors);
