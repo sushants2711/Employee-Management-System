@@ -2,7 +2,8 @@ import { useState, useEffect } from "react";
 import { Outlet } from "react-router-dom";
 import Sidebar from "../components/Sidebar";
 import { useAuth } from "../context/AuthContext";
-import { Circle } from "lucide-react";
+import { useTheme } from "../context/ThemeContext";
+import { Circle, Sun, Moon } from "lucide-react";
 import { updateIsAvailable, getSingleUser } from "../api/authApi";
 import { showSuccess, showError } from "../toastMessage/toastDeliver";
 
@@ -17,6 +18,7 @@ const STATUS_OPTIONS = [
 
 function DashboardLayout() {
   const { user, updateUser } = useAuth();
+  const { isDarkMode, toggleDarkMode } = useTheme();
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
@@ -60,7 +62,19 @@ function DashboardLayout() {
     <div className="flex h-screen bg-slate-50 dark:bg-slate-900 transition-colors duration-300">
       <Sidebar />
       <div className="flex-1 flex flex-col overflow-hidden relative">
-        <header className="h-16 flex items-center justify-end px-6 border-b border-slate-200 dark:border-slate-800 bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm z-10">
+        <header className="h-16 flex items-center justify-end px-6 border-b border-slate-200 dark:border-slate-800 bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm z-10 gap-4">
+          <button
+            onClick={toggleDarkMode}
+            className="p-2 rounded-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors text-slate-700 dark:text-yellow-500 cursor-pointer"
+            aria-label="Toggle Dark Mode"
+          >
+            {isDarkMode ? (
+              <Sun className="w-5 h-5" />
+            ) : (
+              <Moon className="w-5 h-5" />
+            )}
+          </button>
+
           <div className="relative w-auto min-w-[140px]">
             <button
               onClick={() =>
