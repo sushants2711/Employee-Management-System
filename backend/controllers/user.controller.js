@@ -1044,23 +1044,10 @@ export const createAccountForUserController = async (req, res) => {
       department,
     } = req.body;
 
-    const checkId = verifyMongoDBId(id, res);
-
-    if (!checkId) {
-      return checkId;
-    }
-
     const userExist = await userModel.findById(id);
 
     if (!userExist) {
       return notFoundResponse(res, "User not found");
-    }
-
-    if (loggedInUser.role !== "Management" || loggedInUser.role !== "Manager") {
-      return badRequestResponse(
-        res,
-        "You are not authorized to perform this action"
-      );
     }
 
     const emailOrPhoneNumberExist = await userModel.findOne({

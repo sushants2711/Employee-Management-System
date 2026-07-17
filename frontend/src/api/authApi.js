@@ -33,3 +33,16 @@ export const verifyOtp = async (otpData) => {
     body: JSON.stringify(otpData),
   });
 };
+
+export const getAllUsers = async () => {
+  return await apiClient("/user/all-users", {
+    method: "GET",
+  });
+};
+
+export const createUserAccount = async (userData) => {
+  return await apiClient("/user/create-account", {
+    method: "POST",
+    body: JSON.stringify(userData),
+  });
+};
