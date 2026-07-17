@@ -18,6 +18,7 @@ export const createTeamMiddleware = async (req, res, next) => {
         .allow(""),
       teamLead: joi.string().hex().length(24).optional().allow(""),
       manager: joi.string().hex().length(24).required(),
+      department: joi.string().hex().length(24).required(),
     });
 
     const { error } = schema.validate(req.body);
@@ -54,6 +55,8 @@ export const updateTeamMiddleware = async (req, res, next) => {
         .allow(""),
       teamLead: joi.string().hex().length(24).optional().allow(""),
       manager: joi.string().hex().length(24).optional().allow(""),
+      status: joi.string().valid("ACTIVE", "INACTIVE").optional().allow(""),
+      department: joi.string().hex().length(24).optional().allow(""),
     });
 
     const { error } = schema.validate(req.body);
