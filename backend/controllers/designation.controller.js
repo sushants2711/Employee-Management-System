@@ -1,3 +1,4 @@
+import departmentModel from "../models/department.model.js";
 import designationModel from "../models/designation.model.js";
 import {
   internalServerErrorResponse,
@@ -13,7 +14,18 @@ export const createDesignationController = async (req, res) => {
   try {
     const loggedInUser = req.user;
 
-    const { designationName, designationCode, description } = req.body;
+    const { designationName, designationCode, description, department } =
+      req.body;
+
+    const isValid = verifyMongoDBId(department, res);
+
+    if (!isValid) return isValid;
+
+    const departmentExist = await departmentModel.findById(department);
+
+    if (!departmentExist) {
+      return notFoundResponse(res, "Department not found");
+    }
 
     const designationNameExist = await designationModel.findOne({
       designationName,
@@ -56,7 +68,9 @@ export const getDesignationController = async (req, res) => {
     if (designationName) filterData.designationName = designationName;
     if (designationCode) filterData.designationCode = designationCode;
 
-    const designation = await designationModel.find(filterData);
+    const designation = await designationModel
+      .find(filterData)
+      .populate("department", "departmentName departmentCode");
 
     if (
       !designation ||
@@ -89,7 +103,9 @@ export const getSingleDesignationController = async (req, res) => {
 
     if (!isValid) return isValid;
 
-    const singleDesignation = await designationModel.findById(id);
+    const singleDesignation = await designationModel
+      .findById(id)
+      .populate("department", "departmentName departmentCode");
 
     if (!singleDesignation) {
       return notFoundResponse(res, "Designation not found");
@@ -116,11 +132,21 @@ export const updateDesignationController = async (req, res) => {
 
     const loggedInUser = req.user;
 
-    const { designationName, designationCode, description } = req.body;
+    const {
+      designationName,
+      designationCode,
+      description,
+      status,
+      department,
+    } = req.body;
 
     const isValid = verifyMongoDBId(id, res);
 
     if (!isValid) return isValid;
+
+    const result = verifyMongoDBId(department, res);
+
+    if (!result) return result;
 
     const singleDesignation = await designationModel.findById(id);
 
@@ -128,11 +154,21 @@ export const updateDesignationController = async (req, res) => {
       return notFoundResponse(res, "Designation not found");
     }
 
+    if (department) {
+      const departmentExist = await departmentModel.findById(department);
+
+      if (!departmentExist) {
+        return notFoundResponse(res, "Department not found");
+      }
+    }
+
     const updateDataGrounp = {
       designationName: designationName ?? singleDesignation.designationName,
       designationCode: designationCode ?? singleDesignation.designationCode,
       description: description ?? singleDesignation.description,
       createdBy: loggedInUser._id ?? singleDesignation.createdBy,
+      status: status ?? singleDesignation.status,
+      department: department ?? singleDesignation.department,
     };
 
     const updatedDesignation = await designationModel.findByIdAndUpdate(
