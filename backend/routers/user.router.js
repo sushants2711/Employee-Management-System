@@ -6,6 +6,7 @@ import {
   loginUserByEmployeeIdMiddleware,
   otpCheckerMiddleware,
   resetPasswordMiddleware,
+  updateManagerProfileMiddleware,
   updatePasswordMiddleware,
   updateUserIsAvailableMiddleware,
   updateUserRoleMiddleware,
@@ -31,6 +32,7 @@ import {
   singleUserDetailsController,
   updatePasswordController,
   updatePasswordFirstTimeController,
+  updateProfileManagerController,
   updateTheProfileImageController,
   updateTheRoleController,
   updateTheStatusController,
@@ -171,5 +173,15 @@ userRouter
 userRouter
   .route("/all-managers")
   .get(verifyCookie, verifyEmployeeOrManager, getAllManagersController);
+
+// get update the profile
+userRouter
+  .route("/update-profile-manager")
+  .put(
+    verifyCookie,
+    verifyManagement,
+    updateManagerProfileMiddleware,
+    updateProfileManagerController
+  );
 
 export default userRouter;

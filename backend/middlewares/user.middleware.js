@@ -423,3 +423,33 @@ export const createAccountMiddleware = async (req, res, next) => {
     );
   }
 };
+
+// update the profile of manager
+export const updateManagerProfileMiddleware = async (req, res, next) => {
+  try {
+    const schema = joi.object({
+      password: joi.string().min(8).max(100).optional().allow(""),
+      teamName: joi.string().hex().length(24).optional().allow(""),
+      designation: joi.string().hex().length(24).optional().allow(""),
+      department: joi.string().hex().length(24).optional().allow(""),
+    });
+
+    const { error } = schema.validate(req.body);
+
+    if (error) {
+      return validationErrorResponse(
+        res,
+        "Error Occured at Update Manager Profile Validation",
+        error?.details?.[0]?.message
+      );
+    }
+
+    next();
+  } catch (error) {
+    return internalServerErrorResponse(
+      res,
+      "Internal Server Error",
+      error.message
+    );
+  }
+};

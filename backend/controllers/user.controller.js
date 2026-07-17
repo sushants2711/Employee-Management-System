@@ -20,6 +20,9 @@ import { sendCookieToUser } from "../utils/send.cookie.js";
 import { cookieOptionsSetting } from "../utils/cookieOptions.js";
 import { verifyMongoDBId } from "../utils/verifyMongoId.js";
 import cloudinary from "../config/cloudinary.config.js";
+import teamModel from "../models/team.model.js";
+import designationModel from "../models/designation.model.js";
+import departmentModel from "../models/department.model.js";
 
 // management signup (usign email otp)
 export const signupManagementController = async (req, res) => {
@@ -1150,3 +1153,46 @@ export const getAllManagersController = async (req, res) => {
 };
 
 // get all team leader
+
+// get profile update of manager itself
+export const updateProfileManagerController = async (req, res) => {
+  try {
+    const loggedInUser = req.user;
+
+    const { password, teamName, designation, department } = req.body;
+
+    const teamExist = await teamModel.findById(teamName);
+    const designationExist = await designationModel.findById(designation);
+    const departmentExist = await departmentModel.findById(department);
+
+    if (!teamExist || !designationExist || !departmentExist) {
+      return badRequestResponse(res, "Invalid Data");
+    }
+
+    if (password) {
+      const hashedPassword = await hashPassword(password);
+      loggedInUser.password = hashedPassword;
+    }
+
+    if (teamName) loggedInUser.teamName = teamName;
+    if (designation) loggedInUser.designation = designation;
+    if (department) loggedInUser.department = department;
+
+    const savedData = await loggedInUser.save();
+
+    const dataSendToClient = savedData.toObject();
+    delete dataSendToClient.password;
+
+    return successResponse(
+      res,
+      "Profile updated successfully",
+      dataSendToClient
+    );
+  } catch (error) {
+    return internalServerErrorResponse(
+      res,
+      "Internal Server Error",
+      error.message
+    );
+  }
+};
