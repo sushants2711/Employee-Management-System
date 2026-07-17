@@ -16,11 +16,8 @@ export const validateDesignationField = (name, value) => {
     case "designationCode":
       if (!value.trim()) {
         error = '"designationCode" is required';
-      } else if (value.trim().length < 5) {
-        error = '"designationCode" length must be at least 5 characters long';
-      } else if (value.trim().length > 50) {
-        error =
-          '"designationCode" length must be less than or equal to 50 characters long';
+      } else if (value.trim().length !== 6) {
+        error = '"designationCode" length must be exactly 6 characters long';
       }
       break;
 

@@ -17,11 +17,8 @@ export const validateDepartmentField = (name, value) => {
     case "departmentCode":
       if (!value.trim()) {
         error = '"departmentCode" is required';
-      } else if (value.trim().length < 5) {
-        error = '"departmentCode" length must be at least 5 characters long';
-      } else if (value.trim().length > 50) {
-        error =
-          '"departmentCode" length must be less than or equal to 50 characters long';
+      } else if (value.trim().length !== 6) {
+        error = '"departmentCode" length must be exactly 6 characters long';
       }
       break;
 

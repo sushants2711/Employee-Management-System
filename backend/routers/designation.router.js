@@ -1,17 +1,17 @@
 import express from "express";
-import { verifyCookie } from "../utils/verify.cookie";
-import { verifyManagement } from "../utils/verify.management";
+import { verifyCookie } from "../utils/verify.cookie.js";
+import { verifyManagement } from "../utils/verify.management.js";
 import {
   createDesignationMiddleware,
   updateDesignationMiddleware,
-} from "../middlewares/designation.middleware";
+} from "../middlewares/designation.middleware.js";
 import {
   createDesignationController,
   deleteDesignationController,
   getDesignationController,
   getSingleDesignationController,
   updateDesignationController,
-} from "../controllers/designation.controller";
+} from "../controllers/designation.controller.js";
 
 const designationRouter = express.Router();
 
