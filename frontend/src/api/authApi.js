@@ -66,3 +66,10 @@ export const updateProfileImage = async (formData) => {
     body: formData,
   });
 };
+
+export const updateIsAvailable = async (isAvailable) => {
+  return await apiClient("/user/is-available", {
+    method: "PUT",
+    body: JSON.stringify({ isAvailable }),
+  });
+};

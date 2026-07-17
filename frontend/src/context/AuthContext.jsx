@@ -8,13 +8,15 @@ export const AuthProvider = ({ children }) => {
     const role = localStorage.getItem("role");
     const name = localStorage.getItem("name");
     const email = localStorage.getItem("email");
-    return role && name && email ? { role, name, email } : null;
+    const isAvailable = localStorage.getItem("isAvailable") || "Available";
+    return role && name && email ? { role, name, email, isAvailable } : null;
   });
 
   const login = (userData, role) => {
     localStorage.setItem("role", role);
     localStorage.setItem("name", userData.name);
     localStorage.setItem("email", userData.email);
+    localStorage.setItem("isAvailable", userData.isAvailable || "Available");
     setUser({ ...userData, role });
   };
 
@@ -22,11 +24,18 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem("role");
     localStorage.removeItem("name");
     localStorage.removeItem("email");
+    localStorage.removeItem("isAvailable");
     setUser(null);
   };
 
+  const updateUser = (updates) => {
+    if (updates.isAvailable)
+      localStorage.setItem("isAvailable", updates.isAvailable);
+    setUser((prev) => ({ ...prev, ...updates }));
+  };
+
   return (
-    <AuthContext.Provider value={{ user, login, logout }}>
+    <AuthContext.Provider value={{ user, login, logout, updateUser }}>
       {children}
     </AuthContext.Provider>
   );
