@@ -14,7 +14,6 @@ const departmentSchema = new mongoose.Schema(
     },
     description: {
       type: String,
-      default: null,
     },
     status: {
       type: String,

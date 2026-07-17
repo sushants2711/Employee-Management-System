@@ -1,4 +1,3 @@
-import mongoose from "mongoose";
 import teamModel from "../models/team.model.js";
 import {
   internalServerErrorResponse,
@@ -7,23 +6,37 @@ import {
   successResponse,
   notFoundResponse,
 } from "../utils/response.handler.js";
+import departmentModel from "../models/department.model.js";
+import { verifyMongoDBId } from "../utils/verifyMongoId.js";
 
 // create team controller
 export const createTeamController = async (req, res) => {
   try {
-    const { teamName, teamLead, manager, teamDescription } = req.body;
+    const loggedInUserId = req.user._id;
+
+    const { teamName, teamLead, manager, teamDescription, department } =
+      req.body;
+
+    const isValid = verifyMongoDBId(department, res);
+
+    if (isValid !== true)
+      return badRequestResponse(res, "Invalid department ID");
 
     const teamNameExist = await teamModel.findOne({ teamName });
 
-    if (teamNameExist) {
-      return badRequestResponse(res, "Team already exist");
-    }
+    if (teamNameExist) return badRequestResponse(res, "Team already exist");
+
+    const departmentExist = await departmentModel.findById(department);
+
+    if (!departmentExist)
+      return badRequestResponse(res, "Department not exist");
 
     const team = new teamModel({
       teamName,
       teamLead,
       manager,
       teamDescription,
+      createdBy: loggedInUserId,
     });
 
     const saveData = await team.save();
@@ -49,7 +62,12 @@ export const getAllTeamController = async (req, res) => {
     if (teamLead) filterData.teamLead = teamLead;
     if (manager) filterData.manager = manager;
 
-    const team = await teamModel.find(filterData);
+    const team = await teamModel
+      .find(filterData)
+      .populate("department", "departmentName departmentCode status")
+      .populate("teamLead", "name email role")
+      .populate("manager", "name email role")
+      .populate("createdBy", "name email role");
 
     if (!team || team.length === 0 || !Array.isArray(team)) {
       return notFoundResponse(res, "Team not found");
@@ -70,19 +88,18 @@ export const getSingleTeamController = async (req, res) => {
   try {
     const { id } = req.params;
 
-    if (!id) {
-      return badRequestResponse(res, "Team ID is missing");
-    }
+    const isValid = verifyMongoDBId(id, res);
 
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      return badRequestResponse(res, "Invalid team ID");
-    }
+    if (isValid !== true) return badRequestResponse(res, "Invalid team ID");
 
-    const singleTeam = await teamModel.findById(id);
+    const singleTeam = await teamModel
+      .findById(id)
+      .populate("department", "departmentName departmentCode status")
+      .populate("teamLead", "name email role")
+      .populate("manager", "name email role")
+      .populate("createdBy", "name email role");
 
-    if (!singleTeam) {
-      return notFoundResponse(res, "Team not found");
-    }
+    if (!singleTeam) return notFoundResponse(res, "Team not found");
 
     return successResponse(res, "Team fetched successfully", singleTeam);
   } catch (error) {
@@ -99,14 +116,23 @@ export const updateTeamController = async (req, res) => {
   try {
     const { id } = req.params;
 
-    const { teamName, teamLead, manager, teamDescription, isActive } = req.body;
+    const { teamName, teamLead, manager, teamDescription, status, department } =
+      req.body;
 
-    if (!id) {
-      return badRequestResponse(res, "Team ID is missing");
-    }
+    const isValid = verifyMongoDBId(id, res);
 
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      return badRequestResponse(res, "Invalid team ID");
+    if (isValid !== true) return badRequestResponse(res, "Invalid team ID");
+
+    if (department) {
+      const isValid = verifyMongoDBId(department, res);
+
+      if (isValid !== true)
+        return badRequestResponse(res, "Invalid department ID");
+
+      const departmentExist = await departmentModel.findById(department);
+
+      if (!departmentExist)
+        return badRequestResponse(res, "Department not exist");
     }
 
     const singleTeam = await teamModel.findById(id);
@@ -140,7 +166,8 @@ export const updateTeamController = async (req, res) => {
       teamLead: teamLead ?? singleTeam.teamLead,
       manager: manager ?? singleTeam.manager,
       teamDescription: teamDescription ?? singleTeam.teamDescription,
-      isActive: isActive ?? singleTeam.isActive,
+      status: status ?? singleTeam.status,
+      department: department ?? singleTeam.department,
     };
 
     const updatedTeam = await teamModel.findByIdAndUpdate(
@@ -168,19 +195,13 @@ export const deleteTeamController = async (req, res) => {
   try {
     const { id } = req.params;
 
-    if (!id) {
-      return badRequestResponse(res, "Team ID is missing");
-    }
+    const isValid = verifyMongoDBId(id, res);
 
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      return badRequestResponse(res, "Invalid team ID");
-    }
+    if (isValid !== true) return badRequestResponse(res, "Invalid team ID");
 
     const singleTeam = await teamModel.findById(id);
 
-    if (!singleTeam) {
-      return notFoundResponse(res, "Team not found");
-    }
+    if (!singleTeam) return notFoundResponse(res, "Team not found");
 
     const deleteData = await teamModel.findByIdAndDelete(id);
 
@@ -197,26 +218,12 @@ export const deleteTeamController = async (req, res) => {
 // all active team controller
 export const allActiveTeamController = async (req, res) => {
   try {
-    const team = await teamModel.find({ isActive: true });
-
-    if (!team || team.length === 0 || !Array.isArray(team)) {
-      return notFoundResponse(res, "Team not found");
-    }
-
-    return successResponse(res, "Team fetched successfully", team);
-  } catch (error) {
-    return internalServerErrorResponse(
-      res,
-      "Internal Server Error",
-      error.message
-    );
-  }
-};
-
-// all inactive team controller
-export const allInactiveTeamController = async (req, res) => {
-  try {
-    const team = await teamModel.find({ isActive: false });
+    const team = await teamModel
+      .find({ status: "ACTIVE" })
+      .populate("department", "departmentName departmentCode status")
+      .populate("teamLead", "name email role")
+      .populate("manager", "name email role")
+      .populate("createdBy", "name email role");
 
     if (!team || team.length === 0 || !Array.isArray(team)) {
       return notFoundResponse(res, "Team not found");

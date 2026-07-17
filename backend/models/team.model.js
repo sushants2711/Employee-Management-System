@@ -20,12 +20,16 @@ const teamSchema = new mongoose.Schema(
     },
     teamDescription: {
       type: String,
-      default: null,
     },
     status: {
       type: String,
       enum: ["ACTIVE", "INACTIVE"],
       default: "ACTIVE",
+    },
+    department: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Department",
+      required: true,
     },
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,
