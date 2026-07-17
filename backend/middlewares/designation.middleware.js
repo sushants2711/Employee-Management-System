@@ -11,6 +11,7 @@ export const createDesignationMiddleware = async (req, res, next) => {
       designationName: joi.string().min(2).max(50).trim().required(),
       designationCode: joi.string().length(6).trim().required(),
       description: joi.string().min(10).max(1000).trim().optional().allow(""),
+      department: joi.string().hex().length(24).required(),
     });
 
     const { error } = schema.validate(req.body);
@@ -40,6 +41,8 @@ export const updateDesignationMiddleware = async (req, res, next) => {
       designationName: joi.string().min(2).max(50).trim().optional().allow(""),
       designationCode: joi.string().length(6).trim().optional().allow(""),
       description: joi.string().min(10).max(1000).trim().optional().allow(""),
+      status: joi.string().valid("ACTIVE", "INACTIVE").optional().allow(""),
+      department: joi.string().hex().length(24).optional().allow(""),
     });
 
     const { error } = schema.validate(req.body);
