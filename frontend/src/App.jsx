@@ -2,6 +2,7 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import ToastConfig from "./toastMessage/ToastConfig";
 import { AuthProvider } from "./context/AuthContext";
 import { ThemeProvider } from "./context/ThemeContext";
+import Footer from "./components/Footer";
 import Home from "./pages/Home";
 import EmployeeLogin from "./pages/EmployeeLogin";
 import ManagementLogin from "./pages/ManagementLogin";
@@ -89,6 +90,7 @@ function App() {
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </main>
+            <Footer />
           </div>
         </Router>
       </AuthProvider>
