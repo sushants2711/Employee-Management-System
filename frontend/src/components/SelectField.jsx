@@ -27,11 +27,11 @@ const SelectField = ({
       if (dropdownRef.current && dropdownRef.current.contains(event.target)) {
         return;
       }
-      
-      // If the event target has a specific class or we can just blindly close it 
-      // if it's outside the button. To prevent immediate closing when clicking inside 
+
+      // If the event target has a specific class or we can just blindly close it
+      // if it's outside the button. To prevent immediate closing when clicking inside
       // the portal, we can check if it's our portal element.
-      if (event.target.closest('.select-field-portal')) {
+      if (event.target.closest(".select-field-portal")) {
         return;
       }
 
@@ -58,7 +58,7 @@ const SelectField = ({
 
       // Close on scroll to prevent detached floating
       const handleScroll = (e) => {
-        if (!e.target.closest('.select-field-portal')) {
+        if (!e.target.closest(".select-field-portal")) {
           setIsOpen(false);
         }
       };
