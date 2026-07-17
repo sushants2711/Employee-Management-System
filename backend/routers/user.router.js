@@ -20,6 +20,7 @@ import {
   countPasswordChangeAfterFirstLoginController,
   createAccountForUserController,
   forgotPasswordController,
+  getAllManagersController,
   isAvailableUpdateController,
   logoutController,
   managementLoginController,
@@ -165,5 +166,10 @@ userRouter
     createAccountMiddleware,
     createAccountForUserController
   );
+
+// get all manager and team leader and department
+userRouter
+  .route("/all-managers")
+  .get(verifyCookie, verifyEmployeeOrManager, getAllManagersController);
 
 export default userRouter;

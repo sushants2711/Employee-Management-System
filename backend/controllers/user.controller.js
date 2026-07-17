@@ -1113,3 +1113,40 @@ export const checkManagementCountController = async (req, res) => {
     );
   }
 };
+
+// get all manager
+export const getAllManagersController = async (req, res) => {
+  try {
+    const allManagers = await userModel
+      .find({
+        role: "Management",
+        isManagementVerified: true,
+        status: "ACTIVE",
+      })
+      .populate("teamName", "teamName")
+      .populate("department", "departmentName")
+      .select("-password");
+
+    if (
+      !allManagers ||
+      allManagers.length === 0 ||
+      !Array.isArray(allManagers)
+    ) {
+      return notFoundResponse(res, "No managers found");
+    }
+
+    return successResponse(
+      res,
+      "All managers fetched successfully",
+      allManagers
+    );
+  } catch (error) {
+    return internalServerErrorResponse(
+      res,
+      "Internal Server Error",
+      error.message
+    );
+  }
+};
+
+// get all team leader
