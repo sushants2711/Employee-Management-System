@@ -392,9 +392,9 @@ export const createAccountMiddleware = async (req, res, next) => {
       confirmPassword: joi.string().min(8).max(100).required(),
       role: joi.string().valid("Employee", "Manager", "Team Leader").required(),
       phoneNumber: joi.string().length(10).trim().required(),
-      teamName: joi.string().required(),
-      designation: joi.string().required(),
-      department: joi.string().required(),
+      teamName: joi.string().hex().length(24).optional().allow(""),
+      designation: joi.string().hex().length(24).optional().allow(""),
+      department: joi.string().hex().length(24).optional().allow(""),
     });
 
     const { error } = schema.validate(req.body);
@@ -453,3 +453,5 @@ export const updateManagerProfileMiddleware = async (req, res, next) => {
     );
   }
 };
+
+// update user middleware

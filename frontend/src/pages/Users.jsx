@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { Plus, X, Eye } from "lucide-react";
 import { getAllUsers, createUserAccount } from "../api/authApi";
+import { getAllTeams } from "../api/teamApi";
 import { getAllActiveDepartments } from "../api/departmentApi";
 import { getAllActiveDesignations } from "../api/designationApi";
 import { showSuccess, showError } from "../toastMessage/toastDeliver";
@@ -14,6 +15,7 @@ import SubmitButton from "../components/SubmitButton";
 
 function Users() {
   const [users, setUsers] = useState([]);
+  const [teams, setTeams] = useState([]);
   const [departments, setDepartments] = useState([]);
   const [designations, setDesignations] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -41,12 +43,14 @@ function Users() {
   const fetchData = useCallback(async () => {
     try {
       setIsLoading(true);
-      const [usersRes, deptRes, desigRes] = await Promise.all([
-        getAllUsers(),
-        getAllActiveDepartments(),
-        getAllActiveDesignations(),
+      const [usersRes, teamsRes, deptRes, desigRes] = await Promise.all([
+        getAllUsers().catch(() => ({ data: [] })),
+        getAllTeams().catch(() => ({ data: [] })),
+        getAllActiveDepartments().catch(() => ({ data: [] })),
+        getAllActiveDesignations().catch(() => ({ data: [] })),
       ]);
       setUsers(usersRes.data || []);
+      setTeams(teamsRes.data || []);
       setDepartments(deptRes.data || []);
       setDesignations(desigRes.data || []);
     } catch (error) {
@@ -410,14 +414,18 @@ function Users() {
                     }))}
                   />
                   <div className="sm:col-span-2">
-                    <InputField
-                      label="Team Name"
+                    <SelectField
+                      label="Team"
                       name="teamName"
                       value={formData.teamName}
                       onChange={handleInputChange}
                       error={errors.teamName}
                       disabled={isSubmitting}
-                      placeholder="e.g. Frontend Team"
+                      placeholder="Select a team"
+                      options={teams.map((team) => ({
+                        label: team.teamName,
+                        value: team._id,
+                      }))}
                     />
                   </div>
                 </div>

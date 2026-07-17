@@ -38,6 +38,7 @@ import {
   updateTheStatusController,
   getAllActiveManagerControllers,
   getAllActiveTeamLeaderController,
+  getAllEmployeeController,
 } from "../controllers/user.controller.js";
 import { verifyCookie } from "../utils/verify.cookie.js";
 import { verifyManagement } from "../utils/verify.management.js";
@@ -202,4 +203,7 @@ userRouter
 userRouter
   .route("/all-active-team-leader")
   .get(verifyCookie, getAllActiveTeamLeaderController);
+
+// get all employee
+userRouter.route("/all-employee").get(verifyCookie, getAllEmployeeController);
 export default userRouter;

@@ -8,7 +8,7 @@ import {
 } from "../api/teamApi";
 import { getAllActiveDepartments } from "../api/departmentApi";
 import {
-  getAllUsers,
+  getAllEmployees,
   getAllActiveManagers,
   getAllActiveTeamLeaders,
 } from "../api/authApi";
@@ -57,7 +57,7 @@ function Teams() {
         await Promise.all([
           getAllTeams().catch(() => ({ data: [] })),
           getAllActiveDepartments().catch(() => ({ data: [] })),
-          getAllUsers().catch(() => ({ data: [] })),
+          getAllEmployees().catch(() => ({ data: [] })),
           getAllActiveManagers().catch(() => ({ data: [] })),
           getAllActiveTeamLeaders().catch(() => ({ data: [] })),
         ]);

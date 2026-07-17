@@ -59,6 +59,12 @@ export const getAllActiveTeamLeaders = async () => {
   });
 };
 
+export const getAllEmployees = async () => {
+  return await apiClient("/user/all-employee", {
+    method: "GET",
+  });
+};
+
 export const createUserAccount = async (userData) => {
   return await apiClient("/user/create-account", {
     method: "POST",

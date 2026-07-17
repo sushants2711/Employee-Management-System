@@ -1063,7 +1063,7 @@ export const createAccountForUserController = async (req, res) => {
 
     const hashedPassword = await hashPassword(password);
 
-    const empId = generateEmpId();
+    const empId = await generateEmpId();
 
     const newUserAccount = new userModel({
       employeeId: empId,
@@ -1072,9 +1072,9 @@ export const createAccountForUserController = async (req, res) => {
       password: hashedPassword,
       role,
       phoneNumber,
-      teamName,
-      designation,
-      department,
+      teamName: teamName || null,
+      designation: designation || null,
+      department: department || null,
       createdAccount: id,
     });
 
@@ -1275,6 +1275,32 @@ export const getAllActiveTeamLeaderController = async (req, res) => {
       res,
       "All active team leaders fetched successfully",
       allActiveTeamLeaders
+    );
+  } catch (error) {
+    return internalServerErrorResponse(
+      res,
+      "Internal Server Error",
+      error.message
+    );
+  }
+};
+
+// get all employee controller
+export const getAllEmployeeController = async (req, res) => {
+  try {
+    const allEmployee = await userModel.find({
+      role: "Employee",
+      status: "ACTIVE",
+    });
+
+    if (!allEmployee) {
+      return notFoundResponse(res, "No employee found");
+    }
+
+    return successResponse(
+      res,
+      "All employee fetched successfully",
+      allEmployee
     );
   } catch (error) {
     return internalServerErrorResponse(
