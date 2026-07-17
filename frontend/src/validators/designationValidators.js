@@ -32,6 +32,18 @@ export const validateDesignationField = (name, value) => {
       }
       break;
 
+    case "department":
+      if (!value) {
+        error = '"department" is required';
+      }
+      break;
+
+    case "status":
+      if (value && value !== "ACTIVE" && value !== "INACTIVE") {
+        error = '"status" must be [ACTIVE, INACTIVE]';
+      }
+      break;
+
     default:
       break;
   }

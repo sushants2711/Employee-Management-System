@@ -1,11 +1,12 @@
 import { useState, useEffect, useCallback } from "react";
-import { Plus, X, Edit2, Trash2 } from "lucide-react";
+import { Plus, X, Edit2, Trash2, Eye } from "lucide-react";
 import {
   createDesignation,
   getAllDesignations,
   updateDesignation,
   deleteDesignation,
 } from "../api/designationApi";
+import { getAllDepartments } from "../api/departmentApi";
 import { showSuccess, showError } from "../toastMessage/toastDeliver";
 import {
   validateDesignationField,
@@ -16,6 +17,7 @@ import SubmitButton from "../components/SubmitButton";
 
 function Designations() {
   const [designations, setDesignations] = useState([]);
+  const [departments, setDepartments] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [modalConfig, setModalConfig] = useState({
     isOpen: false,
@@ -23,23 +25,30 @@ function Designations() {
     desigId: null,
   });
   const [deleteConfirmId, setDeleteConfirmId] = useState(null);
+  const [selectedItem, setSelectedItem] = useState(null);
 
   // Form State
   const [formData, setFormData] = useState({
     designationName: "",
     designationCode: "",
     description: "",
+    department: "",
+    status: "ACTIVE",
   });
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const fetchDesignations = useCallback(async () => {
+  const fetchDesignationsAndDepartments = useCallback(async () => {
     try {
       setIsLoading(true);
-      const response = await getAllDesignations();
-      setDesignations(response.data || []);
+      const [desigRes, deptRes] = await Promise.all([
+        getAllDesignations(),
+        getAllDepartments(),
+      ]);
+      setDesignations(desigRes.data || []);
+      setDepartments(deptRes.data || []);
     } catch (error) {
-      showError(error.message || "Failed to fetch designations");
+      showError(error.message || "Failed to fetch data");
     } finally {
       setIsLoading(false);
     }
@@ -47,8 +56,8 @@ function Designations() {
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
-    fetchDesignations();
-  }, [fetchDesignations]);
+    fetchDesignationsAndDepartments();
+  }, [fetchDesignationsAndDepartments]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -64,7 +73,15 @@ function Designations() {
       designationName: "",
       designationCode: "",
       description: "",
+      department: "",
+      status: "ACTIVE",
     });
+    setErrors({});
+  };
+
+  const openViewModal = (desig) => {
+    setModalConfig({ isOpen: true, mode: "VIEW", desigId: desig._id });
+    setSelectedItem(desig);
     setErrors({});
   };
 
@@ -74,6 +91,8 @@ function Designations() {
       designationName: desig.designationName,
       designationCode: desig.designationCode,
       description: desig.description || "",
+      department: desig.department?._id || "",
+      status: desig.status || "ACTIVE",
     });
     setErrors({});
   };
@@ -83,9 +102,6 @@ function Designations() {
       await deleteDesignation(id);
       showSuccess("Designation deleted successfully");
       setDeleteConfirmId(null);
-
-      // Instantly remove the deleted designation from local state
-      // without needing to wait for a network refresh
       setDesignations((prev) => prev.filter((desig) => desig._id !== id));
     } catch (error) {
       showError(error.message || "Failed to delete designation");
@@ -110,6 +126,7 @@ function Designations() {
           designationName: formData.designationName,
           designationCode: formData.designationCode,
           description: formData.description,
+          department: formData.department,
         };
         await createDesignation(createData);
         showSuccess("Designation created successfully");
@@ -118,7 +135,7 @@ function Designations() {
         showSuccess("Designation updated successfully");
       }
       setModalConfig({ isOpen: false, mode: "CREATE", desigId: null });
-      fetchDesignations(); // refresh list
+      fetchDesignationsAndDepartments(); // refresh list to get populated references
     } catch (error) {
       showError(
         error.message ||
@@ -173,15 +190,37 @@ function Designations() {
                 <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
                   {desig.designationName}
                 </h3>
+                <span
+                  className={`px-2.5 py-1 text-xs font-medium rounded-full ${
+                    desig.status === "ACTIVE"
+                      ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
+                      : "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
+                  }`}
+                >
+                  {desig.status}
+                </span>
               </div>
-              <p className="text-sm text-slate-600 dark:text-slate-400 mb-4 line-clamp-2 min-h-[40px]">
+              <p className="text-sm text-slate-600 dark:text-slate-400 mb-2 line-clamp-2 min-h-[40px]">
                 {desig.description || "No description provided."}
               </p>
+              <div className="mb-4 text-sm text-slate-500 dark:text-slate-400">
+                Department:{" "}
+                <span className="font-medium text-slate-700 dark:text-slate-300">
+                  {desig.department?.departmentName || "Unknown"}
+                </span>
+              </div>
               <div className="flex items-center justify-between text-sm text-slate-500 dark:text-slate-400 mt-2">
                 <span className="font-mono bg-slate-100 dark:bg-slate-900 px-2 py-1 rounded">
                   {desig.designationCode}
                 </span>
                 <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => openViewModal(desig)}
+                    className="p-1.5 hover:bg-green-50 hover:text-green-600 dark:hover:bg-green-900/30 dark:hover:text-green-400 rounded-lg transition-colors cursor-pointer"
+                    title="View Details"
+                  >
+                    <Eye className="w-4 h-4" />
+                  </button>
                   <button
                     onClick={() => openUpdateModal(desig)}
                     className="p-1.5 hover:bg-blue-50 hover:text-blue-600 dark:hover:bg-blue-900/30 dark:hover:text-blue-400 rounded-lg transition-colors cursor-pointer"
@@ -211,7 +250,9 @@ function Designations() {
               <h2 className="text-lg font-bold text-slate-900 dark:text-white">
                 {modalConfig.mode === "CREATE"
                   ? "Create Designation"
-                  : "Edit Designation"}
+                  : modalConfig.mode === "UPDATE"
+                    ? "Edit Designation"
+                    : "Designation Details"}
               </h2>
               <button
                 onClick={() =>
@@ -223,56 +264,156 @@ function Designations() {
               </button>
             </div>
 
-            <form onSubmit={handleSubmit} className="p-5 space-y-5">
-              <InputField
-                label="Designation Name"
-                name="designationName"
-                value={formData.designationName}
-                onChange={handleInputChange}
-                error={errors.designationName}
-                disabled={isSubmitting}
-                placeholder="e.g. Software Engineer"
-              />
-              <InputField
-                label="Designation Code"
-                name="designationCode"
-                value={formData.designationCode}
-                onChange={handleInputChange}
-                error={errors.designationCode}
-                disabled={isSubmitting}
-                placeholder="e.g. SWE-001"
-              />
-              <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
-                  Description <span className="text-slate-400">(Optional)</span>
-                </label>
-                <textarea
-                  name="description"
-                  value={formData.description}
-                  onChange={handleInputChange}
-                  disabled={isSubmitting}
-                  className={`w-full px-4 py-2.5 rounded-xl border ${
-                    errors.description
-                      ? "border-red-300 focus:ring-red-500 dark:border-red-500/50"
-                      : "border-slate-300 dark:border-slate-700 focus:ring-ems-primary"
-                  } bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:border-transparent transition-all resize-none h-24`}
-                  placeholder="Briefly describe the designation's role..."
-                />
-                {errors.description && (
-                  <p className="mt-1.5 text-sm text-red-600 dark:text-red-400 font-medium">
-                    {errors.description}
+            {modalConfig.mode === "VIEW" && selectedItem ? (
+              <div className="p-5 space-y-5">
+                <div>
+                  <label className="block text-sm font-medium text-slate-500 dark:text-slate-400 mb-1">
+                    Designation Name
+                  </label>
+                  <p className="text-slate-900 dark:text-white font-medium">
+                    {selectedItem.designationName}
                   </p>
-                )}
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-500 dark:text-slate-400 mb-1">
+                    Designation Code
+                  </label>
+                  <p className="font-mono text-slate-900 dark:text-white">
+                    {selectedItem.designationCode}
+                  </p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-500 dark:text-slate-400 mb-1">
+                    Department
+                  </label>
+                  <p className="text-slate-900 dark:text-white">
+                    {selectedItem.department?.departmentName || "Unknown"}
+                  </p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-500 dark:text-slate-400 mb-1">
+                    Description
+                  </label>
+                  <p className="text-slate-900 dark:text-white">
+                    {selectedItem.description || "No description provided."}
+                  </p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-500 dark:text-slate-400 mb-1">
+                    Status
+                  </label>
+                  <span
+                    className={`inline-flex px-2.5 py-1 text-xs font-medium rounded-full ${
+                      selectedItem.status === "ACTIVE"
+                        ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
+                        : "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
+                    }`}
+                  >
+                    {selectedItem.status}
+                  </span>
+                </div>
               </div>
+            ) : (
+              <form onSubmit={handleSubmit} className="p-5 space-y-5">
+                <InputField
+                  label="Designation Name"
+                  name="designationName"
+                  value={formData.designationName}
+                  onChange={handleInputChange}
+                  error={errors.designationName}
+                  disabled={isSubmitting}
+                  placeholder="e.g. Software Engineer"
+                />
+                <InputField
+                  label="Designation Code"
+                  name="designationCode"
+                  value={formData.designationCode}
+                  onChange={handleInputChange}
+                  error={errors.designationCode}
+                  disabled={isSubmitting}
+                  placeholder="e.g. SWE-001"
+                />
 
-              <div className="pt-2">
-                <SubmitButton isSubmitting={isSubmitting}>
-                  {modalConfig.mode === "CREATE"
-                    ? "Create Designation"
-                    : "Save Changes"}
-                </SubmitButton>
-              </div>
-            </form>
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
+                    Department
+                  </label>
+                  <select
+                    name="department"
+                    value={formData.department}
+                    onChange={handleInputChange}
+                    disabled={isSubmitting}
+                    className={`w-full px-4 py-2.5 rounded-xl border ${
+                      errors.department
+                        ? "border-red-300 focus:ring-red-500 dark:border-red-500/50"
+                        : "border-slate-300 dark:border-slate-700 focus:ring-ems-primary"
+                    } bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:border-transparent transition-all`}
+                  >
+                    <option value="">Select a department</option>
+                    {departments.map((dept) => (
+                      <option key={dept._id} value={dept._id}>
+                        {dept.departmentName}
+                      </option>
+                    ))}
+                  </select>
+                  {errors.department && (
+                    <p className="mt-1.5 text-sm text-red-600 dark:text-red-400 font-medium">
+                      {errors.department}
+                    </p>
+                  )}
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
+                    Description{" "}
+                    <span className="text-slate-400">(Optional)</span>
+                  </label>
+                  <textarea
+                    name="description"
+                    value={formData.description}
+                    onChange={handleInputChange}
+                    disabled={isSubmitting}
+                    className={`w-full px-4 py-2.5 rounded-xl border ${
+                      errors.description
+                        ? "border-red-300 focus:ring-red-500 dark:border-red-500/50"
+                        : "border-slate-300 dark:border-slate-700 focus:ring-ems-primary"
+                    } bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:border-transparent transition-all resize-none h-24`}
+                    placeholder="Briefly describe the designation's role..."
+                  />
+                  {errors.description && (
+                    <p className="mt-1.5 text-sm text-red-600 dark:text-red-400 font-medium">
+                      {errors.description}
+                    </p>
+                  )}
+                </div>
+
+                {modalConfig.mode === "UPDATE" && (
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
+                      Status
+                    </label>
+                    <select
+                      name="status"
+                      value={formData.status}
+                      onChange={handleInputChange}
+                      disabled={isSubmitting}
+                      className="w-full px-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-ems-primary transition-all"
+                    >
+                      <option value="ACTIVE">Active</option>
+                      <option value="INACTIVE">Inactive</option>
+                    </select>
+                  </div>
+                )}
+
+                <div className="pt-2">
+                  <SubmitButton isSubmitting={isSubmitting}>
+                    {modalConfig.mode === "CREATE"
+                      ? "Create Designation"
+                      : "Save Changes"}
+                  </SubmitButton>
+                </div>
+              </form>
+            )}
           </div>
         </div>
       )}
