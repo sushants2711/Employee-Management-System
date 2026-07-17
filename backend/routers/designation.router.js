@@ -8,6 +8,7 @@ import {
 import {
   createDesignationController,
   deleteDesignationController,
+  getAllActiveDesignationController,
   getDesignationController,
   getSingleDesignationController,
   updateDesignationController,
@@ -23,10 +24,13 @@ designationRouter
     createDesignationMiddleware,
     createDesignationController
   );
+
 designationRouter.route("/all").get(verifyCookie, getDesignationController);
+
 designationRouter
   .route("/single/:id")
   .get(verifyCookie, getSingleDesignationController);
+
 designationRouter
   .route("/update-designation/:id")
   .put(
@@ -35,8 +39,13 @@ designationRouter
     updateDesignationMiddleware,
     updateDesignationController
   );
+
 designationRouter
   .route("/delete-designation/:id")
   .delete(verifyCookie, verifyManagement, deleteDesignationController);
+
+designationRouter
+  .route("/all-active")
+  .get(verifyCookie, getAllActiveDesignationController);
 
 export default designationRouter;
