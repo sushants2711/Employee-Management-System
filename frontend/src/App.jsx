@@ -25,72 +25,72 @@ function App() {
     <ThemeProvider>
       <AuthProvider>
         <Router>
-        <ScrollToTop />
-        <div className="min-h-screen flex flex-col bg-ems-bg-light dark:bg-ems-bg-dark transition-colors duration-300 relative">
-          <ToastConfig />
-          <main className="flex-grow flex flex-col w-full">
-            <Routes>
-              <Route path="/" element={<Home />} />
-              <Route
-                path="/employee-login"
-                element={
-                  <PublicRoute>
-                    <EmployeeLogin />
-                  </PublicRoute>
-                }
-              />
-              <Route
-                path="/management-login"
-                element={
-                  <PublicRoute>
-                    <ManagementLogin />
-                  </PublicRoute>
-                }
-              />
-              <Route
-                path="/management-signup"
-                element={
-                  <PublicRoute>
-                    <ManagementSignup />
-                  </PublicRoute>
-                }
-              />
-              <Route
-                path="/otp"
-                element={
-                  <PublicRoute>
-                    <OTP />
-                  </PublicRoute>
-                }
-              />
-              <Route
-                path="/change-password"
-                element={
-                  <ProtectedRoute>
-                    <ChangePassword />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/home"
-                element={
-                  <ProtectedRoute>
-                    <DashboardLayout />
-                  </ProtectedRoute>
-                }
-              >
-                <Route index element={<DashboardHome />} />
-                <Route path="departments" element={<Departments />} />
-                <Route path="designations" element={<Designations />} />
-                <Route path="teams" element={<Teams />} />
-                <Route path="users" element={<Users />} />
-                <Route path="profile" element={<Profile />} />
-              </Route>
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </main>
-        </div>
-      </Router>
+          <ScrollToTop />
+          <div className="min-h-screen flex flex-col bg-ems-bg-light dark:bg-ems-bg-dark transition-colors duration-300 relative">
+            <ToastConfig />
+            <main className="flex-grow flex flex-col w-full">
+              <Routes>
+                <Route path="/" element={<Home />} />
+                <Route
+                  path="/employee-login"
+                  element={
+                    <PublicRoute>
+                      <EmployeeLogin />
+                    </PublicRoute>
+                  }
+                />
+                <Route
+                  path="/management-login"
+                  element={
+                    <PublicRoute>
+                      <ManagementLogin />
+                    </PublicRoute>
+                  }
+                />
+                <Route
+                  path="/management-signup"
+                  element={
+                    <PublicRoute>
+                      <ManagementSignup />
+                    </PublicRoute>
+                  }
+                />
+                <Route
+                  path="/otp"
+                  element={
+                    <PublicRoute>
+                      <OTP />
+                    </PublicRoute>
+                  }
+                />
+                <Route
+                  path="/change-password"
+                  element={
+                    <ProtectedRoute>
+                      <ChangePassword />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/home"
+                  element={
+                    <ProtectedRoute>
+                      <DashboardLayout />
+                    </ProtectedRoute>
+                  }
+                >
+                  <Route index element={<DashboardHome />} />
+                  <Route path="departments" element={<Departments />} />
+                  <Route path="designations" element={<Designations />} />
+                  <Route path="teams" element={<Teams />} />
+                  <Route path="users" element={<Users />} />
+                  <Route path="profile" element={<Profile />} />
+                </Route>
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </main>
+          </div>
+        </Router>
       </AuthProvider>
     </ThemeProvider>
   );
