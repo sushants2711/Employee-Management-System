@@ -1,6 +1,6 @@
 import { NavLink } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { LayoutDashboard, Building2, LogOut } from "lucide-react";
+import { LogOut } from "lucide-react";
 import { apiClient } from "../api/apiClient";
 
 function Sidebar() {
@@ -16,16 +16,16 @@ function Sidebar() {
     }
   };
 
-  const navItems = [
-    { name: "Dashboard", path: "/home", icon: LayoutDashboard },
-  ];
+  const navItems = [{ name: "Dashboard", path: "/home" }];
 
-  // Only show Departments to Management or Managers
   if (user?.role === "Management" || user?.role === "Manager") {
     navItems.push({
       name: "Departments",
       path: "/home/departments",
-      icon: Building2,
+    });
+    navItems.push({
+      name: "Designations",
+      path: "/home/designations",
     });
   }
 
@@ -57,7 +57,7 @@ function Sidebar() {
                 }`
               }
             >
-              <Icon className="w-5 h-5" />
+              {Icon && <Icon className="w-5 h-5" />}
               {item.name}
             </NavLink>
           );

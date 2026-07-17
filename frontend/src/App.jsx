@@ -11,6 +11,7 @@ import OTP from "./pages/OTP";
 import ChangePassword from "./pages/ChangePassword";
 import DashboardHome from "./pages/DashboardHome";
 import Departments from "./pages/Departments";
+import Designations from "./pages/Designations";
 import NotFound from "./pages/NotFound";
 import DashboardLayout from "./layouts/DashboardLayout";
 import ScrollToTop from "./components/ScrollToTop";
@@ -108,6 +109,7 @@ function App() {
               >
                 <Route index element={<DashboardHome />} />
                 <Route path="departments" element={<Departments />} />
+                <Route path="designations" element={<Designations />} />
               </Route>
               <Route path="*" element={<NotFound />} />
             </Routes>
