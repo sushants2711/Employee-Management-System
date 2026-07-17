@@ -28,6 +28,10 @@ function Sidebar() {
       path: "/home/designations",
     });
     navItems.push({
+      name: "Teams",
+      path: "/home/teams",
+    });
+    navItems.push({
       name: "Users",
       path: "/home/users",
     });

@@ -12,6 +12,7 @@ import ChangePassword from "./pages/ChangePassword";
 import DashboardHome from "./pages/DashboardHome";
 import Departments from "./pages/Departments";
 import Designations from "./pages/Designations";
+import Teams from "./pages/Teams";
 import Users from "./pages/Users";
 import NotFound from "./pages/NotFound";
 import DashboardLayout from "./layouts/DashboardLayout";
@@ -111,6 +112,7 @@ function App() {
                 <Route index element={<DashboardHome />} />
                 <Route path="departments" element={<Departments />} />
                 <Route path="designations" element={<Designations />} />
+                <Route path="teams" element={<Teams />} />
                 <Route path="users" element={<Users />} />
               </Route>
               <Route path="*" element={<NotFound />} />
