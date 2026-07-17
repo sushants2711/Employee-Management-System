@@ -186,7 +186,7 @@ userRouter
   .route("/update-profile-manager")
   .put(
     verifyCookie,
-    verifyManagement,
+    verifyManagerOrManagement,
     updateManagerProfileMiddleware,
     updateProfileManagerController
   );
