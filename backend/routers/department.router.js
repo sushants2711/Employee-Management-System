@@ -1,6 +1,6 @@
 import express from "express";
 import { verifyCookie } from "../utils/verify.cookie.js";
-import { verifyManagerOrManagement } from "../utils/verify.managerOrManagement.js";
+import { verifyManagement } from "../utils/verify.management.js";
 import {
   createDepartmentController,
   deleteTheDepartmentByIdController,
@@ -19,7 +19,7 @@ departmentRouter
   .route("/create-department")
   .post(
     verifyCookie,
-    verifyManagerOrManagement,
+    verifyManagement,
     createDepartmentMiddleware,
     createDepartmentController
   );
@@ -34,17 +34,13 @@ departmentRouter
   .route("/update-department/:id")
   .put(
     verifyCookie,
-    verifyManagerOrManagement,
+    verifyManagement,
     updateDepartmentMiddleware,
     updateTheDepartmentController
   );
 
 departmentRouter
   .route("/delete-department/:id")
-  .delete(
-    verifyCookie,
-    verifyManagerOrManagement,
-    deleteTheDepartmentByIdController
-  );
+  .delete(verifyCookie, verifyManagement, deleteTheDepartmentByIdController);
 
 export default departmentRouter;

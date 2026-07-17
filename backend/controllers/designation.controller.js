@@ -1,4 +1,3 @@
-import mongoose from "mongoose";
 import designationModel from "../models/designation.model.js";
 import {
   internalServerErrorResponse,
@@ -7,10 +6,13 @@ import {
   successResponse,
   notFoundResponse,
 } from "../utils/response.handler.js";
+import { verifyMongoDBId } from "../utils/verifyMongoId.js";
 
 // create designation controller
 export const createDesignationController = async (req, res) => {
   try {
+    const loggedInUser = req.user;
+
     const { designationName, designationCode, description } = req.body;
 
     const designationNameExist = await designationModel.findOne({
@@ -29,6 +31,7 @@ export const createDesignationController = async (req, res) => {
       designationName,
       designationCode,
       description,
+      createdBy: loggedInUser._id,
     });
 
     const saveData = await designation.save();
@@ -82,13 +85,9 @@ export const getSingleDesignationController = async (req, res) => {
   try {
     const { id } = req.params;
 
-    if (!id) {
-      return badRequestResponse(res, "Designation ID is missing");
-    }
+    const isValid = verifyMongoDBId(id, res);
 
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      return badRequestResponse(res, "Invalid designation ID");
-    }
+    if (!isValid) return isValid;
 
     const singleDesignation = await designationModel.findById(id);
 
@@ -115,15 +114,13 @@ export const updateDesignationController = async (req, res) => {
   try {
     const { id } = req.params;
 
+    const loggedInUser = req.user;
+
     const { designationName, designationCode, description } = req.body;
 
-    if (!id) {
-      return badRequestResponse(res, "Designation ID is missing");
-    }
+    const isValid = verifyMongoDBId(id, res);
 
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      return badRequestResponse(res, "Invalid designation ID");
-    }
+    if (!isValid) return isValid;
 
     const singleDesignation = await designationModel.findById(id);
 
@@ -135,6 +132,7 @@ export const updateDesignationController = async (req, res) => {
       designationName: designationName ?? singleDesignation.designationName,
       designationCode: designationCode ?? singleDesignation.designationCode,
       description: description ?? singleDesignation.description,
+      createdBy: loggedInUser._id ?? singleDesignation.createdBy,
     };
 
     const updatedDesignation = await designationModel.findByIdAndUpdate(
@@ -166,13 +164,9 @@ export const deleteDesignationController = async (req, res) => {
   try {
     const { id } = req.params;
 
-    if (!id) {
-      return badRequestResponse(res, "Designation ID is missing");
-    }
+    const isValid = verifyMongoDBId(id, res);
 
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      return badRequestResponse(res, "Invalid designation ID");
-    }
+    if (!isValid) return isValid;
 
     const singleDesignation = await designationModel.findById(id);
 

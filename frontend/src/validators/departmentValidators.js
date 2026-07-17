@@ -29,9 +29,9 @@ export const validateDepartmentField = (name, value) => {
       if (value.trim().length > 0) {
         if (value.trim().length < 10) {
           error = '"description" length must be at least 10 characters long';
-        } else if (value.trim().length > 255) {
+        } else if (value.trim().length > 1000) {
           error =
-            '"description" length must be less than or equal to 255 characters long';
+            '"description" length must be less than or equal to 1000 characters long';
         }
       }
       break;
