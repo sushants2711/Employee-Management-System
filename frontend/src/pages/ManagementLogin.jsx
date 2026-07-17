@@ -71,8 +71,9 @@ function ManagementLogin() {
         email: loginMethod === "email" ? formData.identifier : "",
         name: response.data?.name || "Management User",
       };
+      const userRole = response.data?.role || "Management";
 
-      login(userData, "mg0");
+      login(userData, userRole);
       navigate("/home"); // Navigate to dashboard
     } catch (error) {
       showError(error.message || "An error occurred during login");

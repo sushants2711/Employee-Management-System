@@ -10,8 +10,9 @@ import ManagementSignup from "./pages/ManagementSignup";
 import OTP from "./pages/OTP";
 import ChangePassword from "./pages/ChangePassword";
 import DashboardHome from "./pages/DashboardHome";
+import Departments from "./pages/Departments";
 import NotFound from "./pages/NotFound";
-import Footer from "./components/Footer";
+import DashboardLayout from "./layouts/DashboardLayout";
 import ScrollToTop from "./components/ScrollToTop";
 import ProtectedRoute from "./components/ProtectedRoute";
 import PublicRoute from "./components/PublicRoute";
@@ -45,7 +46,7 @@ function App() {
           <ToastConfig />
           <button
             onClick={toggleDarkMode}
-            className="absolute top-4 right-4 p-2 rounded-full bg-ems-surface-light dark:bg-ems-surface-dark shadow-md hover:shadow-lg transition-all z-50 text-slate-700 dark:text-yellow-500 cursor-pointer"
+            className="fixed bottom-6 right-6 p-3 rounded-full bg-white dark:bg-slate-800 shadow-lg border border-slate-200 dark:border-slate-700 hover:shadow-xl transition-all z-50 text-slate-700 dark:text-yellow-500 cursor-pointer"
             aria-label="Toggle Dark Mode"
           >
             {isDarkMode ? (
@@ -101,14 +102,16 @@ function App() {
                 path="/home"
                 element={
                   <ProtectedRoute>
-                    <DashboardHome />
+                    <DashboardLayout />
                   </ProtectedRoute>
                 }
-              />
+              >
+                <Route index element={<DashboardHome />} />
+                <Route path="departments" element={<Departments />} />
+              </Route>
               <Route path="*" element={<NotFound />} />
             </Routes>
           </main>
-          <Footer />
         </div>
       </Router>
     </AuthProvider>
