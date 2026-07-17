@@ -8,14 +8,21 @@ import {
 } from "../utils/response.handler.js";
 import departmentModel from "../models/department.model.js";
 import { verifyMongoDBId } from "../utils/verifyMongoId.js";
+import userModel from "../models/user.model.js";
 
 // create team controller
 export const createTeamController = async (req, res) => {
   try {
     const loggedInUserId = req.user._id;
 
-    const { teamName, teamLead, manager, teamDescription, department } =
-      req.body;
+    const {
+      teamName,
+      teamLead,
+      manager,
+      teamDescription,
+      department,
+      members,
+    } = req.body;
 
     const isValid = verifyMongoDBId(department, res);
 
@@ -31,11 +38,20 @@ export const createTeamController = async (req, res) => {
     if (!departmentExist)
       return badRequestResponse(res, "Department not exist");
 
+    if (members) {
+      for (const member of members) {
+        const memberExist = await userModel.findById(member);
+        if (!memberExist) return badRequestResponse(res, "Member not exist");
+      }
+    }
+
     const team = new teamModel({
       teamName,
       teamLead,
       manager,
       teamDescription,
+      department,
+      members: members || [],
       createdBy: loggedInUserId,
     });
 
@@ -67,7 +83,8 @@ export const getAllTeamController = async (req, res) => {
       .populate("department", "departmentName departmentCode status")
       .populate("teamLead", "name email role")
       .populate("manager", "name email role")
-      .populate("createdBy", "name email role");
+      .populate("createdBy", "name email role")
+      .populate("members", "name email role");
 
     if (!team || team.length === 0 || !Array.isArray(team)) {
       return notFoundResponse(res, "Team not found");
@@ -97,7 +114,8 @@ export const getSingleTeamController = async (req, res) => {
       .populate("department", "departmentName departmentCode status")
       .populate("teamLead", "name email role")
       .populate("manager", "name email role")
-      .populate("createdBy", "name email role");
+      .populate("createdBy", "name email role")
+      .populate("members", "name email role");
 
     if (!singleTeam) return notFoundResponse(res, "Team not found");
 
@@ -116,8 +134,15 @@ export const updateTeamController = async (req, res) => {
   try {
     const { id } = req.params;
 
-    const { teamName, teamLead, manager, teamDescription, status, department } =
-      req.body;
+    const {
+      teamName,
+      teamLead,
+      manager,
+      teamDescription,
+      status,
+      department,
+      members,
+    } = req.body;
 
     const isValid = verifyMongoDBId(id, res);
 
@@ -133,6 +158,13 @@ export const updateTeamController = async (req, res) => {
 
       if (!departmentExist)
         return badRequestResponse(res, "Department not exist");
+    }
+
+    if (members) {
+      for (const member of members) {
+        const memberExist = await userModel.findById(member);
+        if (!memberExist) return badRequestResponse(res, "Member not exist");
+      }
     }
 
     const singleTeam = await teamModel.findById(id);
@@ -168,6 +200,7 @@ export const updateTeamController = async (req, res) => {
       teamDescription: teamDescription ?? singleTeam.teamDescription,
       status: status ?? singleTeam.status,
       department: department ?? singleTeam.department,
+      members: members ?? singleTeam.members,
     };
 
     const updatedTeam = await teamModel.findByIdAndUpdate(
@@ -223,7 +256,8 @@ export const allActiveTeamController = async (req, res) => {
       .populate("department", "departmentName departmentCode status")
       .populate("teamLead", "name email role")
       .populate("manager", "name email role")
-      .populate("createdBy", "name email role");
+      .populate("createdBy", "name email role")
+      .populate("members", "name email role");
 
     if (!team || team.length === 0 || !Array.isArray(team)) {
       return notFoundResponse(res, "Team not found");

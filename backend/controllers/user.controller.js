@@ -1232,3 +1232,55 @@ export const getLoggedInUserDetailsController = async (req, res) => {
     );
   }
 };
+
+// get all manager
+export const getAllActiveManagerControllers = async (req, res) => {
+  try {
+    const allActiveManagers = await userModel.find({
+      role: "Manager",
+      status: "ACTIVE",
+    });
+
+    if (!allActiveManagers) {
+      return notFoundResponse(res, "No active managers found");
+    }
+
+    return successResponse(
+      res,
+      "All active managers fetched successfully",
+      allActiveManagers
+    );
+  } catch (error) {
+    return internalServerErrorResponse(
+      res,
+      "Internal Server Error",
+      error.message
+    );
+  }
+};
+
+// get all team leader
+export const getAllActiveTeamLeaderController = async (req, res) => {
+  try {
+    const allActiveTeamLeaders = await userModel.find({
+      role: "Team Leader",
+      status: "ACTIVE",
+    });
+
+    if (!allActiveTeamLeaders) {
+      return notFoundResponse(res, "No active team leaders found");
+    }
+
+    return successResponse(
+      res,
+      "All active team leaders fetched successfully",
+      allActiveTeamLeaders
+    );
+  } catch (error) {
+    return internalServerErrorResponse(
+      res,
+      "Internal Server Error",
+      error.message
+    );
+  }
+};

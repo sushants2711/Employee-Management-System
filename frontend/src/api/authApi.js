@@ -47,6 +47,18 @@ export const getAllUsers = async () => {
   });
 };
 
+export const getAllActiveManagers = async () => {
+  return await apiClient("/user/all-active-manager", {
+    method: "GET",
+  });
+};
+
+export const getAllActiveTeamLeaders = async () => {
+  return await apiClient("/user/all-active-team-leader", {
+    method: "GET",
+  });
+};
+
 export const createUserAccount = async (userData) => {
   return await apiClient("/user/create-account", {
     method: "POST",

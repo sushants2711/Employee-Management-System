@@ -36,6 +36,8 @@ import {
   updateTheProfileImageController,
   updateTheRoleController,
   updateTheStatusController,
+  getAllActiveManagerControllers,
+  getAllActiveTeamLeaderController,
 } from "../controllers/user.controller.js";
 import { verifyCookie } from "../utils/verify.cookie.js";
 import { verifyManagement } from "../utils/verify.management.js";
@@ -191,4 +193,13 @@ userRouter
     updateProfileManagerController
   );
 
+// get all active manager
+userRouter
+  .route("/all-active-manager")
+  .get(verifyCookie, getAllActiveManagerControllers);
+
+// get all active team leader
+userRouter
+  .route("/all-active-team-leader")
+  .get(verifyCookie, getAllActiveTeamLeaderController);
 export default userRouter;

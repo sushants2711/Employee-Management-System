@@ -7,7 +7,11 @@ import {
   deleteTeam,
 } from "../api/teamApi";
 import { getAllActiveDepartments } from "../api/departmentApi";
-import { getAllUsers } from "../api/authApi";
+import {
+  getAllUsers,
+  getAllActiveManagers,
+  getAllActiveTeamLeaders,
+} from "../api/authApi";
 import { showSuccess, showError } from "../toastMessage/toastDeliver";
 import {
   validateTeamField,
@@ -15,12 +19,15 @@ import {
 } from "../validators/teamValidators";
 import InputField from "../components/InputField";
 import SelectField from "../components/SelectField";
+import MultiSelectField from "../components/MultiSelectField";
 import SubmitButton from "../components/SubmitButton";
 
 function Teams() {
   const [teams, setTeams] = useState([]);
   const [departments, setDepartments] = useState([]);
   const [users, setUsers] = useState([]);
+  const [managers, setManagers] = useState([]);
+  const [teamLeaders, setTeamLeaders] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [modalConfig, setModalConfig] = useState({
     isOpen: false,
@@ -38,6 +45,7 @@ function Teams() {
     manager: "",
     teamLead: "",
     status: "ACTIVE",
+    members: [],
   });
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -45,14 +53,19 @@ function Teams() {
   const fetchData = useCallback(async () => {
     try {
       setIsLoading(true);
-      const [teamsRes, deptRes, usersRes] = await Promise.all([
-        getAllTeams(),
-        getAllActiveDepartments(),
-        getAllUsers(),
-      ]);
+      const [teamsRes, deptRes, usersRes, managersRes, teamLeadersRes] =
+        await Promise.all([
+          getAllTeams().catch(() => ({ data: [] })),
+          getAllActiveDepartments().catch(() => ({ data: [] })),
+          getAllUsers().catch(() => ({ data: [] })),
+          getAllActiveManagers().catch(() => ({ data: [] })),
+          getAllActiveTeamLeaders().catch(() => ({ data: [] })),
+        ]);
       setTeams(teamsRes.data || []);
       setDepartments(deptRes.data || []);
       setUsers(usersRes.data || []);
+      setManagers(managersRes.data || []);
+      setTeamLeaders(teamLeadersRes.data || []);
     } catch (error) {
       showError(error.message || "Failed to fetch data");
     } finally {
@@ -82,6 +95,7 @@ function Teams() {
       manager: "",
       teamLead: "",
       status: "ACTIVE",
+      members: [],
     });
     setErrors({});
   };
@@ -101,6 +115,7 @@ function Teams() {
       manager: team.manager?._id || team.manager,
       teamLead: team.teamLead?._id || team.teamLead || "",
       status: team.status,
+      members: team.members?.map((m) => m._id || m) || [],
     });
     setErrors({});
   };
@@ -229,6 +244,12 @@ function Teams() {
                     </span>
                   </div>
                 )}
+                <div>
+                  Members:{" "}
+                  <span className="font-medium text-slate-700 dark:text-slate-300">
+                    {team.members?.length || 0}
+                  </span>
+                </div>
               </div>
 
               <div className="flex items-center justify-end text-sm text-slate-500 dark:text-slate-400 mt-2 border-t border-slate-100 dark:border-slate-700 pt-3">
@@ -264,7 +285,7 @@ function Teams() {
       {/* Create/Update Modal */}
       {modalConfig.isOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm overflow-y-auto pt-24 pb-10">
-          <div className="bg-white dark:bg-slate-800 w-full max-w-lg rounded-2xl shadow-xl overflow-hidden animate-in fade-in zoom-in-95 duration-200 my-auto">
+          <div className="bg-white dark:bg-slate-800 w-full max-w-2xl rounded-2xl shadow-xl overflow-hidden animate-in fade-in zoom-in-95 duration-200 my-auto">
             <div className="flex items-center justify-between p-5 border-b border-slate-200 dark:border-slate-700">
               <h2 className="text-lg font-bold text-slate-900 dark:text-white">
                 {modalConfig.mode === "CREATE"
@@ -341,6 +362,22 @@ function Teams() {
                       {selectedItem.teamLead?.name || "None assigned"}
                     </p>
                   </div>
+                  <div className="col-span-2">
+                    <label className="block text-sm font-medium text-slate-500 dark:text-slate-400 mb-1">
+                      Team Members
+                    </label>
+                    <p className="text-slate-900 dark:text-white">
+                      {selectedItem.members?.length > 0
+                        ? selectedItem.members.map((m) => (
+                            <div key={m._id} className="mb-1">
+                              • {m.name} ({m.employeeId}) -{" "}
+                              {m.designation?.designationName || "N/A"} |{" "}
+                              {m.department?.departmentName || "N/A"}
+                            </div>
+                          ))
+                        : "No members assigned"}
+                    </p>
+                  </div>
                 </div>
               </div>
             ) : (
@@ -405,15 +442,10 @@ function Teams() {
                     error={errors.manager}
                     disabled={isSubmitting}
                     placeholder="Select a manager"
-                    options={users
-                      .filter(
-                        (user) =>
-                          user.role === "Manager" || user.role === "Management"
-                      )
-                      .map((user) => ({
-                        label: `${user.name} (${user.role})`,
-                        value: user._id,
-                      }))}
+                    options={managers.map((user) => ({
+                      label: `${user.name} (${user.role})`,
+                      value: user._id,
+                    }))}
                   />
 
                   {modalConfig.mode === "UPDATE" && (
@@ -438,12 +470,27 @@ function Teams() {
                     error={errors.teamLead}
                     disabled={isSubmitting}
                     placeholder="Select a team lead"
-                    options={users.map((user) => ({
+                    options={teamLeaders.map((user) => ({
                       label: user.name,
                       value: user._id,
                     }))}
                   />
                 </div>
+
+                <MultiSelectField
+                  label="Team Members"
+                  name="members"
+                  value={formData.members}
+                  onChange={handleInputChange}
+                  error={errors.members}
+                  disabled={isSubmitting}
+                  placeholder="Select team members"
+                  options={users.map((user) => ({
+                    label: `${user.name} (${user.employeeId}) - ${user.designation?.designationName || "N/A"} | ${user.department?.departmentName || "N/A"}`,
+                    chipLabel: user.name,
+                    value: user._id,
+                  }))}
+                />
 
                 <div className="pt-4">
                   <SubmitButton isSubmitting={isSubmitting}>
