@@ -9,8 +9,8 @@ export const createDesignationMiddleware = async (req, res, next) => {
   try {
     const schema = joi.object({
       designationName: joi.string().min(2).max(50).trim().required(),
-      designationCode: joi.string().min(5).max(50).trim().required(),
-      description: joi.string().min(10).max(255).trim().optional().allow(""),
+      designationCode: joi.string().length(6).trim().required(),
+      description: joi.string().min(10).max(1000).trim().optional().allow(""),
     });
 
     const { error } = schema.validate(req.body);
@@ -38,8 +38,8 @@ export const updateDesignationMiddleware = async (req, res, next) => {
   try {
     const schema = joi.object({
       designationName: joi.string().min(2).max(50).trim().optional().allow(""),
-      designationCode: joi.string().min(5).max(50).trim().optional().allow(""),
-      description: joi.string().min(10).max(255).trim().optional().allow(""),
+      designationCode: joi.string().length(6).trim().optional().allow(""),
+      description: joi.string().min(10).max(1000).trim().optional().allow(""),
     });
 
     const { error } = schema.validate(req.body);

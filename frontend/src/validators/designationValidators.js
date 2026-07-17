@@ -1,24 +1,23 @@
-// Validates a single field for Department Creation
-export const validateDepartmentField = (name, value) => {
+export const validateDesignationField = (name, value) => {
   let error = "";
 
   switch (name) {
-    case "departmentName":
+    case "designationName":
       if (!value.trim()) {
-        error = '"departmentName" is required';
+        error = '"designationName" is required';
       } else if (value.trim().length < 2) {
-        error = '"departmentName" length must be at least 2 characters long';
+        error = '"designationName" length must be at least 2 characters long';
       } else if (value.trim().length > 50) {
         error =
-          '"departmentName" length must be less than or equal to 50 characters long';
+          '"designationName" length must be less than or equal to 50 characters long';
       }
       break;
 
-    case "departmentCode":
+    case "designationCode":
       if (!value.trim()) {
-        error = '"departmentCode" is required';
+        error = '"designationCode" is required';
       } else if (value.trim().length !== 6) {
-        error = '"departmentCode" length must be exactly 6 characters long';
+        error = '"designationCode" length must be exactly 6 characters long';
       }
       break;
 
@@ -33,12 +32,6 @@ export const validateDepartmentField = (name, value) => {
       }
       break;
 
-    case "status":
-      if (value && value !== "ACTIVE" && value !== "INACTIVE") {
-        error = '"status" must be [ACTIVE, INACTIVE]';
-      }
-      break;
-
     default:
       break;
   }
@@ -46,12 +39,11 @@ export const validateDepartmentField = (name, value) => {
   return error;
 };
 
-// Validates the entire Department form
-export const validateDepartmentForm = (formData) => {
+export const validateDesignationForm = (formData) => {
   const errors = {};
 
   Object.keys(formData).forEach((key) => {
-    const error = validateDepartmentField(key, formData[key]);
+    const error = validateDesignationField(key, formData[key]);
     if (error) {
       errors[key] = error;
     }

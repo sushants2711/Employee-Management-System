@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { Users, ShieldCheck, Sparkles, LayoutDashboard } from "lucide-react";
+import { Users, ShieldCheck, Sparkles } from "lucide-react";
 import PortalCard from "../components/PortalCard";
 import { useAuth } from "../context/AuthContext";
 
@@ -35,9 +35,7 @@ function Home() {
             to="/home"
             className="group flex flex-col items-center justify-center gap-4 p-8 bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 hover:shadow-md hover:border-ems-primary/50 dark:hover:border-ems-primary-dark/50 transition-all duration-300"
           >
-            <div className="w-16 h-16 rounded-full bg-ems-primary/10 dark:bg-ems-primary-dark/10 flex items-center justify-center text-ems-primary dark:text-ems-primary-dark group-hover:scale-110 transition-transform duration-300">
-              <LayoutDashboard className="w-8 h-8" />
-            </div>
+            <div className="w-16 h-16 rounded-full bg-ems-primary/10 dark:bg-ems-primary-dark/10 flex items-center justify-center text-ems-primary dark:text-ems-primary-dark group-hover:scale-110 transition-transform duration-300"></div>
             <div className="text-center">
               <h2 className="text-xl font-semibold text-slate-900 dark:text-white mb-2">
                 Continue to Dashboard

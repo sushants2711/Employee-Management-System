@@ -16,6 +16,16 @@ const designationSchema = new mongoose.Schema(
       type: String,
       default: null,
     },
+    department: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Department",
+      required: true,
+    },
+    status: {
+      type: String,
+      enum: ["ACTIVE", "INACTIVE"],
+      default: "ACTIVE",
+    },
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
