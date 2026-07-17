@@ -189,3 +189,30 @@ export const deleteTheDepartmentByIdController = async (req, res) => {
     );
   }
 };
+
+// get all active
+export const getAllActiveDepartmentController = async (req, res) => {
+  try {
+    const allDepartments = await departmentModel.find({ status: "ACTIVE" });
+
+    if (
+      !allDepartments ||
+      allDepartments.length === 0 ||
+      !Array.isArray(allDepartments)
+    ) {
+      return notFoundResponse(res, "No active department found");
+    }
+
+    return successResponse(
+      res,
+      "Active departments fetched successfully",
+      allDepartments
+    );
+  } catch (error) {
+    return internalServerErrorResponse(
+      res,
+      "Internal Server Error",
+      error.message
+    );
+  }
+};

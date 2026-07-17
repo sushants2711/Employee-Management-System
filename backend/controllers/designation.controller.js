@@ -222,3 +222,30 @@ export const deleteDesignationController = async (req, res) => {
     );
   }
 };
+
+// get all active designation controllers
+export const getAllActiveDesignationController = async (req, res) => {
+  try {
+    const allDesignation = await designationModel.find({ status: "ACTIVE" });
+
+    if (
+      !allDesignation ||
+      allDesignation.length === 0 ||
+      !Array.isArray(allDesignation)
+    ) {
+      return notFoundResponse(res, "No active designation found");
+    }
+
+    return successResponse(
+      res,
+      "Active designations fetched successfully",
+      allDesignation
+    );
+  } catch (error) {
+    return internalServerErrorResponse(
+      res,
+      "Internal Server Error",
+      error.message
+    );
+  }
+};

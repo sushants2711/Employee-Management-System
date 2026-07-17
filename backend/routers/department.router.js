@@ -4,6 +4,7 @@ import { verifyManagement } from "../utils/verify.management.js";
 import {
   createDepartmentController,
   deleteTheDepartmentByIdController,
+  getAllActiveDepartmentController,
   getAllDepartmentController,
   getSingleDepartmentController,
   updateTheDepartmentController,
@@ -42,5 +43,9 @@ departmentRouter
 departmentRouter
   .route("/delete-department/:id")
   .delete(verifyCookie, verifyManagement, deleteTheDepartmentByIdController);
+
+departmentRouter
+  .route("/all-active")
+  .get(verifyCookie, getAllActiveDepartmentController);
 
 export default departmentRouter;
