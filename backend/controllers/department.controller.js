@@ -11,13 +11,9 @@ import { verifyMongoDBId } from "../utils/verifyMongoId.js";
 // create a department
 export const createDepartmentController = async (req, res) => {
   try {
-    const loggedInUser = req.user._id;
+    const loggedInUser = req.user;
 
     const { departmentName, departmentCode, description } = req.body;
-
-    const isValid = verifyMongoDBId(loggedInUser, res);
-
-    if (isValid !== true) return isValid;
 
     const departmentNameExist = await departmentModel.findOne({
       departmentName,
@@ -35,7 +31,7 @@ export const createDepartmentController = async (req, res) => {
       departmentName,
       departmentCode,
       description: description,
-      createdBy: loggedInUser,
+      createdBy: loggedInUser._id,
     });
 
     const saveData = await department.save();
@@ -91,7 +87,8 @@ export const getSingleDepartmentController = async (req, res) => {
     const { id } = req.params;
 
     const isValid = verifyMongoDBId(id, res);
-    if (isValid !== true) return isValid;
+
+    if (!isValid) return isValid;
 
     const singleDepartment = await departmentModel.findById(id);
 
@@ -117,12 +114,15 @@ export const getSingleDepartmentController = async (req, res) => {
 // fix the api
 export const updateTheDepartmentController = async (req, res) => {
   try {
+    const loggedInUser = req.user;
+
     const { id } = req.params;
 
     const { departmentName, departmentCode, description, status } = req.body;
 
     const isValid = verifyMongoDBId(id, res);
-    if (isValid !== true) return isValid;
+
+    if (!isValid) return isValid;
 
     const singleDepartment = await departmentModel.findById(id);
 
@@ -135,6 +135,7 @@ export const updateTheDepartmentController = async (req, res) => {
       departmentCode: departmentCode ?? singleDepartment.departmentCode,
       description: description ?? singleDepartment.description,
       status: status ?? singleDepartment.status,
+      createdBy: loggedInUser._id ?? singleDepartment.createdBy,
     };
 
     const updatedDepartment = await departmentModel.findByIdAndUpdate(
@@ -168,7 +169,8 @@ export const deleteTheDepartmentByIdController = async (req, res) => {
     const { id } = req.params;
 
     const isValid = verifyMongoDBId(id, res);
-    if (isValid !== true) return isValid;
+
+    if (!isValid) return isValid;
 
     const singleDepartment = await departmentModel.findById(id);
 
