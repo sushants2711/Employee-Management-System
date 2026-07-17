@@ -29,10 +29,10 @@ import {
   otpController,
   resetPasswordController,
   signupManagementController,
-  singleUserDetailsController,
   updatePasswordController,
   updatePasswordFirstTimeController,
   updateProfileManagerController,
+  getLoggedInUserDetailsController,
   updateTheProfileImageController,
   updateTheRoleController,
   updateTheStatusController,
@@ -41,6 +41,7 @@ import { verifyCookie } from "../utils/verify.cookie.js";
 import { verifyManagement } from "../utils/verify.management.js";
 import { verifyManagerOrManagement } from "../utils/verify.managerOrManagement.js";
 import { verifyEmployeeOrManager } from "../utils/verify.employeeOrManager.js";
+import { uploadEmployeeImage } from "../config/multer.js";
 
 const userRouter = express.Router();
 
@@ -106,12 +107,18 @@ userRouter
   );
 
 // get single user details for user
-userRouter.route("/single-user").get(verifyCookie, singleUserDetailsController);
+userRouter
+  .route("/single-user")
+  .get(verifyCookie, getLoggedInUserDetailsController);
 
 // update the profile image controller for every user
 userRouter
   .route("/update-profile-image")
-  .put(verifyCookie, updateTheProfileImageController);
+  .put(
+    verifyCookie,
+    uploadEmployeeImage.single("image"),
+    updateTheProfileImageController
+  );
 
 // for management only specific routes
 

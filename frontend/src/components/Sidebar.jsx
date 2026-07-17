@@ -1,4 +1,4 @@
-import { NavLink } from "react-router-dom";
+import { NavLink, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { LogOut } from "lucide-react";
 import { apiClient } from "../api/apiClient";
@@ -73,7 +73,10 @@ function Sidebar() {
       </div>
 
       <div className="p-4 border-t border-slate-200 dark:border-slate-800">
-        <div className="flex items-center gap-3 px-3 py-2 mb-2">
+        <Link
+          to="/home/profile"
+          className="flex items-center gap-3 px-3 py-2 mb-2 hover:bg-slate-50 dark:hover:bg-slate-800/50 rounded-xl transition-colors cursor-pointer"
+        >
           <div className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-600 dark:text-slate-300 font-bold text-sm">
             {user?.name?.charAt(0).toUpperCase()}
           </div>
@@ -85,7 +88,7 @@ function Sidebar() {
               {user?.role}
             </p>
           </div>
-        </div>
+        </Link>
 
         <button
           onClick={handleLogout}

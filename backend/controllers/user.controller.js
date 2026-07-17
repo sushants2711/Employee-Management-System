@@ -1161,22 +1161,30 @@ export const updateProfileManagerController = async (req, res) => {
 
     const { password, teamName, designation, department } = req.body;
 
-    const teamExist = await teamModel.findById(teamName);
-    const designationExist = await designationModel.findById(designation);
-    const departmentExist = await departmentModel.findById(department);
-
-    if (!teamExist || !designationExist || !departmentExist) {
-      return badRequestResponse(res, "Invalid Data");
-    }
-
     if (password) {
       const hashedPassword = await hashPassword(password);
       loggedInUser.password = hashedPassword;
     }
 
-    if (teamName) loggedInUser.teamName = teamName;
-    if (designation) loggedInUser.designation = designation;
-    if (department) loggedInUser.department = department;
+    if (teamName) {
+      const teamExist = await teamModel.findById(teamName);
+      if (!teamExist) return badRequestResponse(res, "Invalid Team");
+      loggedInUser.teamName = teamName;
+    }
+
+    if (designation) {
+      const designationExist = await designationModel.findById(designation);
+      if (!designationExist)
+        return badRequestResponse(res, "Invalid Designation");
+      loggedInUser.designation = designation;
+    }
+
+    if (department) {
+      const departmentExist = await departmentModel.findById(department);
+      if (!departmentExist)
+        return badRequestResponse(res, "Invalid Department");
+      loggedInUser.department = department;
+    }
 
     const savedData = await loggedInUser.save();
 
@@ -1188,6 +1196,34 @@ export const updateProfileManagerController = async (req, res) => {
       "Profile updated successfully",
       dataSendToClient
     );
+  } catch (error) {
+    return internalServerErrorResponse(
+      res,
+      "Internal Server Error",
+      error.message
+    );
+  }
+};
+
+// get loggedin user details
+export const getLoggedInUserDetailsController = async (req, res) => {
+  try {
+    const loggedInUser = req.user;
+
+    const userExist = await userModel
+      .findById(loggedInUser._id)
+      .populate("teamName", "teamName")
+      .populate("designation", "designationName")
+      .populate("department", "departmentName");
+
+    if (!userExist) {
+      return notFoundResponse(res, "User not found");
+    }
+
+    const dataSendToClient = userExist.toObject();
+    delete dataSendToClient.password;
+
+    return successResponse(res, "User fetched successfully", dataSendToClient);
   } catch (error) {
     return internalServerErrorResponse(
       res,

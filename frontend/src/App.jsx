@@ -14,6 +14,7 @@ import Departments from "./pages/Departments";
 import Designations from "./pages/Designations";
 import Teams from "./pages/Teams";
 import Users from "./pages/Users";
+import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
 import DashboardLayout from "./layouts/DashboardLayout";
 import ScrollToTop from "./components/ScrollToTop";
@@ -114,6 +115,7 @@ function App() {
                 <Route path="designations" element={<Designations />} />
                 <Route path="teams" element={<Teams />} />
                 <Route path="users" element={<Users />} />
+                <Route path="profile" element={<Profile />} />
               </Route>
               <Route path="*" element={<NotFound />} />
             </Routes>

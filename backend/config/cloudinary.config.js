@@ -1,12 +1,10 @@
-import cloudinaryModule from "cloudinary";
-import CloudinaryStorage from "multer-storage-cloudinary";
+import { v2 as cloudinary } from "cloudinary";
+import { CloudinaryStorage } from "multer-storage-cloudinary";
 import {
   CLOUDINARY_CLOUD_NAME,
   CLOUDINARY_API_KEY,
   CLOUDINARY_API_SECRET,
 } from "./constant.js";
-
-const cloudinary = cloudinaryModule.v2;
 
 cloudinary.config({
   cloud_name: CLOUDINARY_CLOUD_NAME,

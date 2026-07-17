@@ -31,3 +31,9 @@ export const deleteDepartment = async (id) => {
     method: "DELETE",
   });
 };
+
+export const getAllActiveDepartments = async () => {
+  return await apiClient("/department/all-active", {
+    method: "GET",
+  });
+};

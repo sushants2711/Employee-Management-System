@@ -31,3 +31,9 @@ export const deleteDesignation = async (id) => {
     method: "DELETE",
   });
 };
+
+export const getAllActiveDesignations = async () => {
+  return await apiClient("/designation/all-active", {
+    method: "GET",
+  });
+};

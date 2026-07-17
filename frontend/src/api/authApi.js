@@ -6,6 +6,13 @@ export const checkManagementLimit = async () => {
   });
 };
 
+export const updateManagementProfile = async (profileData) => {
+  return await apiClient("/user/update-profile-manager", {
+    method: "PUT",
+    body: JSON.stringify(profileData),
+  });
+};
+
 export const managementSignup = async (userData) => {
   return await apiClient("/user/manager-signup", {
     method: "POST",
@@ -44,5 +51,18 @@ export const createUserAccount = async (userData) => {
   return await apiClient("/user/create-account", {
     method: "POST",
     body: JSON.stringify(userData),
+  });
+};
+
+export const getSingleUser = async () => {
+  return await apiClient("/user/single-user", {
+    method: "GET",
+  });
+};
+
+export const updateProfileImage = async (formData) => {
+  return await apiClient("/user/update-profile-image", {
+    method: "PUT",
+    body: formData,
   });
 };

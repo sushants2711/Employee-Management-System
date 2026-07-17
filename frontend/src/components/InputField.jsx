@@ -31,7 +31,7 @@ const InputField = ({
           value={value}
           onChange={onChange}
           disabled={disabled}
-          className={`block w-full pl-10 ${isPassword ? "pr-10" : "pr-3"} py-3 border rounded-xl bg-slate-50 dark:bg-slate-900/50 text-ems-text-light dark:text-ems-text-dark focus:outline-none focus:ring-2 transition-colors disabled:opacity-50 ${
+          className={`block w-full ${Icon ? "pl-10" : "pl-4"} ${isPassword ? "pr-10" : "pr-4"} py-3 border rounded-xl bg-slate-50 dark:bg-slate-900/50 text-ems-text-light dark:text-ems-text-dark focus:outline-none focus:ring-2 transition-colors disabled:opacity-50 ${
             error
               ? "border-red-500 dark:border-red-500 focus:ring-red-500 dark:focus:ring-red-500"
               : "border-slate-200 dark:border-slate-700 focus:ring-ems-primary dark:focus:ring-ems-primary-dark"
