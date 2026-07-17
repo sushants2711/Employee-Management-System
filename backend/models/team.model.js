@@ -22,9 +22,15 @@ const teamSchema = new mongoose.Schema(
       type: String,
       default: null,
     },
-    isActive: {
-      type: Boolean,
-      default: true,
+    status: {
+      type: String,
+      enum: ["ACTIVE", "INACTIVE"],
+      default: "ACTIVE",
+    },
+    createdBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
     },
   },
   { timestamps: true, minimize: true }
