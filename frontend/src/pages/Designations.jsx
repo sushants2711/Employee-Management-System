@@ -6,13 +6,14 @@ import {
   updateDesignation,
   deleteDesignation,
 } from "../api/designationApi";
-import { getAllDepartments } from "../api/departmentApi";
+import { getAllActiveDepartments } from "../api/departmentApi";
 import { showSuccess, showError } from "../toastMessage/toastDeliver";
 import {
   validateDesignationField,
   validateDesignationForm,
 } from "../validators/designationValidators";
 import InputField from "../components/InputField";
+import SelectField from "../components/SelectField";
 import SubmitButton from "../components/SubmitButton";
 
 function Designations() {
@@ -43,7 +44,7 @@ function Designations() {
       setIsLoading(true);
       const [desigRes, deptRes] = await Promise.all([
         getAllDesignations(),
-        getAllDepartments(),
+        getAllActiveDepartments(),
       ]);
       setDesignations(desigRes.data || []);
       setDepartments(deptRes.data || []);
@@ -334,34 +335,19 @@ function Designations() {
                   placeholder="e.g. SWE-001"
                 />
 
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
-                    Department
-                  </label>
-                  <select
-                    name="department"
-                    value={formData.department}
-                    onChange={handleInputChange}
-                    disabled={isSubmitting}
-                    className={`w-full px-4 py-2.5 rounded-xl border ${
-                      errors.department
-                        ? "border-red-300 focus:ring-red-500 dark:border-red-500/50"
-                        : "border-slate-300 dark:border-slate-700 focus:ring-ems-primary"
-                    } bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:border-transparent transition-all`}
-                  >
-                    <option value="">Select a department</option>
-                    {departments.map((dept) => (
-                      <option key={dept._id} value={dept._id}>
-                        {dept.departmentName}
-                      </option>
-                    ))}
-                  </select>
-                  {errors.department && (
-                    <p className="mt-1.5 text-sm text-red-600 dark:text-red-400 font-medium">
-                      {errors.department}
-                    </p>
-                  )}
-                </div>
+                <SelectField
+                  label="Department"
+                  name="department"
+                  value={formData.department}
+                  onChange={handleInputChange}
+                  error={errors.department}
+                  disabled={isSubmitting}
+                  placeholder="Select a department"
+                  options={departments.map((dept) => ({
+                    label: dept.departmentName,
+                    value: dept._id,
+                  }))}
+                />
 
                 <div>
                   <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
@@ -388,21 +374,17 @@ function Designations() {
                 </div>
 
                 {modalConfig.mode === "UPDATE" && (
-                  <div>
-                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
-                      Status
-                    </label>
-                    <select
-                      name="status"
-                      value={formData.status}
-                      onChange={handleInputChange}
-                      disabled={isSubmitting}
-                      className="w-full px-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-ems-primary transition-all"
-                    >
-                      <option value="ACTIVE">Active</option>
-                      <option value="INACTIVE">Inactive</option>
-                    </select>
-                  </div>
+                  <SelectField
+                    label="Status"
+                    name="status"
+                    value={formData.status}
+                    onChange={handleInputChange}
+                    disabled={isSubmitting}
+                    options={[
+                      { label: "Active", value: "ACTIVE" },
+                      { label: "Inactive", value: "INACTIVE" },
+                    ]}
+                  />
                 )}
 
                 <div className="pt-2">

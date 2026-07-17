@@ -6,7 +6,7 @@ import {
   updateTeam,
   deleteTeam,
 } from "../api/teamApi";
-import { getAllDepartments } from "../api/departmentApi";
+import { getAllActiveDepartments } from "../api/departmentApi";
 import { getAllUsers } from "../api/authApi";
 import { showSuccess, showError } from "../toastMessage/toastDeliver";
 import {
@@ -14,6 +14,7 @@ import {
   validateTeamForm,
 } from "../validators/teamValidators";
 import InputField from "../components/InputField";
+import SelectField from "../components/SelectField";
 import SubmitButton from "../components/SubmitButton";
 
 function Teams() {
@@ -46,7 +47,7 @@ function Teams() {
       setIsLoading(true);
       const [teamsRes, deptRes, usersRes] = await Promise.all([
         getAllTeams(),
-        getAllDepartments(),
+        getAllActiveDepartments(),
         getAllUsers(),
       ]);
       setTeams(teamsRes.data || []);
@@ -345,7 +346,7 @@ function Teams() {
             ) : (
               <form
                 onSubmit={handleSubmit}
-                className="p-5 space-y-4 max-h-[70vh] overflow-y-auto"
+                className="p-5 space-y-6 max-h-[70vh] overflow-y-auto"
               >
                 <InputField
                   label="Team Name"
@@ -381,121 +382,70 @@ function Teams() {
                   )}
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
-                      Department
-                    </label>
-                    <select
-                      name="department"
-                      value={formData.department}
-                      onChange={handleInputChange}
-                      disabled={isSubmitting}
-                      className={`w-full px-4 py-2.5 rounded-xl border ${
-                        errors.department
-                          ? "border-red-300 focus:ring-red-500 dark:border-red-500/50"
-                          : "border-slate-300 dark:border-slate-700 focus:ring-ems-primary"
-                      } bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:border-transparent transition-all`}
-                    >
-                      <option value="">Select a department</option>
-                      {departments.map((dept) => (
-                        <option key={dept._id} value={dept._id}>
-                          {dept.departmentName}
-                        </option>
-                      ))}
-                    </select>
-                    {errors.department && (
-                      <p className="mt-1.5 text-sm text-red-600 dark:text-red-400 font-medium">
-                        {errors.department}
-                      </p>
-                    )}
-                  </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                  <SelectField
+                    label="Department"
+                    name="department"
+                    value={formData.department}
+                    onChange={handleInputChange}
+                    error={errors.department}
+                    disabled={isSubmitting}
+                    placeholder="Select a department"
+                    options={departments.map((dept) => ({
+                      label: dept.departmentName,
+                      value: dept._id,
+                    }))}
+                  />
+
+                  <SelectField
+                    label="Manager"
+                    name="manager"
+                    value={formData.manager}
+                    onChange={handleInputChange}
+                    error={errors.manager}
+                    disabled={isSubmitting}
+                    placeholder="Select a manager"
+                    options={users
+                      .filter(
+                        (user) =>
+                          user.role === "Manager" || user.role === "Management"
+                      )
+                      .map((user) => ({
+                        label: `${user.name} (${user.role})`,
+                        value: user._id,
+                      }))}
+                  />
 
                   {modalConfig.mode === "UPDATE" && (
-                    <div>
-                      <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
-                        Status
-                      </label>
-                      <select
-                        name="status"
-                        value={formData.status}
-                        onChange={handleInputChange}
-                        disabled={isSubmitting}
-                        className="w-full px-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-ems-primary transition-all"
-                      >
-                        <option value="ACTIVE">Active</option>
-                        <option value="INACTIVE">Inactive</option>
-                      </select>
-                    </div>
+                    <SelectField
+                      label="Status"
+                      name="status"
+                      value={formData.status}
+                      onChange={handleInputChange}
+                      disabled={isSubmitting}
+                      options={[
+                        { label: "Active", value: "ACTIVE" },
+                        { label: "Inactive", value: "INACTIVE" },
+                      ]}
+                    />
                   )}
 
-                  <div>
-                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
-                      Manager
-                    </label>
-                    <select
-                      name="manager"
-                      value={formData.manager}
-                      onChange={handleInputChange}
-                      disabled={isSubmitting}
-                      className={`w-full px-4 py-2.5 rounded-xl border ${
-                        errors.manager
-                          ? "border-red-300 focus:ring-red-500 dark:border-red-500/50"
-                          : "border-slate-300 dark:border-slate-700 focus:ring-ems-primary"
-                      } bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:border-transparent transition-all`}
-                    >
-                      <option value="">Select a manager</option>
-                      {users
-                        .filter(
-                          (user) =>
-                            user.role === "Manager" ||
-                            user.role === "Management"
-                        )
-                        .map((user) => (
-                          <option key={user._id} value={user._id}>
-                            {user.name} ({user.role})
-                          </option>
-                        ))}
-                    </select>
-                    {errors.manager && (
-                      <p className="mt-1.5 text-sm text-red-600 dark:text-red-400 font-medium">
-                        {errors.manager}
-                      </p>
-                    )}
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
-                      Team Lead{" "}
-                      <span className="text-slate-400">(Optional)</span>
-                    </label>
-                    <select
-                      name="teamLead"
-                      value={formData.teamLead}
-                      onChange={handleInputChange}
-                      disabled={isSubmitting}
-                      className={`w-full px-4 py-2.5 rounded-xl border ${
-                        errors.teamLead
-                          ? "border-red-300 focus:ring-red-500 dark:border-red-500/50"
-                          : "border-slate-300 dark:border-slate-700 focus:ring-ems-primary"
-                      } bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:border-transparent transition-all`}
-                    >
-                      <option value="">Select a team lead</option>
-                      {users.map((user) => (
-                        <option key={user._id} value={user._id}>
-                          {user.name}
-                        </option>
-                      ))}
-                    </select>
-                    {errors.teamLead && (
-                      <p className="mt-1.5 text-sm text-red-600 dark:text-red-400 font-medium">
-                        {errors.teamLead}
-                      </p>
-                    )}
-                  </div>
+                  <SelectField
+                    label="Team Lead (Optional)"
+                    name="teamLead"
+                    value={formData.teamLead}
+                    onChange={handleInputChange}
+                    error={errors.teamLead}
+                    disabled={isSubmitting}
+                    placeholder="Select a team lead"
+                    options={users.map((user) => ({
+                      label: user.name,
+                      value: user._id,
+                    }))}
+                  />
                 </div>
 
-                <div className="pt-2">
+                <div className="pt-4">
                   <SubmitButton isSubmitting={isSubmitting}>
                     {modalConfig.mode === "CREATE"
                       ? "Create Team"

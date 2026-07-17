@@ -19,6 +19,7 @@ import { getAllActiveDepartments } from "../api/departmentApi";
 import { getAllActiveDesignations } from "../api/designationApi";
 import { showSuccess, showError } from "../toastMessage/toastDeliver";
 import InputField from "../components/InputField";
+import SelectField from "../components/SelectField";
 import SubmitButton from "../components/SubmitButton";
 import { useAuth } from "../context/AuthContext";
 
@@ -282,64 +283,43 @@ function Profile() {
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {/* Department Select */}
-                  <div>
-                    <label className="block text-sm font-medium text-ems-text-light dark:text-ems-text-dark mb-2">
-                      Department
-                    </label>
-                    <select
-                      name="department"
-                      value={formData.department}
-                      onChange={handleInputChange}
-                      className="block w-full px-4 py-3 border border-slate-200 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-900/50 text-ems-text-light dark:text-ems-text-dark focus:outline-none focus:ring-2 focus:ring-ems-primary dark:focus:ring-ems-primary-dark transition-colors"
-                    >
-                      <option value="">Select Department</option>
-                      {departments.map((dept) => (
-                        <option key={dept._id} value={dept._id}>
-                          {dept.departmentName}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
+                  <SelectField
+                    label="Department"
+                    name="department"
+                    value={formData.department}
+                    onChange={handleInputChange}
+                    placeholder="Select Department"
+                    options={departments.map((dept) => ({
+                      label: dept.departmentName,
+                      value: dept._id,
+                    }))}
+                  />
 
                   {/* Designation Select */}
-                  <div>
-                    <label className="block text-sm font-medium text-ems-text-light dark:text-ems-text-dark mb-2">
-                      Designation
-                    </label>
-                    <select
-                      name="designation"
-                      value={formData.designation}
-                      onChange={handleInputChange}
-                      className="block w-full px-4 py-3 border border-slate-200 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-900/50 text-ems-text-light dark:text-ems-text-dark focus:outline-none focus:ring-2 focus:ring-ems-primary dark:focus:ring-ems-primary-dark transition-colors"
-                    >
-                      <option value="">Select Designation</option>
-                      {designations.map((desig) => (
-                        <option key={desig._id} value={desig._id}>
-                          {desig.designationName}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
+                  <SelectField
+                    label="Designation"
+                    name="designation"
+                    value={formData.designation}
+                    onChange={handleInputChange}
+                    placeholder="Select Designation"
+                    options={designations.map((desig) => ({
+                      label: desig.designationName,
+                      value: desig._id,
+                    }))}
+                  />
 
                   {/* Team Select */}
-                  <div>
-                    <label className="block text-sm font-medium text-ems-text-light dark:text-ems-text-dark mb-2">
-                      Team
-                    </label>
-                    <select
-                      name="teamName"
-                      value={formData.teamName}
-                      onChange={handleInputChange}
-                      className="block w-full px-4 py-3 border border-slate-200 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-900/50 text-ems-text-light dark:text-ems-text-dark focus:outline-none focus:ring-2 focus:ring-ems-primary dark:focus:ring-ems-primary-dark transition-colors"
-                    >
-                      <option value="">Select Team</option>
-                      {teams.map((team) => (
-                        <option key={team._id} value={team._id}>
-                          {team.teamName}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
+                  <SelectField
+                    label="Team"
+                    name="teamName"
+                    value={formData.teamName}
+                    onChange={handleInputChange}
+                    placeholder="Select Team"
+                    options={teams.map((team) => ({
+                      label: team.teamName,
+                      value: team._id,
+                    }))}
+                  />
 
                   {/* Password Update */}
                   <div>

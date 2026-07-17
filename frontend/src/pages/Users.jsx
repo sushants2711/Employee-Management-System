@@ -1,14 +1,15 @@
 import { useState, useEffect, useCallback } from "react";
 import { Plus, X, Eye } from "lucide-react";
 import { getAllUsers, createUserAccount } from "../api/authApi";
-import { getAllDepartments } from "../api/departmentApi";
-import { getAllDesignations } from "../api/designationApi";
+import { getAllActiveDepartments } from "../api/departmentApi";
+import { getAllActiveDesignations } from "../api/designationApi";
 import { showSuccess, showError } from "../toastMessage/toastDeliver";
 import {
   validateUserManagementField,
   validateUserManagementForm,
 } from "../validators/userManagementValidators";
 import InputField from "../components/InputField";
+import SelectField from "../components/SelectField";
 import SubmitButton from "../components/SubmitButton";
 
 function Users() {
@@ -42,8 +43,8 @@ function Users() {
       setIsLoading(true);
       const [usersRes, deptRes, desigRes] = await Promise.all([
         getAllUsers(),
-        getAllDepartments(),
-        getAllDesignations(),
+        getAllActiveDepartments(),
+        getAllActiveDesignations(),
       ]);
       setUsers(usersRes.data || []);
       setDepartments(deptRes.data || []);
@@ -318,9 +319,9 @@ function Users() {
             ) : (
               <form
                 onSubmit={handleSubmit}
-                className="p-5 space-y-4 max-h-[70vh] overflow-y-auto"
+                className="p-5 space-y-6 max-h-[70vh] overflow-y-auto"
               >
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                   <InputField
                     label="Name"
                     name="name"
@@ -369,87 +370,45 @@ function Users() {
                     disabled={isSubmitting}
                     placeholder="1234567890"
                   />
-                  <div>
-                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
-                      Role
-                    </label>
-                    <select
-                      name="role"
-                      value={formData.role}
-                      onChange={handleInputChange}
-                      disabled={isSubmitting}
-                      className={`w-full px-4 py-2.5 rounded-xl border ${
-                        errors.role
-                          ? "border-red-300 focus:ring-red-500 dark:border-red-500/50"
-                          : "border-slate-300 dark:border-slate-700 focus:ring-ems-primary"
-                      } bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:border-transparent transition-all`}
-                    >
-                      <option value="Employee">Employee</option>
-                      <option value="Manager">Manager</option>
-                      <option value="Team Leader">Team Leader</option>
-                    </select>
-                    {errors.role && (
-                      <p className="mt-1.5 text-sm text-red-600 dark:text-red-400 font-medium">
-                        {errors.role}
-                      </p>
-                    )}
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
-                      Department
-                    </label>
-                    <select
-                      name="department"
-                      value={formData.department}
-                      onChange={handleInputChange}
-                      disabled={isSubmitting}
-                      className={`w-full px-4 py-2.5 rounded-xl border ${
-                        errors.department
-                          ? "border-red-300 focus:ring-red-500 dark:border-red-500/50"
-                          : "border-slate-300 dark:border-slate-700 focus:ring-ems-primary"
-                      } bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:border-transparent transition-all`}
-                    >
-                      <option value="">Select a department</option>
-                      {departments.map((dept) => (
-                        <option key={dept._id} value={dept._id}>
-                          {dept.departmentName}
-                        </option>
-                      ))}
-                    </select>
-                    {errors.department && (
-                      <p className="mt-1.5 text-sm text-red-600 dark:text-red-400 font-medium">
-                        {errors.department}
-                      </p>
-                    )}
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
-                      Designation
-                    </label>
-                    <select
-                      name="designation"
-                      value={formData.designation}
-                      onChange={handleInputChange}
-                      disabled={isSubmitting}
-                      className={`w-full px-4 py-2.5 rounded-xl border ${
-                        errors.designation
-                          ? "border-red-300 focus:ring-red-500 dark:border-red-500/50"
-                          : "border-slate-300 dark:border-slate-700 focus:ring-ems-primary"
-                      } bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:border-transparent transition-all`}
-                    >
-                      <option value="">Select a designation</option>
-                      {designations.map((desig) => (
-                        <option key={desig._id} value={desig._id}>
-                          {desig.designationName}
-                        </option>
-                      ))}
-                    </select>
-                    {errors.designation && (
-                      <p className="mt-1.5 text-sm text-red-600 dark:text-red-400 font-medium">
-                        {errors.designation}
-                      </p>
-                    )}
-                  </div>
+                  <SelectField
+                    label="Role"
+                    name="role"
+                    value={formData.role}
+                    onChange={handleInputChange}
+                    error={errors.role}
+                    disabled={isSubmitting}
+                    options={[
+                      { label: "Employee", value: "Employee" },
+                      { label: "Manager", value: "Manager" },
+                      { label: "Team Leader", value: "Team Leader" },
+                    ]}
+                  />
+                  <SelectField
+                    label="Department"
+                    name="department"
+                    value={formData.department}
+                    onChange={handleInputChange}
+                    error={errors.department}
+                    disabled={isSubmitting}
+                    placeholder="Select a department"
+                    options={departments.map((dept) => ({
+                      label: dept.departmentName,
+                      value: dept._id,
+                    }))}
+                  />
+                  <SelectField
+                    label="Designation"
+                    name="designation"
+                    value={formData.designation}
+                    onChange={handleInputChange}
+                    error={errors.designation}
+                    disabled={isSubmitting}
+                    placeholder="Select a designation"
+                    options={designations.map((desig) => ({
+                      label: desig.designationName,
+                      value: desig._id,
+                    }))}
+                  />
                   <div className="sm:col-span-2">
                     <InputField
                       label="Team Name"

@@ -12,6 +12,7 @@ import {
   validateDepartmentForm,
 } from "../validators/departmentValidators";
 import InputField from "../components/InputField";
+import SelectField from "../components/SelectField";
 import SubmitButton from "../components/SubmitButton";
 
 function Departments() {
@@ -337,21 +338,17 @@ function Departments() {
                 </div>
 
                 {modalConfig.mode === "UPDATE" && (
-                  <div>
-                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
-                      Status
-                    </label>
-                    <select
-                      name="status"
-                      value={formData.status}
-                      onChange={handleInputChange}
-                      disabled={isSubmitting}
-                      className="w-full px-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-ems-primary transition-all"
-                    >
-                      <option value="ACTIVE">Active</option>
-                      <option value="INACTIVE">Inactive</option>
-                    </select>
-                  </div>
+                  <SelectField
+                    label="Status"
+                    name="status"
+                    value={formData.status}
+                    onChange={handleInputChange}
+                    disabled={isSubmitting}
+                    options={[
+                      { label: "Active", value: "ACTIVE" },
+                      { label: "Inactive", value: "INACTIVE" },
+                    ]}
+                  />
                 )}
 
                 <div className="pt-2">
