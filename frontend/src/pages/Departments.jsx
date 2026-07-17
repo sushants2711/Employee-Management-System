@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { Plus, X, Edit2, Trash2 } from "lucide-react";
+import { Plus, X, Edit2, Trash2, Eye } from "lucide-react";
 import {
   createDepartment,
   getAllDepartments,
@@ -23,6 +23,7 @@ function Departments() {
     deptId: null,
   });
   const [deleteConfirmId, setDeleteConfirmId] = useState(null);
+  const [selectedItem, setSelectedItem] = useState(null);
 
   // Form State
   const [formData, setFormData] = useState({
@@ -67,6 +68,12 @@ function Departments() {
       description: "",
       status: "ACTIVE",
     });
+    setErrors({});
+  };
+
+  const openViewModal = (dept) => {
+    setModalConfig({ isOpen: true, mode: "VIEW", deptId: dept._id });
+    setSelectedItem(dept);
     setErrors({});
   };
 
@@ -195,6 +202,13 @@ function Departments() {
                 </span>
                 <div className="flex items-center gap-2">
                   <button
+                    onClick={() => openViewModal(dept)}
+                    className="p-1.5 hover:bg-green-50 hover:text-green-600 dark:hover:bg-green-900/30 dark:hover:text-green-400 rounded-lg transition-colors cursor-pointer"
+                    title="View Details"
+                  >
+                    <Eye className="w-4 h-4" />
+                  </button>
+                  <button
                     onClick={() => openUpdateModal(dept)}
                     className="p-1.5 hover:bg-blue-50 hover:text-blue-600 dark:hover:bg-blue-900/30 dark:hover:text-blue-400 rounded-lg transition-colors cursor-pointer"
                     title="Edit Department"
@@ -223,7 +237,9 @@ function Departments() {
               <h2 className="text-lg font-bold text-slate-900 dark:text-white">
                 {modalConfig.mode === "CREATE"
                   ? "Create Department"
-                  : "Edit Department"}
+                  : modalConfig.mode === "UPDATE"
+                    ? "Edit Department"
+                    : "Department Details"}
               </h2>
               <button
                 onClick={() =>
@@ -235,74 +251,118 @@ function Departments() {
               </button>
             </div>
 
-            <form onSubmit={handleSubmit} className="p-5 space-y-5">
-              <InputField
-                label="Department Name"
-                name="departmentName"
-                value={formData.departmentName}
-                onChange={handleInputChange}
-                error={errors.departmentName}
-                disabled={isSubmitting}
-                placeholder="e.g. Engineering"
-              />
-              <InputField
-                label="Department Code"
-                name="departmentCode"
-                value={formData.departmentCode}
-                onChange={handleInputChange}
-                error={errors.departmentCode}
-                disabled={isSubmitting}
-                placeholder="e.g. ENG-001"
-              />
-              <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
-                  Description <span className="text-slate-400">(Optional)</span>
-                </label>
-                <textarea
-                  name="description"
-                  value={formData.description}
-                  onChange={handleInputChange}
-                  disabled={isSubmitting}
-                  className={`w-full px-4 py-2.5 rounded-xl border ${
-                    errors.description
-                      ? "border-red-300 focus:ring-red-500 dark:border-red-500/50"
-                      : "border-slate-300 dark:border-slate-700 focus:ring-ems-primary"
-                  } bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:border-transparent transition-all resize-none h-24`}
-                  placeholder="Briefly describe the department's purpose..."
-                />
-                {errors.description && (
-                  <p className="mt-1.5 text-sm text-red-600 dark:text-red-400 font-medium">
-                    {errors.description}
-                  </p>
-                )}
-              </div>
-
-              {modalConfig.mode === "UPDATE" && (
+            {modalConfig.mode === "VIEW" && selectedItem ? (
+              <div className="p-5 space-y-5">
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
+                  <label className="block text-sm font-medium text-slate-500 dark:text-slate-400 mb-1">
+                    Department Name
+                  </label>
+                  <p className="text-slate-900 dark:text-white font-medium">
+                    {selectedItem.departmentName}
+                  </p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-500 dark:text-slate-400 mb-1">
+                    Department Code
+                  </label>
+                  <p className="font-mono text-slate-900 dark:text-white">
+                    {selectedItem.departmentCode}
+                  </p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-500 dark:text-slate-400 mb-1">
+                    Description
+                  </label>
+                  <p className="text-slate-900 dark:text-white">
+                    {selectedItem.description || "No description provided."}
+                  </p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-500 dark:text-slate-400 mb-1">
                     Status
                   </label>
-                  <select
-                    name="status"
-                    value={formData.status}
+                  <span
+                    className={`inline-flex px-2.5 py-1 text-xs font-medium rounded-full ${
+                      selectedItem.status === "ACTIVE"
+                        ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
+                        : "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
+                    }`}
+                  >
+                    {selectedItem.status}
+                  </span>
+                </div>
+              </div>
+            ) : (
+              <form onSubmit={handleSubmit} className="p-5 space-y-5">
+                <InputField
+                  label="Department Name"
+                  name="departmentName"
+                  value={formData.departmentName}
+                  onChange={handleInputChange}
+                  error={errors.departmentName}
+                  disabled={isSubmitting}
+                  placeholder="e.g. Engineering"
+                />
+                <InputField
+                  label="Department Code"
+                  name="departmentCode"
+                  value={formData.departmentCode}
+                  onChange={handleInputChange}
+                  error={errors.departmentCode}
+                  disabled={isSubmitting}
+                  placeholder="e.g. ENG-001"
+                />
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
+                    Description{" "}
+                    <span className="text-slate-400">(Optional)</span>
+                  </label>
+                  <textarea
+                    name="description"
+                    value={formData.description}
                     onChange={handleInputChange}
                     disabled={isSubmitting}
-                    className="w-full px-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-ems-primary transition-all"
-                  >
-                    <option value="ACTIVE">Active</option>
-                    <option value="INACTIVE">Inactive</option>
-                  </select>
+                    className={`w-full px-4 py-2.5 rounded-xl border ${
+                      errors.description
+                        ? "border-red-300 focus:ring-red-500 dark:border-red-500/50"
+                        : "border-slate-300 dark:border-slate-700 focus:ring-ems-primary"
+                    } bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:border-transparent transition-all resize-none h-24`}
+                    placeholder="Briefly describe the department's purpose..."
+                  />
+                  {errors.description && (
+                    <p className="mt-1.5 text-sm text-red-600 dark:text-red-400 font-medium">
+                      {errors.description}
+                    </p>
+                  )}
                 </div>
-              )}
 
-              <div className="pt-2">
-                <SubmitButton isSubmitting={isSubmitting}>
-                  {modalConfig.mode === "CREATE"
-                    ? "Create Department"
-                    : "Save Changes"}
-                </SubmitButton>
-              </div>
-            </form>
+                {modalConfig.mode === "UPDATE" && (
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
+                      Status
+                    </label>
+                    <select
+                      name="status"
+                      value={formData.status}
+                      onChange={handleInputChange}
+                      disabled={isSubmitting}
+                      className="w-full px-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-ems-primary transition-all"
+                    >
+                      <option value="ACTIVE">Active</option>
+                      <option value="INACTIVE">Inactive</option>
+                    </select>
+                  </div>
+                )}
+
+                <div className="pt-2">
+                  <SubmitButton isSubmitting={isSubmitting}>
+                    {modalConfig.mode === "CREATE"
+                      ? "Create Department"
+                      : "Save Changes"}
+                  </SubmitButton>
+                </div>
+              </form>
+            )}
           </div>
         </div>
       )}

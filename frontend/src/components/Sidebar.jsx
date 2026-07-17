@@ -27,6 +27,10 @@ function Sidebar() {
       name: "Designations",
       path: "/home/designations",
     });
+    navItems.push({
+      name: "Users",
+      path: "/home/users",
+    });
   }
 
   // Placeholder for future routes

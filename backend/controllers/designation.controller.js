@@ -19,7 +19,7 @@ export const createDesignationController = async (req, res) => {
 
     const isValid = verifyMongoDBId(department, res);
 
-    if (!isValid) return isValid;
+    if (isValid !== true) return;
 
     const departmentExist = await departmentModel.findById(department);
 
@@ -43,6 +43,7 @@ export const createDesignationController = async (req, res) => {
       designationName,
       designationCode,
       description,
+      department,
       createdBy: loggedInUser._id,
     });
 
@@ -146,7 +147,7 @@ export const updateDesignationController = async (req, res) => {
 
     const result = verifyMongoDBId(department, res);
 
-    if (!result) return result;
+    if (result !== true) return;
 
     const singleDesignation = await designationModel.findById(id);
 
