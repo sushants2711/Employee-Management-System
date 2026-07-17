@@ -1,75 +1,75 @@
 import { Link } from "react-router-dom";
-import { Users, ShieldCheck, ArrowRight } from "lucide-react";
+import { Users, ShieldCheck, Sparkles, LayoutDashboard } from "lucide-react";
+import PortalCard from "../components/PortalCard";
+import { useAuth } from "../context/AuthContext";
 
 function Home() {
+  const { user } = useAuth();
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen p-6 relative overflow-hidden">
-      {/* Background decorations */}
-      <div className="absolute top-[-20%] left-[-10%] w-96 h-96 bg-blue-500 opacity-10 dark:opacity-20 rounded-full blur-[100px] pointer-events-none"></div>
-      <div className="absolute bottom-[-20%] right-[-10%] w-96 h-96 bg-indigo-500 opacity-10 dark:opacity-20 rounded-full blur-[100px] pointer-events-none"></div>
+    <div className="flex flex-col items-center justify-center min-h-screen p-6 relative overflow-hidden bg-transparent">
+      <div className="text-center mb-16 relative z-10 max-w-4xl px-4 animate-fade-in-up">
+        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/50 dark:bg-slate-800/50 backdrop-blur-md border border-slate-200 dark:border-slate-700/50 mb-8 shadow-sm">
+          <Sparkles className="w-4 h-4 text-ems-primary dark:text-ems-primary-dark" />
+          <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
+            Welcome to the future of work
+          </span>
+        </div>
 
-      <div className="text-center mb-16 relative z-10 max-w-3xl mt-12">
-        <h1 className="text-[3rem] lg:text-[4rem] font-bold text-ems-text-light dark:text-ems-text-dark leading-tight mb-6 tracking-tight">
-          Enterprise{" "}
-          <span className="text-ems-primary dark:text-ems-primary-dark">
+        <h1 className="text-[3.5rem] lg:text-[5rem] font-extrabold text-slate-900 dark:text-white leading-[1.1] mb-6 tracking-tight">
+          Enterprise <br className="md:hidden" />
+          <span className="text-transparent bg-clip-text bg-gradient-to-r from-ems-primary via-purple-500 to-pink-500 dark:from-ems-primary-dark dark:via-purple-400 dark:to-pink-400">
             Workforce
           </span>{" "}
           Hub
         </h1>
-        <p className="text-lg lg:text-xl text-slate-600 dark:text-slate-300 font-medium">
-          Internal portal for employee management, analytics, and operational
-          tracking. Please select your designated access level.
+        <p className="text-lg lg:text-xl text-slate-600 dark:text-slate-300 font-medium max-w-2xl mx-auto leading-relaxed">
+          The central nervous system for your organization. Seamlessly manage
+          employees, analyze performance, and track operational metrics with
+          unparalleled clarity.
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full max-w-5xl relative z-10">
-        {/* Employee Card */}
-        <Link
-          to="/employee-login"
-          className="group relative flex flex-col p-8 lg:p-12 bg-white dark:bg-slate-800 rounded-3xl shadow-xl hover:shadow-2xl border border-slate-100 dark:border-slate-700/50 transition-all duration-300 transform hover:-translate-y-2 overflow-hidden"
-        >
-          <div className="absolute top-0 left-0 w-full h-2 bg-ems-primary"></div>
-          <div className="mb-8 p-4 bg-blue-50 dark:bg-blue-900/30 rounded-2xl w-fit group-hover:scale-110 transition-transform duration-300">
-            <Users className="w-12 h-12 text-ems-primary dark:text-ems-primary-dark" />
+      {user ? (
+        <div className="w-full max-w-md relative z-10 px-4 opacity-0 [animation:fade-in-up_0.8s_cubic-bezier(0.16,1,0.3,1)_0.2s_forwards]">
+          <Link
+            to="/home"
+            className="group flex flex-col items-center justify-center gap-4 p-8 bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 hover:shadow-md hover:border-ems-primary/50 dark:hover:border-ems-primary-dark/50 transition-all duration-300"
+          >
+            <div className="w-16 h-16 rounded-full bg-ems-primary/10 dark:bg-ems-primary-dark/10 flex items-center justify-center text-ems-primary dark:text-ems-primary-dark group-hover:scale-110 transition-transform duration-300">
+              <LayoutDashboard className="w-8 h-8" />
+            </div>
+            <div className="text-center">
+              <h2 className="text-xl font-semibold text-slate-900 dark:text-white mb-2">
+                Continue to Dashboard
+              </h2>
+              <p className="text-sm text-slate-500 dark:text-slate-400">
+                You are currently logged in as {user.name}
+              </p>
+            </div>
+          </Link>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full max-w-5xl relative z-10 px-4">
+          <div className="opacity-0 [animation:fade-in-up_0.8s_cubic-bezier(0.16,1,0.3,1)_0.2s_forwards]">
+            <PortalCard
+              to="/employee-login"
+              icon={Users}
+              title="Employee Portal"
+              description="Access your personalized dashboard. View schedules, manage leave requests, and track your growth seamlessly."
+              gradient="from-blue-500/10 to-cyan-500/10"
+            />
           </div>
-          <h2 className="text-2xl font-bold text-ems-text-light dark:text-ems-text-dark mb-4">
-            Employee Portal
-          </h2>
-          <p className="text-slate-500 dark:text-slate-400 mb-8 flex-grow leading-relaxed">
-            Access your personal dashboard to view schedules, submit leave
-            requests, and track your performance metrics securely.
-          </p>
-          <div className="flex items-center text-ems-primary dark:text-ems-primary-dark font-semibold group-hover:gap-3 gap-2 transition-all">
-            Continue to Login <ArrowRight className="w-5 h-5" />
+          <div className="opacity-0 [animation:fade-in-up_0.8s_cubic-bezier(0.16,1,0.3,1)_0.4s_forwards]">
+            <PortalCard
+              to="/management-login"
+              icon={ShieldCheck}
+              title="Management Portal"
+              description="Exclusive access for the leadership team. Oversee operations, approve workflows, and empower your personnel."
+              gradient="from-purple-500/10 to-pink-500/10"
+            />
           </div>
-        </Link>
-
-        {/* Management Card */}
-        <Link
-          to="/management-login"
-          className="group relative flex flex-col p-8 lg:p-12 bg-white dark:bg-slate-800 rounded-3xl shadow-xl hover:shadow-2xl border border-slate-100 dark:border-slate-700/50 transition-all duration-300 transform hover:-translate-y-2 overflow-hidden"
-        >
-          <div className="absolute top-0 left-0 w-full h-2 bg-indigo-600 dark:bg-indigo-500"></div>
-          <div className="mb-8 p-4 bg-indigo-50 dark:bg-indigo-900/30 rounded-2xl w-fit group-hover:scale-110 transition-transform duration-300">
-            <ShieldCheck className="w-12 h-12 text-indigo-600 dark:text-indigo-400" />
-          </div>
-          <h2 className="text-2xl font-bold text-ems-text-light dark:text-ems-text-dark mb-4">
-            Management Portal
-          </h2>
-          <p className="text-slate-500 dark:text-slate-400 mb-8 flex-grow leading-relaxed">
-            Management login is strictly for the company management team to
-            oversee operations, approve requests, and manage personnel.
-          </p>
-          <div className="flex items-center text-indigo-600 dark:text-indigo-400 font-semibold group-hover:gap-3 gap-2 transition-all">
-            Continue to Login <ArrowRight className="w-5 h-5" />
-          </div>
-        </Link>
-      </div>
-
-      <div className="mt-16 text-center text-sm text-slate-400 dark:text-slate-500 font-medium tracking-wide">
-        &copy; {new Date().getFullYear()} COMPANY INTERNAL PROJECT. SECURE
-        CONNECTION ESTABLISHED.
-      </div>
+        </div>
+      )}
     </div>
   );
 }

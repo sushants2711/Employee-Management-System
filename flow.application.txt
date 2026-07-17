@@ -1,0 +1,8 @@
+user is come 
+than user go to management signup - if already full fill the management signup limit like 5 for example than show alert message to user that already compleeted the limited number 
+if it is not full fill normally user try to sighnup and make sure data validatiuon in frontend also like everything that is written in the middleware and show error after each div or box and than good user signup button enable and than user sign up
+after the successfully signup to the user if i am the user and i do successfully signup so get the message pop up signup successfuuly please verify the acocutn the message is come by the backend 
+than redirect the user no /otp page and than user fill the otp and verify their account 
+
+if otp is not verify than it is ok - show the message 
+if otp is verify than user data store in the localstorage and context and than send to the /home page what is the next route 

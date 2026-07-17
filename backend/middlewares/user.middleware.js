@@ -3,7 +3,7 @@ import {
   badRequestResponse,
   internalServerErrorResponse,
   validationErrorResponse,
-} from "../utils/response.handler";
+} from "../utils/response.handler.js";
 
 // user registration for manager
 export const userRegistrationForManagerMiddleware = async (req, res, next) => {

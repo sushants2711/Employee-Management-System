@@ -273,14 +273,14 @@ export const otpController = async (req, res) => {
 // management login
 export const managementLoginController = async (req, res) => {
   try {
-    const { empId, email, password } = req.body;
+    const { employeeId, email, password } = req.body;
 
     let userExist;
 
-    if (empId) {
-      // login with empId
+    if (employeeId) {
+      // login with employeeId
       userExist = await userModel.findOne({
-        employeeId: empId,
+        employeeId: employeeId,
         isManagementVerified: true,
         role: "Management",
         status: "ACTIVE",
@@ -341,14 +341,14 @@ export const managementLoginController = async (req, res) => {
 // employee and manager login
 export const normalUserLoginController = async (req, res) => {
   try {
-    const { empId, email, password } = req.body;
+    const { employeeId, email, password } = req.body;
 
     let userExist;
 
-    if (empId) {
-      // login with empId
+    if (employeeId) {
+      // login with employeeId
       userExist = await userModel.findOne({
-        employeeId: empId,
+        employeeId: employeeId,
         status: "ACTIVE",
         role: { $in: ["Employee", "Manager", "Team Leader"] },
       });
@@ -1098,6 +1098,26 @@ export const createAccountForUserController = async (req, res) => {
       `${role.toLowerCase()} account created successfully`,
       dataSendToClient
     );
+  } catch (error) {
+    return internalServerErrorResponse(
+      res,
+      "Internal Server Error",
+      error.message
+    );
+  }
+};
+
+export const checkManagementCountController = async (req, res) => {
+  try {
+    const managementCount = await userModel.countDocuments({
+      role: "Management",
+      isManagementVerified: true,
+    });
+
+    return successResponse(res, "Management count retrieved", {
+      count: managementCount,
+      isFull: managementCount >= 5,
+    });
   } catch (error) {
     return internalServerErrorResponse(
       res,
