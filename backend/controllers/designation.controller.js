@@ -1,4 +1,3 @@
-import mongoose from "mongoose";
 import designationModel from "../models/designation.model.js";
 import {
   internalServerErrorResponse,
@@ -6,7 +5,6 @@ import {
   badRequestResponse,
   successResponse,
   notFoundResponse,
-  unauthorizedResponse,
 } from "../utils/response.handler.js";
 import { verifyMongoDBId } from "../utils/verifyMongoId.js";
 
@@ -16,17 +14,6 @@ export const createDesignationController = async (req, res) => {
     const loggedInUser = req.user;
 
     const { designationName, designationCode, description } = req.body;
-
-    const isValid = verifyMongoDBId(loggedInUser._id, res);
-
-    if (!isValid) return isValid;
-
-    if (loggedInUser.role !== "Management") {
-      return unauthorizedResponse(
-        res,
-        "You are not authorized to create designation"
-      );
-    }
 
     const designationNameExist = await designationModel.findOne({
       designationName,
@@ -98,13 +85,9 @@ export const getSingleDesignationController = async (req, res) => {
   try {
     const { id } = req.params;
 
-    if (!id) {
-      return badRequestResponse(res, "Designation ID is missing");
-    }
+    const isValid = verifyMongoDBId(id, res);
 
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      return badRequestResponse(res, "Invalid designation ID");
-    }
+    if (!isValid) return isValid;
 
     const singleDesignation = await designationModel.findById(id);
 
@@ -139,21 +122,10 @@ export const updateDesignationController = async (req, res) => {
 
     if (!isValid) return isValid;
 
-    const result = verifyMongoDBId(loggedInUser._id, res);
-
-    if (!result) return result;
-
     const singleDesignation = await designationModel.findById(id);
 
     if (!singleDesignation) {
       return notFoundResponse(res, "Designation not found");
-    }
-
-    if (loggedInUser.role !== "Management") {
-      return unauthorizedResponse(
-        res,
-        "You are not authorized to update this designation"
-      );
     }
 
     const updateDataGrounp = {
@@ -190,24 +162,11 @@ export const updateDesignationController = async (req, res) => {
 // delete designation controller
 export const deleteDesignationController = async (req, res) => {
   try {
-    const loggedInUser = req.user;
-
     const { id } = req.params;
 
     const isValid = verifyMongoDBId(id, res);
 
     if (!isValid) return isValid;
-
-    const result = verifyMongoDBId(loggedInUser._id, res);
-
-    if (!result) return result;
-
-    if (loggedInUser.role !== "Management") {
-      return unauthorizedResponse(
-        res,
-        "You are not authorized to delete this designation"
-      );
-    }
 
     const singleDesignation = await designationModel.findById(id);
 
