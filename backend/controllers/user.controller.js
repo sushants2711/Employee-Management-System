@@ -974,7 +974,8 @@ export const allUsersControllers = async (req, res) => {
       .find(query)
       .populate("teamName", "teamName")
       .populate("designation", "designationName")
-      .populate("department", "departmentName");
+      .populate("department", "departmentName")
+      .populate("createdAccount", "name");
 
     if (!allData || allData.length === 0 || !Array.isArray(allData)) {
       return notFoundResponse(res, "No data found");
