@@ -59,6 +59,13 @@ export const getAllActiveTeamLeaders = async () => {
   });
 };
 
+export const updateUserDetails = async (id, userData) => {
+  return await apiClient(`/user/update-user/${id}`, {
+    method: "PUT",
+    body: JSON.stringify(userData),
+  });
+};
+
 export const getAllEmployees = async () => {
   return await apiClient("/user/all-employee", {
     method: "GET",

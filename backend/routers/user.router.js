@@ -9,6 +9,7 @@ import {
   updateManagerProfileMiddleware,
   updatePasswordMiddleware,
   updateUserIsAvailableMiddleware,
+  updateUserMiddleware,
   updateUserRoleMiddleware,
   updateUserStatusMiddleware,
   userForgotPasswordEmailMiddleware,
@@ -39,6 +40,7 @@ import {
   getAllActiveManagerControllers,
   getAllActiveTeamLeaderController,
   getAllEmployeeController,
+  updateUserByManagementController,
 } from "../controllers/user.controller.js";
 import { verifyCookie } from "../utils/verify.cookie.js";
 import { verifyManagement } from "../utils/verify.management.js";
@@ -206,4 +208,15 @@ userRouter
 
 // get all employee
 userRouter.route("/all-employee").get(verifyCookie, getAllEmployeeController);
+
+// update the user details by Management and Manager
+userRouter
+  .route("/update-user/:id")
+  .put(
+    verifyCookie,
+    verifyManagerOrManagement,
+    updateUserMiddleware,
+    updateUserByManagementController
+  );
+
 export default userRouter;

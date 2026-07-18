@@ -392,7 +392,7 @@ export const createAccountMiddleware = async (req, res, next) => {
       confirmPassword: joi.string().min(8).max(100).required(),
       role: joi.string().valid("Employee", "Manager", "Team Leader").required(),
       phoneNumber: joi.string().length(10).trim().required(),
-      teamName: joi.string().hex().length(24).optional().allow(""),
+      teamName: joi.string().hex().length(24).required(),
       designation: joi.string().hex().length(24).optional().allow(""),
       department: joi.string().hex().length(24).optional().allow(""),
     });
@@ -455,3 +455,40 @@ export const updateManagerProfileMiddleware = async (req, res, next) => {
 };
 
 // update user middleware
+export const updateUserMiddleware = async (req, res, next) => {
+  try {
+    const schema = joi.object({
+      role: joi
+        .string()
+        .valid("Employee", "Manager", "Team Leader")
+        .optional()
+        .allow(""),
+      status: joi
+        .string()
+        .valid("ACTIVE", "INACTIVE", "SUSPENDED")
+        .optional()
+        .allow(""),
+      teamName: joi.string().hex().length(24).optional().allow(""),
+      designation: joi.string().hex().length(24).optional().allow(""),
+      department: joi.string().hex().length(24).optional().allow(""),
+    });
+
+    const { error } = schema.validate(req.body);
+
+    if (error) {
+      return validationErrorResponse(
+        res,
+        "Error Occured at Update User Validation",
+        error?.details?.[0]?.message
+      );
+    }
+
+    next();
+  } catch (error) {
+    return internalServerErrorResponse(
+      res,
+      "Internal Server Error",
+      error.message
+    );
+  }
+};

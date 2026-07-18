@@ -1153,8 +1153,6 @@ export const getAllManagersController = async (req, res) => {
   }
 };
 
-// get all team leader
-
 // get profile update of manager itself
 export const updateProfileManagerController = async (req, res) => {
   try {
@@ -1303,6 +1301,69 @@ export const getAllEmployeeController = async (req, res) => {
       "All employee fetched successfully",
       allEmployee
     );
+  } catch (error) {
+    return internalServerErrorResponse(
+      res,
+      "Internal Server Error",
+      error.message
+    );
+  }
+};
+
+// update the user controller
+export const updateUserByManagementController = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const loggedInUser = req.user;
+
+    const { role, status, teamName, designation, department } = req.body;
+
+    const isVerified = verifyMongoDBId(id, res);
+
+    if (isVerified !== true) return isVerified;
+
+    const userExist = await userModel.findById(id);
+
+    if (!userExist) return notFoundResponse(res, "User not found");
+
+    if (userExist.role === "Management")
+      return badRequestResponse(res, "You can not update the user role");
+
+    if (role && role !== "Management") {
+      userExist.role = role;
+      userExist.updateByRole = loggedInUser._id;
+    }
+
+    if (status) {
+      userExist.status = status;
+      userExist.updateByStatus = loggedInUser._id;
+    }
+
+    if (teamName) {
+      const teamExist = await teamModel.findById(teamName);
+      if (!teamExist) return badRequestResponse(res, "Invalid Team");
+      userExist.teamName = teamName;
+    }
+    if (designation) {
+      const designationExist = await designationModel.findById(designation);
+      if (!designationExist)
+        return badRequestResponse(res, "Invalid Designation");
+      userExist.designation = designation;
+    }
+    if (department) {
+      const departmentExist = await departmentModel.findById(department);
+      if (!departmentExist)
+        return badRequestResponse(res, "Invalid Department");
+      userExist.department = department;
+    }
+
+    const savedData = await userExist.save();
+
+    const dataSendToClient = savedData.toObject();
+    delete dataSendToClient.password;
+
+    return successResponse(res, "User updated successfully", dataSendToClient);
   } catch (error) {
     return internalServerErrorResponse(
       res,

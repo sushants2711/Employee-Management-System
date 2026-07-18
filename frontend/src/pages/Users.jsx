@@ -1,6 +1,10 @@
 import { useState, useEffect, useCallback } from "react";
-import { Plus, X, Eye } from "lucide-react";
-import { getAllUsers, createUserAccount } from "../api/authApi";
+import { Plus, X, Eye, Pencil } from "lucide-react";
+import {
+  getAllUsers,
+  createUserAccount,
+  updateUserDetails,
+} from "../api/authApi";
 import { getAllTeams } from "../api/teamApi";
 import { getAllActiveDepartments } from "../api/departmentApi";
 import { getAllActiveDesignations } from "../api/designationApi";
@@ -32,6 +36,7 @@ function Users() {
     password: "",
     confirmPassword: "",
     role: "Employee",
+    status: "ACTIVE",
     phoneNumber: "",
     teamName: "",
     department: "",
@@ -98,30 +103,101 @@ function Users() {
     setErrors({});
   };
 
+  const openEditModal = (user) => {
+    setModalConfig({ isOpen: true, mode: "EDIT" });
+    setSelectedItem(user);
+    setFormData({
+      name: user.name || "",
+      email: user.email || "",
+      password: "",
+      confirmPassword: "",
+      role: user.role || "Employee",
+      status: user.status || "ACTIVE",
+      phoneNumber: user.phoneNumber || "",
+      teamName:
+        typeof user.teamName === "object"
+          ? user.teamName?._id || ""
+          : user.teamName || "",
+      department:
+        typeof user.department === "object"
+          ? user.department?._id || ""
+          : user.department || "",
+      designation:
+        typeof user.designation === "object"
+          ? user.designation?._id || ""
+          : user.designation || "",
+    });
+    setErrors({});
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const { isValid, errors: formErrors } =
-      validateUserManagementForm(formData);
-
-    if (!isValid) {
-      setErrors(formErrors);
-      showError("Please fix the form errors");
-      return;
-    }
-
-    setIsSubmitting(true);
-    try {
-      if (modalConfig.mode === "CREATE") {
+    if (modalConfig.mode === "CREATE") {
+      const { isValid, errors: formErrors } =
+        validateUserManagementForm(formData);
+      if (!isValid) {
+        setErrors(formErrors);
+        showError("Please fix the form errors");
+        return;
+      }
+      setIsSubmitting(true);
+      try {
         await createUserAccount(formData);
         showSuccess("Account created successfully");
         setModalConfig({ isOpen: false, mode: "CREATE" });
         fetchData(); // refresh list
+      } catch (error) {
+        showError(error.message || "Failed to create account");
+      } finally {
+        setIsSubmitting(false);
       }
-    } catch (error) {
-      showError(error.message || "Failed to create account");
-    } finally {
-      setIsSubmitting(false);
+    } else if (modalConfig.mode === "EDIT") {
+      const originalRole = selectedItem.role || "Employee";
+      const originalStatus = selectedItem.status || "ACTIVE";
+      const originalTeamName =
+        typeof selectedItem.teamName === "object"
+          ? selectedItem.teamName?._id || ""
+          : selectedItem.teamName || "";
+      const originalDepartment =
+        typeof selectedItem.department === "object"
+          ? selectedItem.department?._id || ""
+          : selectedItem.department || "";
+      const originalDesignation =
+        typeof selectedItem.designation === "object"
+          ? selectedItem.designation?._id || ""
+          : selectedItem.designation || "";
+
+      if (
+        formData.role === originalRole &&
+        formData.status === originalStatus &&
+        formData.teamName === originalTeamName &&
+        formData.department === originalDepartment &&
+        formData.designation === originalDesignation
+      ) {
+        showSuccess("No changes were made");
+        setModalConfig({ ...modalConfig, isOpen: false });
+        return;
+      }
+
+      setIsSubmitting(true);
+      try {
+        const payload = {
+          role: formData.role,
+          status: formData.status,
+          teamName: formData.teamName,
+          designation: formData.designation,
+          department: formData.department,
+        };
+        await updateUserDetails(selectedItem._id, payload);
+        showSuccess("Account updated successfully");
+        setModalConfig({ ...modalConfig, isOpen: false });
+        fetchData();
+      } catch (error) {
+        showError(error.message || "Failed to update account");
+      } finally {
+        setIsSubmitting(false);
+      }
     }
   };
 
@@ -208,6 +284,15 @@ function Users() {
                   >
                     <Eye className="w-4 h-4" />
                   </button>
+                  {user.role !== "Management" && (
+                    <button
+                      onClick={() => openEditModal(user)}
+                      className="p-1.5 hover:bg-green-50 hover:text-green-600 dark:hover:bg-green-900/30 dark:hover:text-green-400 rounded-lg transition-colors cursor-pointer"
+                      title="Edit User"
+                    >
+                      <Pencil className="w-4 h-4" />
+                    </button>
+                  )}
                 </div>
               </div>
             </div>
@@ -219,13 +304,15 @@ function Users() {
       {modalConfig.isOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm overflow-y-auto pt-24 pb-10">
           <div
-            className={`bg-white dark:bg-slate-800 w-full rounded-2xl shadow-xl overflow-hidden animate-in fade-in zoom-in-95 duration-200 my-auto ${modalConfig.mode === "VIEW" ? "max-w-2xl" : "max-w-lg"}`}
+            className={`bg-white dark:bg-slate-800 w-full rounded-2xl shadow-xl overflow-hidden animate-in fade-in zoom-in-95 duration-200 my-auto ${modalConfig.mode !== "CREATE" ? "max-w-4xl" : "max-w-lg"}`}
           >
             <div className="flex items-center justify-between p-5 border-b border-slate-200 dark:border-slate-700">
               <h2 className="text-lg font-bold text-slate-900 dark:text-white">
                 {modalConfig.mode === "CREATE"
                   ? "Create Account"
-                  : "User Details"}
+                  : modalConfig.mode === "EDIT"
+                    ? "Edit User Account"
+                    : "User Details"}
               </h2>
               <button
                 onClick={() =>
@@ -237,8 +324,11 @@ function Users() {
               </button>
             </div>
 
-            {modalConfig.mode === "VIEW" && selectedItem ? (
-              <div className="p-0 overflow-y-auto max-h-[80vh] custom-scrollbar">
+            {modalConfig.mode !== "CREATE" && selectedItem ? (
+              <form
+                onSubmit={handleSubmit}
+                className="p-0 overflow-y-auto max-h-[80vh] custom-scrollbar"
+              >
                 {/* Header Profile Section */}
                 <div className="relative p-8 flex flex-col sm:flex-row items-center sm:items-start space-y-4 sm:space-y-0 sm:space-x-6 border-b border-slate-200 dark:border-slate-700 overflow-hidden">
                   {/* Premium Background Elements */}
@@ -314,15 +404,19 @@ function Users() {
                     <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2">
                       <span
                         className={`inline-flex items-center px-3 py-1 text-xs font-bold uppercase tracking-wider rounded-full border shadow-sm ${
-                          selectedItem.status === "ACTIVE"
+                          (modalConfig.mode === "EDIT"
+                            ? formData.status
+                            : selectedItem.status) === "ACTIVE"
                             ? "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20"
                             : "bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-500/10 dark:text-rose-400 dark:border-rose-500/20"
                         }`}
                       >
                         <span
-                          className={`w-1.5 h-1.5 rounded-full mr-2 ${selectedItem.status === "ACTIVE" ? "bg-emerald-500" : "bg-rose-500"}`}
+                          className={`w-1.5 h-1.5 rounded-full mr-2 ${(modalConfig.mode === "EDIT" ? formData.status : selectedItem.status) === "ACTIVE" ? "bg-emerald-500" : "bg-rose-500"}`}
                         ></span>
-                        {selectedItem.status || "ACTIVE"}
+                        {modalConfig.mode === "EDIT"
+                          ? formData.status
+                          : selectedItem.status || "ACTIVE"}
                       </span>
 
                       <span className="inline-flex items-center px-3 py-1 bg-indigo-50 text-indigo-700 border border-indigo-200 dark:bg-indigo-500/10 dark:text-indigo-400 dark:border-indigo-500/20 text-xs font-bold uppercase tracking-wider rounded-full shadow-sm">
@@ -339,7 +433,9 @@ function Users() {
                             d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
                           />
                         </svg>
-                        {selectedItem.role}
+                        {modalConfig.mode === "EDIT"
+                          ? formData.role
+                          : selectedItem.role}
                       </span>
                     </div>
                   </div>
@@ -348,15 +444,28 @@ function Users() {
                 {/* Details Grid */}
                 <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
                   {/* Contact Info */}
-                  <div className="space-y-4 bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-100 dark:border-slate-700/50 shadow-sm">
-                    <h4 className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-2">
-                      Contact Information
-                    </h4>
-                    <div>
+                  <div
+                    className={`space-y-4 bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-100 dark:border-slate-700/50 shadow-sm ${modalConfig.mode === "EDIT" ? "md:col-span-2 grid grid-cols-1 sm:grid-cols-3 gap-4 space-y-0" : ""}`}
+                  >
+                    {modalConfig.mode !== "EDIT" && (
+                      <h4 className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-2">
+                        Contact Information
+                      </h4>
+                    )}
+                    <div
+                      className={
+                        modalConfig.mode === "EDIT"
+                          ? "break-words overflow-hidden"
+                          : ""
+                      }
+                    >
                       <label className="block text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase">
                         Email
                       </label>
-                      <p className="text-slate-800 dark:text-slate-200 truncate">
+                      <p
+                        className="text-slate-800 dark:text-slate-200 truncate"
+                        title={selectedItem.email}
+                      >
                         {selectedItem.email}
                       </p>
                     </div>
@@ -397,36 +506,118 @@ function Users() {
                   </div>
 
                   {/* Organization Info */}
-                  <div className="space-y-4 bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-100 dark:border-slate-700/50 shadow-sm">
-                    <h4 className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-2">
-                      Organization
+                  <div
+                    className={`space-y-4 bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-100 dark:border-slate-700/50 shadow-sm ${modalConfig.mode === "EDIT" ? "md:col-span-2" : ""}`}
+                  >
+                    <h4 className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-2 flex items-center justify-between">
+                      <span>Organization</span>
+                      {modalConfig.mode === "EDIT" && (
+                        <span className="text-[10px] bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-400 px-2 py-0.5 rounded-full font-bold">
+                          EDITING
+                        </span>
+                      )}
                     </h4>
-                    <div>
-                      <label className="block text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase">
-                        Department
-                      </label>
-                      <p className="text-slate-800 dark:text-slate-200">
-                        {selectedItem.department?.departmentName || "Unknown"}
-                      </p>
-                    </div>
-                    <div>
-                      <label className="block text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase">
-                        Designation
-                      </label>
-                      <p className="text-slate-800 dark:text-slate-200">
-                        {selectedItem.designation?.designationName || "Unknown"}
-                      </p>
-                    </div>
-                    <div>
-                      <label className="block text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase">
-                        Team Name
-                      </label>
-                      <p className="text-slate-800 dark:text-slate-200">
-                        {typeof selectedItem.teamName === "object"
-                          ? selectedItem.teamName?.teamName
-                          : selectedItem.teamName || "N/A"}
-                      </p>
-                    </div>
+
+                    {modalConfig.mode === "EDIT" ? (
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 pt-1">
+                        <SelectField
+                          label="Role"
+                          name="role"
+                          value={formData.role}
+                          onChange={handleInputChange}
+                          error={errors.role}
+                          disabled={isSubmitting}
+                          options={[
+                            { value: "Employee", label: "Employee" },
+                            { value: "Manager", label: "Manager" },
+                            { value: "Team Leader", label: "Team Leader" },
+                          ]}
+                        />
+                        <SelectField
+                          label="Status"
+                          name="status"
+                          value={formData.status}
+                          onChange={handleInputChange}
+                          error={errors.status}
+                          disabled={isSubmitting}
+                          options={[
+                            { value: "ACTIVE", label: "ACTIVE" },
+                            { value: "INACTIVE", label: "INACTIVE" },
+                            { value: "SUSPENDED", label: "SUSPENDED" },
+                          ]}
+                        />
+                        <SelectField
+                          label="Department"
+                          name="department"
+                          value={formData.department}
+                          onChange={handleInputChange}
+                          error={errors.department}
+                          disabled={isSubmitting}
+                          options={departments.map((d) => ({
+                            value: d._id,
+                            label: d.departmentName,
+                          }))}
+                        />
+                        <SelectField
+                          label="Designation"
+                          name="designation"
+                          value={formData.designation}
+                          onChange={handleInputChange}
+                          error={errors.designation}
+                          disabled={isSubmitting}
+                          options={designations.map((d) => ({
+                            value: d._id,
+                            label: d.designationName,
+                          }))}
+                        />
+                        <SelectField
+                          label="Team (Optional)"
+                          name="teamName"
+                          value={formData.teamName}
+                          onChange={handleInputChange}
+                          error={errors.teamName}
+                          disabled={isSubmitting}
+                          options={[
+                            { value: "", label: "Select Team" },
+                            ...teams.map((t) => ({
+                              value: t._id,
+                              label: t.teamName,
+                            })),
+                          ]}
+                        />
+                      </div>
+                    ) : (
+                      <div className="space-y-4">
+                        <div>
+                          <label className="block text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase">
+                            Department
+                          </label>
+                          <p className="text-slate-800 dark:text-slate-200">
+                            {selectedItem.department?.departmentName ||
+                              "Unknown"}
+                          </p>
+                        </div>
+                        <div>
+                          <label className="block text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase">
+                            Designation
+                          </label>
+                          <p className="text-slate-800 dark:text-slate-200">
+                            {selectedItem.designation?.designationName ||
+                              "Unknown"}
+                          </p>
+                        </div>
+                        <div>
+                          <label className="block text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase">
+                            Team Name
+                          </label>
+                          <p className="text-slate-800 dark:text-slate-200">
+                            {typeof selectedItem.teamName === "object"
+                              ? selectedItem.teamName?.teamName
+                              : selectedItem.teamName || "N/A"}
+                          </p>
+                        </div>
+                      </div>
+                    )}
                   </div>
 
                   {/* System Info */}
@@ -466,12 +657,20 @@ function Users() {
                       </p>
                     </div>
                   </div>
+
+                  {modalConfig.mode === "EDIT" && (
+                    <div className="col-span-1 md:col-span-2 pt-4">
+                      <SubmitButton isSubmitting={isSubmitting}>
+                        Save Changes
+                      </SubmitButton>
+                    </div>
+                  )}
                 </div>
-              </div>
+              </form>
             ) : (
               <form
                 onSubmit={handleSubmit}
-                className="p-5 space-y-6 max-h-[70vh] overflow-y-auto"
+                className="p-5 space-y-6 max-h-[70vh] overflow-y-auto custom-scrollbar"
               >
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                   <InputField
@@ -494,6 +693,30 @@ function Users() {
                     placeholder="john@example.com"
                   />
                   <InputField
+                    label="Phone Number"
+                    name="phoneNumber"
+                    value={formData.phoneNumber}
+                    onChange={handleInputChange}
+                    error={errors.phoneNumber}
+                    disabled={isSubmitting}
+                    placeholder="e.g. +1234567890"
+                  />
+
+                  <SelectField
+                    label="Role"
+                    name="role"
+                    value={formData.role}
+                    onChange={handleInputChange}
+                    error={errors.role}
+                    disabled={isSubmitting}
+                    options={[
+                      { value: "Employee", label: "Employee" },
+                      { value: "Manager", label: "Manager" },
+                      { value: "Team Leader", label: "Team Leader" },
+                    ]}
+                  />
+
+                  <InputField
                     label="Password"
                     name="password"
                     type="password"
@@ -501,7 +724,7 @@ function Users() {
                     onChange={handleInputChange}
                     error={errors.password}
                     disabled={isSubmitting}
-                    placeholder="••••••••"
+                    placeholder="Create a password"
                   />
                   <InputField
                     label="Confirm Password"
@@ -511,30 +734,9 @@ function Users() {
                     onChange={handleInputChange}
                     error={errors.confirmPassword}
                     disabled={isSubmitting}
-                    placeholder="••••••••"
+                    placeholder="Confirm password"
                   />
-                  <InputField
-                    label="Phone Number"
-                    name="phoneNumber"
-                    value={formData.phoneNumber}
-                    onChange={handleInputChange}
-                    error={errors.phoneNumber}
-                    disabled={isSubmitting}
-                    placeholder="1234567890"
-                  />
-                  <SelectField
-                    label="Role"
-                    name="role"
-                    value={formData.role}
-                    onChange={handleInputChange}
-                    error={errors.role}
-                    disabled={isSubmitting}
-                    options={[
-                      { label: "Employee", value: "Employee" },
-                      { label: "Manager", value: "Manager" },
-                      { label: "Team Leader", value: "Team Leader" },
-                    ]}
-                  />
+
                   <SelectField
                     label="Department"
                     name="department"
@@ -542,12 +744,12 @@ function Users() {
                     onChange={handleInputChange}
                     error={errors.department}
                     disabled={isSubmitting}
-                    placeholder="Select a department"
-                    options={departments.map((dept) => ({
-                      label: dept.departmentName,
-                      value: dept._id,
+                    options={departments.map((d) => ({
+                      value: d._id,
+                      label: d.departmentName,
                     }))}
                   />
+
                   <SelectField
                     label="Designation"
                     name="designation"
@@ -563,24 +765,28 @@ function Users() {
                   />
                   <div className="sm:col-span-2">
                     <SelectField
-                      label="Team"
+                      label="Team (Optional)"
                       name="teamName"
                       value={formData.teamName}
                       onChange={handleInputChange}
                       error={errors.teamName}
                       disabled={isSubmitting}
                       placeholder="Select a team"
-                      options={teams.map((team) => ({
-                        label: team.teamName,
-                        value: team._id,
-                      }))}
+                      options={[
+                        { value: "", label: "Select Team" },
+                        ...teams.map((t) => ({
+                          value: t._id,
+                          label: t.teamName,
+                        })),
+                      ]}
                     />
                   </div>
                 </div>
-                <div className="pt-2">
-                  <SubmitButton isSubmitting={isSubmitting}>
-                    Create Account
-                  </SubmitButton>
+                <div className="pt-2 flex justify-end">
+                  <SubmitButton
+                    isSubmitting={isSubmitting}
+                    text="Create Account"
+                  />
                 </div>
               </form>
             )}
