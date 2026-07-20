@@ -37,7 +37,7 @@ const ROLE_TABS = [
 ];
 
 const STATUS_OPTIONS = [
-  { id: "", label: "All Status" },
+  { id: "", label: "All" },
   { id: "ACTIVE", label: "Active" },
   { id: "INACTIVE", label: "Inactive" },
   { id: "SUSPENDED", label: "Suspended" },

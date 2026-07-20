@@ -132,7 +132,7 @@ function DesignationModal({
                   errors.description
                     ? "border-red-300 focus:ring-red-500 dark:border-red-500/50"
                     : "border-slate-300 dark:border-slate-700 focus:ring-ems-primary"
-                } bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:border-transparent transition-all resize-none h-24`}
+                } bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:border-transparent transition-all resize-none h-32`}
                 placeholder="Briefly describe the designation's role..."
               />
               {errors.description && (
