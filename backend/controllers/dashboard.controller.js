@@ -45,12 +45,43 @@ export const allDetailsController = async (req, res) => {
       designations: { count: designations.length, data: designations },
     };
 
-    // 3. Projects that are completed right now
+    // 3. Projects that are completed right now (Detailed List)
     const completedProjects = await Project.find({ status: "COMPLETED" })
-      .populate("teamName", "teamName")
-      .populate("manager", "name email")
-      .populate("teamLeader", "name email")
+      .populate({
+        path: "teamName",
+        select: "teamName manager teamLead",
+        populate: [
+          { path: "manager", select: "name email role" },
+          { path: "teamLead", select: "name email role" },
+        ],
+      })
       .sort({ completedAt: -1 });
+
+    // Project Status Aggregation (Counts for all statuses)
+    const plannedProjectsCount = await Project.countDocuments({
+      status: "PLANNED",
+    });
+    const inProgressProjectsCount = await Project.countDocuments({
+      status: "IN_PROGRESS",
+    });
+    const onHoldProjectsCount = await Project.countDocuments({
+      status: "ON_HOLD",
+    });
+    const completedProjectsCount = await Project.countDocuments({
+      status: "COMPLETED",
+    });
+
+    const projectStats = {
+      planned: plannedProjectsCount,
+      inProgress: inProgressProjectsCount,
+      onHold: onHoldProjectsCount,
+      completed: completedProjectsCount,
+      total:
+        plannedProjectsCount +
+        inProgressProjectsCount +
+        onHoldProjectsCount +
+        completedProjectsCount,
+    };
 
     // 4. Feedback (Performance reviews)
     const feedback = await Performance.find()
@@ -67,6 +98,7 @@ export const allDetailsController = async (req, res) => {
         count: completedProjects.length,
         data: completedProjects,
       },
+      projectStats,
       recentFeedback: { count: feedback.length, data: feedback },
     };
 

@@ -11,6 +11,10 @@ import {
   CheckCircle,
   MessageSquare,
   Award,
+  Clock,
+  Activity,
+  PauseCircle,
+  FolderDot,
 } from "lucide-react";
 
 function DashboardHome() {
@@ -128,11 +132,8 @@ function DashboardHome() {
       </div>
 
       {/* Organization Structure Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <div className="group relative bg-white/60 dark:bg-slate-800/60 backdrop-blur-xl p-6 rounded-3xl shadow-sm border border-slate-200/50 dark:border-slate-700/50 hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
-          <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-            <Building2 size={64} />
-          </div>
           <div className="flex items-center space-x-4 mb-4">
             <div className="p-3 bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 rounded-2xl">
               <Building2 size={24} />
@@ -147,9 +148,6 @@ function DashboardHome() {
         </div>
 
         <div className="group relative bg-white/60 dark:bg-slate-800/60 backdrop-blur-xl p-6 rounded-3xl shadow-sm border border-slate-200/50 dark:border-slate-700/50 hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
-          <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-            <Network size={64} />
-          </div>
           <div className="flex items-center space-x-4 mb-4">
             <div className="p-3 bg-purple-100 dark:bg-purple-900/40 text-purple-600 dark:text-purple-400 rounded-2xl">
               <Network size={24} />
@@ -164,9 +162,6 @@ function DashboardHome() {
         </div>
 
         <div className="group relative bg-white/60 dark:bg-slate-800/60 backdrop-blur-xl p-6 rounded-3xl shadow-sm border border-slate-200/50 dark:border-slate-700/50 hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
-          <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-            <Briefcase size={64} />
-          </div>
           <div className="flex items-center space-x-4 mb-4">
             <div className="p-3 bg-emerald-100 dark:bg-emerald-900/40 text-emerald-600 dark:text-emerald-400 rounded-2xl">
               <Briefcase size={24} />
@@ -177,6 +172,20 @@ function DashboardHome() {
           </div>
           <p className="text-4xl font-extrabold text-slate-800 dark:text-white">
             {data.organization?.designations?.count || 0}
+          </p>
+        </div>
+
+        <div className="group relative bg-white/60 dark:bg-slate-800/60 backdrop-blur-xl p-6 rounded-3xl shadow-sm border border-slate-200/50 dark:border-slate-700/50 hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+          <div className="flex items-center space-x-4 mb-4">
+            <div className="p-3 bg-indigo-100 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400 rounded-2xl">
+              <FolderDot size={24} />
+            </div>
+            <h3 className="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest">
+              Total Projects
+            </h3>
+          </div>
+          <p className="text-4xl font-extrabold text-slate-800 dark:text-white">
+            {data.projectStats?.total || 0}
           </p>
         </div>
       </div>
@@ -218,6 +227,58 @@ function DashboardHome() {
               <div
                 className={`absolute top-0 left-0 w-full h-1 bg-gradient-to-r ${item.color}`}
               ></div>
+              <h4 className="text-sm font-semibold text-slate-500 dark:text-slate-400">
+                {item.label}
+              </h4>
+              <p className="text-3xl font-black text-slate-800 dark:text-white mt-2 group-hover:scale-110 transition-transform origin-left">
+                {item.count || 0}
+              </p>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Project Status Overview */}
+      <div className="bg-white/60 dark:bg-slate-800/60 backdrop-blur-xl p-8 rounded-3xl shadow-sm border border-slate-200/50 dark:border-slate-700/50 relative overflow-hidden">
+        <h2 className="text-xl font-bold text-slate-800 dark:text-white mb-8 flex items-center">
+          <FolderDot className="mr-3 text-emerald-500" />
+          Project Status Overview
+        </h2>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 relative z-10">
+          {[
+            {
+              label: "Planned",
+              count: data.projectStats?.planned,
+              color: "from-slate-400 to-slate-500",
+              icon: <Clock size={20} className="text-slate-500 mb-2" />,
+            },
+            {
+              label: "In Progress",
+              count: data.projectStats?.inProgress,
+              color: "from-blue-400 to-indigo-500",
+              icon: <Activity size={20} className="text-blue-500 mb-2" />,
+            },
+            {
+              label: "On Hold",
+              count: data.projectStats?.onHold,
+              color: "from-amber-400 to-orange-500",
+              icon: <PauseCircle size={20} className="text-amber-500 mb-2" />,
+            },
+            {
+              label: "Completed",
+              count: data.projectStats?.completed,
+              color: "from-emerald-400 to-green-500",
+              icon: <CheckCircle size={20} className="text-emerald-500 mb-2" />,
+            },
+          ].map((item, index) => (
+            <div
+              key={index}
+              className="relative p-6 bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 hover:shadow-lg transition-all duration-300 group overflow-hidden"
+            >
+              <div
+                className={`absolute top-0 left-0 w-full h-1 bg-gradient-to-r ${item.color}`}
+              ></div>
+              {item.icon}
               <h4 className="text-sm font-semibold text-slate-500 dark:text-slate-400">
                 {item.label}
               </h4>
