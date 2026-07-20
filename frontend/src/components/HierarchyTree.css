@@ -1,7 +1,7 @@
 .org-tree {
   display: flex;
   justify-content: center;
-  overflow-x: auto;
+  min-width: max-content;
   padding: 20px 20px 40px 20px;
 }
 
