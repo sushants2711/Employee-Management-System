@@ -5,7 +5,7 @@ import {
   createUserAccount,
   updateUserDetails,
 } from "../api/authApi";
-import { getAllTeams } from "../api/teamApi";
+import { getAllActiveTeams } from "../api/teamApi";
 import { getAllActiveDepartments } from "../api/departmentApi";
 import { getAllActiveDesignations } from "../api/designationApi";
 import { showSuccess, showError } from "../toastMessage/toastDeliver";
@@ -50,7 +50,7 @@ function Users() {
       setIsLoading(true);
       const [usersRes, teamsRes, deptRes, desigRes] = await Promise.all([
         getAllUsers().catch(() => ({ data: [] })),
-        getAllTeams().catch(() => ({ data: [] })),
+        getAllActiveTeams().catch(() => ({ data: [] })),
         getAllActiveDepartments().catch(() => ({ data: [] })),
         getAllActiveDesignations().catch(() => ({ data: [] })),
       ]);
@@ -304,7 +304,7 @@ function Users() {
       {modalConfig.isOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm overflow-y-auto pt-24 pb-10">
           <div
-            className={`bg-white dark:bg-slate-800 w-full rounded-2xl shadow-xl overflow-hidden animate-in fade-in zoom-in-95 duration-200 my-auto ${modalConfig.mode !== "CREATE" ? "max-w-4xl" : "max-w-lg"}`}
+            className={`bg-white dark:bg-slate-800 w-full rounded-2xl shadow-xl overflow-hidden animate-in fade-in zoom-in-95 duration-200 my-auto ${modalConfig.mode !== "CREATE" ? "max-w-4xl" : "max-w-2xl"}`}
           >
             <div className="flex items-center justify-between p-5 border-b border-slate-200 dark:border-slate-700">
               <h2 className="text-lg font-bold text-slate-900 dark:text-white">
@@ -738,7 +738,7 @@ function Users() {
                   />
 
                   <SelectField
-                    label="Department"
+                    label="Department (Optional)"
                     name="department"
                     value={formData.department}
                     onChange={handleInputChange}
@@ -751,7 +751,7 @@ function Users() {
                   />
 
                   <SelectField
-                    label="Designation"
+                    label="Designation (Optional)"
                     name="designation"
                     value={formData.designation}
                     onChange={handleInputChange}
@@ -783,10 +783,9 @@ function Users() {
                   </div>
                 </div>
                 <div className="pt-2 flex justify-end">
-                  <SubmitButton
-                    isSubmitting={isSubmitting}
-                    text="Create Account"
-                  />
+                  <SubmitButton isSubmitting={isSubmitting}>
+                    Create Account
+                  </SubmitButton>
                 </div>
               </form>
             )}

@@ -392,7 +392,7 @@ export const createAccountMiddleware = async (req, res, next) => {
       confirmPassword: joi.string().min(8).max(100).required(),
       role: joi.string().valid("Employee", "Manager", "Team Leader").required(),
       phoneNumber: joi.string().length(10).trim().required(),
-      teamName: joi.string().hex().length(24).required(),
+      teamName: joi.string().hex().length(24).optional().allow(""),
       designation: joi.string().hex().length(24).optional().allow(""),
       department: joi.string().hex().length(24).optional().allow(""),
     });
