@@ -81,6 +81,24 @@ export const createTeamController = async (req, res) => {
       }
     }
 
+    // --- Active Team Validation ---
+    const usersToCheck = [teamLead, manager, ...(members || [])];
+    const activeTeamConflict = await teamModel.findOne({
+      status: "ACTIVE",
+      $or: [
+        { teamLead: { $in: usersToCheck } },
+        { manager: { $in: usersToCheck } },
+        { members: { $in: usersToCheck } },
+      ],
+    });
+
+    if (activeTeamConflict) {
+      return badRequestResponse(
+        res,
+        `One or more selected users are already assigned to an active team (${activeTeamConflict.teamName})`
+      );
+    }
+
     const team = await teamModel.create({
       teamName,
       teamLead,
@@ -269,6 +287,30 @@ export const updateTeamController = async (req, res) => {
       if (teamNameExist) {
         return badRequestResponse(res, "Team name already exist");
       }
+    }
+
+    // --- Active Team Validation ---
+    const usersToCheck = [
+      teamLead ?? singleTeam.teamLead,
+      manager ?? singleTeam.manager,
+      ...((members ?? singleTeam.members) || []),
+    ].filter(Boolean);
+
+    const activeTeamConflict = await teamModel.findOne({
+      _id: { $ne: id },
+      status: "ACTIVE",
+      $or: [
+        { teamLead: { $in: usersToCheck } },
+        { manager: { $in: usersToCheck } },
+        { members: { $in: usersToCheck } },
+      ],
+    });
+
+    if (activeTeamConflict) {
+      return badRequestResponse(
+        res,
+        `One or more selected users are already assigned to another active team (${activeTeamConflict.teamName})`
+      );
     }
 
     const updateDataGrounp = {

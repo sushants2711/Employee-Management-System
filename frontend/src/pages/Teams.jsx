@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { Plus, X, Edit2, Trash2, Eye } from "lucide-react";
 import {
   createTeam,
@@ -79,6 +79,37 @@ function Teams() {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchData();
   }, [fetchData]);
+
+  const assignedUserIds = useMemo(() => {
+    const ids = new Set();
+    teams.forEach((team) => {
+      // If we are updating, skip the current team so its members can still be selected
+      if (modalConfig.mode === "UPDATE" && team._id === modalConfig.teamId) {
+        return;
+      }
+      if (team.status === "ACTIVE") {
+        if (team.teamLead) ids.add(team.teamLead._id || team.teamLead);
+        if (team.manager) ids.add(team.manager._id || team.manager);
+        if (team.members && Array.isArray(team.members)) {
+          team.members.forEach((m) => ids.add(m._id || m));
+        }
+      }
+    });
+    return ids;
+  }, [teams, modalConfig]);
+
+  const availableUsers = useMemo(
+    () => users.filter((u) => !assignedUserIds.has(u._id)),
+    [users, assignedUserIds]
+  );
+  const availableManagers = useMemo(
+    () => managers.filter((m) => !assignedUserIds.has(m._id)),
+    [managers, assignedUserIds]
+  );
+  const availableTeamLeaders = useMemo(
+    () => teamLeaders.filter((t) => !assignedUserIds.has(t._id)),
+    [teamLeaders, assignedUserIds]
+  );
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -450,7 +481,7 @@ function Teams() {
                     error={errors.manager}
                     disabled={isSubmitting}
                     placeholder="Select a manager"
-                    options={managers.map((user) => ({
+                    options={availableManagers.map((user) => ({
                       label: `${user.name} (${user.role})`,
                       value: user._id,
                     }))}
@@ -478,7 +509,7 @@ function Teams() {
                     error={errors.teamLead}
                     disabled={isSubmitting}
                     placeholder="Select a team lead"
-                    options={teamLeaders.map((user) => ({
+                    options={availableTeamLeaders.map((user) => ({
                       label: user.name,
                       value: user._id,
                     }))}
@@ -493,7 +524,7 @@ function Teams() {
                   error={errors.members}
                   disabled={isSubmitting}
                   placeholder="Select team members"
-                  options={users.map((user) => ({
+                  options={availableUsers.map((user) => ({
                     label: `${user.name} (${user.employeeId}) - ${user.designation?.designationName || "N/A"} | ${user.department?.departmentName || "N/A"}`,
                     chipLabel: user.name,
                     value: user._id,
