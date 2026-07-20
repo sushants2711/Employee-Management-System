@@ -62,12 +62,17 @@ export const createDesignationController = async (req, res) => {
 // get designation controller
 export const getDesignationController = async (req, res) => {
   try {
-    const { designationName, designationCode } = req.query;
+    const { search, status } = req.query;
 
     let filterData = {};
 
-    if (designationName) filterData.designationName = designationName;
-    if (designationCode) filterData.designationCode = designationCode;
+    if (search) {
+      filterData.$or = [
+        { designationName: { $regex: search, $options: "i" } },
+        { designationCode: { $regex: search, $options: "i" } },
+      ];
+    }
+    if (status) filterData.status = status;
 
     const designation = await designationModel
       .find(filterData)

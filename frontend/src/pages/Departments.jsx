@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { Plus, X, Edit2, Trash2, Eye } from "lucide-react";
+import { Plus, Trash2 } from "lucide-react";
 import {
   createDepartment,
   getAllDepartments,
@@ -11,10 +11,12 @@ import {
   validateDepartmentField,
   validateDepartmentForm,
 } from "../validators/departmentValidators";
-import InputField from "../components/InputField";
-import SubmitButton from "../components/SubmitButton";
+import { useAuth } from "../context/AuthContext";
+import DepartmentCard from "../features/departments/DepartmentCard";
+import DepartmentModal from "../features/departments/DepartmentModal";
 
 function Departments() {
+  const { user } = useAuth();
   const [departments, setDepartments] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [modalConfig, setModalConfig] = useState({
@@ -24,6 +26,10 @@ function Departments() {
   });
   const [deleteConfirmId, setDeleteConfirmId] = useState(null);
   const [selectedItem, setSelectedItem] = useState(null);
+
+  // Filters State
+  const [searchQuery, setSearchQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState("");
 
   // Form State
   const [formData, setFormData] = useState({
@@ -38,18 +44,20 @@ function Departments() {
   const fetchDepartments = useCallback(async () => {
     try {
       setIsLoading(true);
-      const response = await getAllDepartments();
+      const response = await getAllDepartments(statusFilter, searchQuery);
       setDepartments(response.data || []);
     } catch (error) {
       showError(error.message || "Failed to fetch departments");
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [searchQuery, statusFilter]);
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    fetchDepartments();
+    const delayDebounceFn = setTimeout(() => {
+      fetchDepartments();
+    }, 300);
+    return () => clearTimeout(delayDebounceFn);
   }, [fetchDepartments]);
 
   const handleInputChange = (e) => {
@@ -150,222 +158,104 @@ function Departments() {
             Manage company departments and their details.
           </p>
         </div>
-        <button
-          onClick={openCreateModal}
-          className="flex items-center gap-2 px-4 py-2 bg-ems-primary hover:bg-blue-700 text-white rounded-xl font-medium transition-colors cursor-pointer shadow-sm"
-        >
-          <Plus className="w-5 h-5" />
-          Add Department
-        </button>
+        {user?.role === "Management" && (
+          <button
+            onClick={openCreateModal}
+            className="flex items-center gap-2 px-4 py-2 bg-ems-primary hover:bg-blue-700 text-white rounded-xl font-medium transition-colors cursor-pointer shadow-sm"
+          >
+            <Plus className="w-5 h-5" />
+            Add Department
+          </button>
+        )}
+      </div>
+
+      {/* Filter Bar */}
+      <div className="flex flex-col sm:flex-row gap-4">
+        <div className="relative flex-1 max-w-md">
+          <input
+            type="text"
+            placeholder="Search departments..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full pl-10 pr-3 py-2 bg-white/60 dark:bg-slate-800/60 backdrop-blur-xl border border-slate-200/50 dark:border-slate-700/50 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-sm text-slate-700 dark:text-slate-300 transition-shadow shadow-sm"
+          />
+          <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-slate-400">
+            <svg className="w-4 h-4 fill-current" viewBox="0 0 20 20">
+              <path
+                fillRule="evenodd"
+                d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
+                clipRule="evenodd"
+              />
+            </svg>
+          </div>
+        </div>
+        <div className="relative">
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            className="w-full sm:w-48 pl-3 pr-10 py-2 bg-white/60 dark:bg-slate-800/60 backdrop-blur-xl border border-slate-200/50 dark:border-slate-700/50 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none appearance-none text-sm text-slate-700 dark:text-slate-300 transition-shadow shadow-sm cursor-pointer"
+          >
+            <option value="">All</option>
+            <option value="ACTIVE">Active</option>
+            <option value="INACTIVE">Inactive</option>
+          </select>
+          <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-slate-400">
+            <svg className="w-4 h-4 fill-current" viewBox="0 0 20 20">
+              <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
+            </svg>
+          </div>
+        </div>
       </div>
 
       {isLoading ? (
         <div className="flex justify-center p-12">
           <div className="w-8 h-8 border-4 border-slate-200 border-t-ems-primary rounded-full animate-spin"></div>
         </div>
-      ) : departments.length === 0 ? (
-        <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-12 text-center shadow-sm">
-          <h3 className="text-lg font-medium text-slate-900 dark:text-white mb-1">
-            No Departments Found
-          </h3>
-          <p className="text-slate-500 dark:text-slate-400">
-            Get started by creating your first department.
-          </p>
-        </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {departments.map((dept) => (
-            <div
-              key={dept._id}
-              className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-6 shadow-sm hover:shadow-md transition-shadow group"
-            >
-              <div className="flex justify-between items-start mb-4">
-                <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
-                  {dept.departmentName}
+        (() => {
+          if (departments.length === 0) {
+            return (
+              <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-12 text-center shadow-sm">
+                <h3 className="text-lg font-medium text-slate-900 dark:text-white mb-1">
+                  No Departments Found
                 </h3>
-                <span
-                  className={`px-2.5 py-1 text-xs font-medium rounded-full ${
-                    dept.status === "ACTIVE"
-                      ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
-                      : "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
-                  }`}
-                >
-                  {dept.status}
-                </span>
+                <p className="text-slate-500 dark:text-slate-400">
+                  {searchQuery || statusFilter
+                    ? "No departments match your filters."
+                    : "Get started by creating your first department."}
+                </p>
               </div>
-              <p className="text-sm text-slate-600 dark:text-slate-400 mb-4 line-clamp-2 min-h-[40px]">
-                {dept.description || "No description provided."}
-              </p>
-              <div className="flex items-center justify-between text-sm text-slate-500 dark:text-slate-400 mt-2">
-                <span className="font-mono bg-slate-100 dark:bg-slate-900 px-2 py-1 rounded">
-                  {dept.departmentCode}
-                </span>
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => openViewModal(dept)}
-                    className="p-1.5 hover:bg-green-50 hover:text-green-600 dark:hover:bg-green-900/30 dark:hover:text-green-400 rounded-lg transition-colors cursor-pointer"
-                    title="View Details"
-                  >
-                    <Eye className="w-4 h-4" />
-                  </button>
-                  <button
-                    onClick={() => openUpdateModal(dept)}
-                    className="p-1.5 hover:bg-blue-50 hover:text-blue-600 dark:hover:bg-blue-900/30 dark:hover:text-blue-400 rounded-lg transition-colors cursor-pointer"
-                    title="Edit Department"
-                  >
-                    <Edit2 className="w-4 h-4" />
-                  </button>
-                  <button
-                    onClick={() => setDeleteConfirmId(dept._id)}
-                    className="p-1.5 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-900/30 dark:hover:text-red-400 rounded-lg transition-colors cursor-pointer"
-                    title="Delete Department"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                </div>
-              </div>
+            );
+          }
+
+          return (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {departments.map((dept) => (
+                <DepartmentCard
+                  key={dept._id}
+                  dept={dept}
+                  user={user}
+                  openViewModal={openViewModal}
+                  openUpdateModal={openUpdateModal}
+                  setDeleteConfirmId={setDeleteConfirmId}
+                />
+              ))}
             </div>
-          ))}
-        </div>
+          );
+        })()
       )}
 
-      {/* Create/Update Department Modal */}
-      {modalConfig.isOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-          <div className="bg-white dark:bg-slate-800 w-full max-w-md rounded-2xl shadow-xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
-            <div className="flex items-center justify-between p-5 border-b border-slate-200 dark:border-slate-700">
-              <h2 className="text-lg font-bold text-slate-900 dark:text-white">
-                {modalConfig.mode === "CREATE"
-                  ? "Create Department"
-                  : modalConfig.mode === "UPDATE"
-                    ? "Edit Department"
-                    : "Department Details"}
-              </h2>
-              <button
-                onClick={() =>
-                  setModalConfig({ ...modalConfig, isOpen: false })
-                }
-                className="p-1 text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-full transition-colors cursor-pointer"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            {modalConfig.mode === "VIEW" && selectedItem ? (
-              <div className="p-5 space-y-5">
-                <div>
-                  <label className="block text-sm font-medium text-slate-500 dark:text-slate-400 mb-1">
-                    Department Name
-                  </label>
-                  <p className="text-slate-900 dark:text-white font-medium">
-                    {selectedItem.departmentName}
-                  </p>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-slate-500 dark:text-slate-400 mb-1">
-                    Department Code
-                  </label>
-                  <p className="font-mono text-slate-900 dark:text-white">
-                    {selectedItem.departmentCode}
-                  </p>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-slate-500 dark:text-slate-400 mb-1">
-                    Description
-                  </label>
-                  <p className="text-slate-900 dark:text-white">
-                    {selectedItem.description || "No description provided."}
-                  </p>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-slate-500 dark:text-slate-400 mb-1">
-                    Status
-                  </label>
-                  <span
-                    className={`inline-flex px-2.5 py-1 text-xs font-medium rounded-full ${
-                      selectedItem.status === "ACTIVE"
-                        ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
-                        : "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
-                    }`}
-                  >
-                    {selectedItem.status}
-                  </span>
-                </div>
-              </div>
-            ) : (
-              <form onSubmit={handleSubmit} className="p-5 space-y-5">
-                <InputField
-                  label="Department Name"
-                  name="departmentName"
-                  value={formData.departmentName}
-                  onChange={handleInputChange}
-                  error={errors.departmentName}
-                  disabled={isSubmitting}
-                  placeholder="e.g. Engineering"
-                />
-                <InputField
-                  label="Department Code"
-                  name="departmentCode"
-                  value={formData.departmentCode}
-                  onChange={handleInputChange}
-                  error={errors.departmentCode}
-                  disabled={isSubmitting}
-                  placeholder="e.g. ENG-001"
-                />
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
-                    Description{" "}
-                    <span className="text-slate-400">(Optional)</span>
-                  </label>
-                  <textarea
-                    name="description"
-                    value={formData.description}
-                    onChange={handleInputChange}
-                    disabled={isSubmitting}
-                    className={`w-full px-4 py-2.5 rounded-xl border ${
-                      errors.description
-                        ? "border-red-300 focus:ring-red-500 dark:border-red-500/50"
-                        : "border-slate-300 dark:border-slate-700 focus:ring-ems-primary"
-                    } bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:border-transparent transition-all resize-none h-24`}
-                    placeholder="Briefly describe the department's purpose..."
-                  />
-                  {errors.description && (
-                    <p className="mt-1.5 text-sm text-red-600 dark:text-red-400 font-medium">
-                      {errors.description}
-                    </p>
-                  )}
-                </div>
-
-                {modalConfig.mode === "UPDATE" && (
-                  <div>
-                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
-                      Status
-                    </label>
-                    <select
-                      name="status"
-                      value={formData.status}
-                      onChange={handleInputChange}
-                      disabled={isSubmitting}
-                      className="w-full px-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-ems-primary transition-all"
-                    >
-                      <option value="ACTIVE">Active</option>
-                      <option value="INACTIVE">Inactive</option>
-                    </select>
-                  </div>
-                )}
-
-                <div className="pt-2">
-                  <SubmitButton isSubmitting={isSubmitting}>
-                    {modalConfig.mode === "CREATE"
-                      ? "Create Department"
-                      : "Save Changes"}
-                  </SubmitButton>
-                </div>
-              </form>
-            )}
-          </div>
-        </div>
-      )}
+      {/* Modal extracted to separate component */}
+      <DepartmentModal
+        modalConfig={modalConfig}
+        setModalConfig={setModalConfig}
+        selectedItem={selectedItem}
+        formData={formData}
+        errors={errors}
+        isSubmitting={isSubmitting}
+        handleInputChange={handleInputChange}
+        handleSubmit={handleSubmit}
+      />
 
       {/* Delete Confirmation Modal */}
       {deleteConfirmId && (

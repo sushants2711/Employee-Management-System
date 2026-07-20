@@ -16,16 +16,6 @@ const projectSchema = new mongoose.Schema(
       ref: "Team",
       required: true,
     },
-    manager: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-      required: true,
-    },
-    teamLeader: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-      required: true,
-    },
     startDate: {
       type: Date,
       required: true,
@@ -39,13 +29,6 @@ const projectSchema = new mongoose.Schema(
       ref: "User",
       required: true,
     },
-    members: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "User",
-        required: true,
-      },
-    ],
     status: {
       type: String,
       enum: ["PLANNED", "IN_PROGRESS", "COMPLETED", "ON_HOLD"],

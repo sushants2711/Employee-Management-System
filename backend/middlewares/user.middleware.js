@@ -259,6 +259,7 @@ export const updatePasswordMiddleware = async (req, res, next) => {
     const schema = joi.object({
       oldPassword: joi.string().min(8).max(100).required(),
       newPassword: joi.string().min(8).max(100).required(),
+      confirmPassword: joi.string().min(8).max(100).required(),
     });
 
     const { error } = schema.validate(req.body);
@@ -392,9 +393,9 @@ export const createAccountMiddleware = async (req, res, next) => {
       confirmPassword: joi.string().min(8).max(100).required(),
       role: joi.string().valid("Employee", "Manager", "Team Leader").required(),
       phoneNumber: joi.string().length(10).trim().required(),
-      teamName: joi.string().required(),
-      designation: joi.string().required(),
-      department: joi.string().required(),
+      teamName: joi.string().hex().length(24).optional().allow(""),
+      designation: joi.string().hex().length(24).optional().allow(""),
+      department: joi.string().hex().length(24).optional().allow(""),
     });
 
     const { error } = schema.validate(req.body);
@@ -411,6 +412,75 @@ export const createAccountMiddleware = async (req, res, next) => {
       return badRequestResponse(
         res,
         "Password and Confirm Password do not match"
+      );
+    }
+
+    next();
+  } catch (error) {
+    return internalServerErrorResponse(
+      res,
+      "Internal Server Error",
+      error.message
+    );
+  }
+};
+
+// update the profile of manager
+export const updateManagerProfileMiddleware = async (req, res, next) => {
+  try {
+    const schema = joi.object({
+      password: joi.string().min(8).max(100).optional().allow(""),
+      teamName: joi.string().hex().length(24).optional().allow(""),
+      designation: joi.string().hex().length(24).optional().allow(""),
+      department: joi.string().hex().length(24).optional().allow(""),
+    });
+
+    const { error } = schema.validate(req.body);
+
+    if (error) {
+      return validationErrorResponse(
+        res,
+        "Error Occured at Update Manager Profile Validation",
+        error?.details?.[0]?.message
+      );
+    }
+
+    next();
+  } catch (error) {
+    return internalServerErrorResponse(
+      res,
+      "Internal Server Error",
+      error.message
+    );
+  }
+};
+
+// update user middleware
+export const updateUserMiddleware = async (req, res, next) => {
+  try {
+    const schema = joi.object({
+      role: joi
+        .string()
+        .valid("Employee", "Manager", "Team Leader")
+        .optional()
+        .allow(""),
+      status: joi
+        .string()
+        .valid("ACTIVE", "INACTIVE", "SUSPENDED")
+        .optional()
+        .allow(""),
+      teamName: joi.string().hex().length(24).optional().allow(""),
+      designation: joi.string().hex().length(24).optional().allow(""),
+      department: joi.string().hex().length(24).optional().allow(""),
+    });
+
+    const { error } = schema.validate(req.body);
+
+    if (error) {
+      return validationErrorResponse(
+        res,
+        "Error Occured at Update User Validation",
+        error?.details?.[0]?.message
       );
     }
 

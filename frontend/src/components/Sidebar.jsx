@@ -1,9 +1,9 @@
-import { NavLink } from "react-router-dom";
+import { NavLink, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { LogOut } from "lucide-react";
+import { LogOut, X } from "lucide-react";
 import { apiClient } from "../api/apiClient";
 
-function Sidebar() {
+function Sidebar({ onClose }) {
   const { user, logout } = useAuth();
 
   const handleLogout = async () => {
@@ -18,24 +18,26 @@ function Sidebar() {
 
   const navItems = [{ name: "Dashboard", path: "/home" }];
 
-  if (user?.role === "Management" || user?.role === "Manager") {
-    navItems.push({
-      name: "Departments",
-      path: "/home/departments",
-    });
-    navItems.push({
-      name: "Designations",
-      path: "/home/designations",
-    });
-    navItems.push({
-      name: "Teams",
-      path: "/home/teams",
-    });
-    navItems.push({
-      name: "Users",
-      path: "/home/users",
-    });
-  }
+  navItems.push({
+    name: "Departments",
+    path: "/home/departments",
+  });
+  navItems.push({
+    name: "Designations",
+    path: "/home/designations",
+  });
+  navItems.push({
+    name: "Teams",
+    path: "/home/teams",
+  });
+  navItems.push({
+    name: "Users",
+    path: "/home/users",
+  });
+  navItems.push({
+    name: "Projects",
+    path: "/home/projects",
+  });
 
   // Placeholder for future routes
   // navItems.push({ name: "Employees", path: "/home/employees", icon: Users });
@@ -43,10 +45,19 @@ function Sidebar() {
 
   return (
     <aside className="w-64 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex flex-col h-full transition-colors duration-300">
-      <div className="h-16 flex items-center px-6 border-b border-slate-200 dark:border-slate-800">
+      <div className="h-16 flex shrink-0 items-center justify-between px-6 border-b border-slate-200 dark:border-slate-800">
         <h2 className="text-lg font-bold text-transparent bg-clip-text bg-gradient-to-r from-ems-primary to-purple-500 dark:from-ems-primary-dark dark:to-purple-400">
           EMS Portal
         </h2>
+        {onClose && (
+          <button
+            onClick={onClose}
+            className="md:hidden p-2 -mr-2 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-colors"
+            aria-label="Close Menu"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        )}
       </div>
 
       <div className="flex-1 overflow-y-auto py-4 px-3 space-y-1">
@@ -57,11 +68,12 @@ function Sidebar() {
               key={item.name}
               to={item.path}
               end={item.path === "/home"}
+              onClick={onClose}
               className={({ isActive }) =>
-                `flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium transition-colors ${
+                `relative flex items-center gap-3 px-3 py-2.5 font-medium transition-colors duration-300 after:content-[''] after:absolute after:bottom-0 after:left-0 after:h-[2px] after:w-full after:bg-current after:transition-transform after:duration-500 after:ease-in-out after:origin-left ${
                   isActive
-                    ? "bg-ems-primary/10 text-ems-primary dark:bg-ems-primary-dark/20 dark:text-ems-primary-dark"
-                    : "text-slate-600 hover:bg-slate-50 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800/50 dark:hover:text-white"
+                    ? "text-slate-900 dark:text-white after:scale-x-100"
+                    : "text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white after:scale-x-0 hover:after:scale-x-100"
                 }`
               }
             >
@@ -73,10 +85,22 @@ function Sidebar() {
       </div>
 
       <div className="p-4 border-t border-slate-200 dark:border-slate-800">
-        <div className="flex items-center gap-3 px-3 py-2 mb-2">
-          <div className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-600 dark:text-slate-300 font-bold text-sm">
-            {user?.name?.charAt(0).toUpperCase()}
-          </div>
+        <Link
+          to="/home/profile"
+          onClick={onClose}
+          className="flex items-center gap-3 px-3 py-2 mb-2 hover:bg-slate-50 dark:hover:bg-slate-800/50 rounded-xl transition-colors cursor-pointer"
+        >
+          {user?.profilePicUrl ? (
+            <img
+              src={user.profilePicUrl}
+              alt="Profile"
+              className="w-8 h-8 rounded-full object-cover ring-2 ring-slate-100 dark:ring-slate-800"
+            />
+          ) : (
+            <div className="w-8 h-8 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center text-green-600 dark:text-green-400 font-bold text-sm ring-2 ring-green-50 dark:ring-green-900/20">
+              {user?.name?.charAt(0).toUpperCase() || "U"}
+            </div>
+          )}
           <div className="flex-1 min-w-0">
             <p className="text-sm font-medium text-slate-900 dark:text-white truncate">
               {user?.name}
@@ -85,7 +109,7 @@ function Sidebar() {
               {user?.role}
             </p>
           </div>
-        </div>
+        </Link>
 
         <button
           onClick={handleLogout}

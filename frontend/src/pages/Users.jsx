@@ -1,18 +1,52 @@
 import { useState, useEffect, useCallback } from "react";
-import { Plus, X, Eye } from "lucide-react";
-import { getAllUsers, createUserAccount } from "../api/authApi";
-import { getAllDepartments } from "../api/departmentApi";
-import { getAllDesignations } from "../api/designationApi";
+import {
+  Plus,
+  Users as UsersIcon,
+  Shield,
+  Briefcase,
+  Star,
+  Filter,
+} from "lucide-react";
+import {
+  getAllUsers,
+  createUserAccount,
+  updateUserDetails,
+  getEmployeesByStatus,
+  getManagementByStatus,
+  getManagersByStatus,
+  getTeamLeadersByStatus,
+} from "../api/authApi";
+import { getAllActiveTeams } from "../api/teamApi";
+import { getAllActiveDepartments } from "../api/departmentApi";
+import { getAllActiveDesignations } from "../api/designationApi";
 import { showSuccess, showError } from "../toastMessage/toastDeliver";
 import {
   validateUserManagementField,
   validateUserManagementForm,
 } from "../validators/userManagementValidators";
-import InputField from "../components/InputField";
-import SubmitButton from "../components/SubmitButton";
+import { useAuth } from "../context/AuthContext";
+import UserCard from "../features/users/UserCard";
+import UserModal from "../features/users/UserModal";
+
+const ROLE_TABS = [
+  { id: "ALL", label: "All Users", icon: UsersIcon },
+  { id: "Management", label: "Management", icon: Shield },
+  { id: "Manager", label: "Managers", icon: Briefcase },
+  { id: "Team Leader", label: "Team Leaders", icon: Star },
+  { id: "Employee", label: "Employees", icon: UsersIcon },
+];
+
+const STATUS_OPTIONS = [
+  { id: "", label: "All" },
+  { id: "ACTIVE", label: "Active" },
+  { id: "INACTIVE", label: "Inactive" },
+  { id: "SUSPENDED", label: "Suspended" },
+];
 
 function Users() {
+  const { user: authUser } = useAuth();
   const [users, setUsers] = useState([]);
+  const [teams, setTeams] = useState([]);
   const [departments, setDepartments] = useState([]);
   const [designations, setDesignations] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -22,6 +56,11 @@ function Users() {
   });
   const [selectedItem, setSelectedItem] = useState(null);
 
+  // Filters State
+  const [activeTab, setActiveTab] = useState("ALL");
+  const [activeStatus, setActiveStatus] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
+
   // Form State
   const [formData, setFormData] = useState({
     name: "",
@@ -29,6 +68,7 @@ function Users() {
     password: "",
     confirmPassword: "",
     role: "Employee",
+    status: "ACTIVE",
     phoneNumber: "",
     teamName: "",
     department: "",
@@ -40,12 +80,26 @@ function Users() {
   const fetchData = useCallback(async () => {
     try {
       setIsLoading(true);
-      const [usersRes, deptRes, desigRes] = await Promise.all([
-        getAllUsers(),
-        getAllDepartments(),
-        getAllDesignations(),
+      let usersPromise;
+      if (activeTab === "ALL")
+        usersPromise = getAllUsers(activeStatus, searchQuery);
+      else if (activeTab === "Management")
+        usersPromise = getManagementByStatus(activeStatus, searchQuery);
+      else if (activeTab === "Manager")
+        usersPromise = getManagersByStatus(activeStatus, searchQuery);
+      else if (activeTab === "Team Leader")
+        usersPromise = getTeamLeadersByStatus(activeStatus, searchQuery);
+      else if (activeTab === "Employee")
+        usersPromise = getEmployeesByStatus(activeStatus, searchQuery);
+
+      const [usersRes, teamsRes, deptRes, desigRes] = await Promise.all([
+        usersPromise.catch(() => ({ data: [] })),
+        getAllActiveTeams().catch(() => ({ data: [] })),
+        getAllActiveDepartments().catch(() => ({ data: [] })),
+        getAllActiveDesignations().catch(() => ({ data: [] })),
       ]);
       setUsers(usersRes.data || []);
+      setTeams(teamsRes.data || []);
       setDepartments(deptRes.data || []);
       setDesignations(desigRes.data || []);
     } catch (error) {
@@ -53,11 +107,13 @@ function Users() {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [activeTab, activeStatus, searchQuery]);
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    fetchData();
+    const delayDebounceFn = setTimeout(() => {
+      fetchData();
+    }, 300);
+    return () => clearTimeout(delayDebounceFn);
   }, [fetchData]);
 
   const handleInputChange = (e) => {
@@ -79,6 +135,7 @@ function Users() {
       password: "",
       confirmPassword: "",
       role: "Employee",
+      status: "ACTIVE",
       phoneNumber: "",
       teamName: "",
       department: "",
@@ -93,385 +150,287 @@ function Users() {
     setErrors({});
   };
 
+  const openEditModal = (user) => {
+    setModalConfig({ isOpen: true, mode: "EDIT" });
+    setSelectedItem(user);
+    setFormData({
+      name: user.name || "",
+      email: user.email || "",
+      password: "",
+      confirmPassword: "",
+      role: user.role || "Employee",
+      status: user.status || "ACTIVE",
+      phoneNumber: user.phoneNumber || "",
+      teamName:
+        typeof user.teamName === "object"
+          ? user.teamName?._id || ""
+          : user.teamName || "",
+      department:
+        typeof user.department === "object"
+          ? user.department?._id || ""
+          : user.department || "",
+      designation:
+        typeof user.designation === "object"
+          ? user.designation?._id || ""
+          : user.designation || "",
+    });
+    setErrors({});
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const { isValid, errors: formErrors } =
-      validateUserManagementForm(formData);
-
-    if (!isValid) {
-      setErrors(formErrors);
-      showError("Please fix the form errors");
-      return;
-    }
-
-    setIsSubmitting(true);
-    try {
-      if (modalConfig.mode === "CREATE") {
+    if (modalConfig.mode === "CREATE") {
+      const { isValid, errors: formErrors } =
+        validateUserManagementForm(formData);
+      if (!isValid) {
+        setErrors(formErrors);
+        showError("Please fix the form errors");
+        return;
+      }
+      setIsSubmitting(true);
+      try {
         await createUserAccount(formData);
         showSuccess("Account created successfully");
         setModalConfig({ isOpen: false, mode: "CREATE" });
         fetchData(); // refresh list
+      } catch (error) {
+        showError(error.message || "Failed to create account");
+      } finally {
+        setIsSubmitting(false);
       }
-    } catch (error) {
-      showError(error.message || "Failed to create account");
-    } finally {
-      setIsSubmitting(false);
+    } else if (modalConfig.mode === "EDIT") {
+      const originalRole = selectedItem.role || "Employee";
+      const originalStatus = selectedItem.status || "ACTIVE";
+      const originalTeamName =
+        typeof selectedItem.teamName === "object"
+          ? selectedItem.teamName?._id || ""
+          : selectedItem.teamName || "";
+      const originalDepartment =
+        typeof selectedItem.department === "object"
+          ? selectedItem.department?._id || ""
+          : selectedItem.department || "";
+      const originalDesignation =
+        typeof selectedItem.designation === "object"
+          ? selectedItem.designation?._id || ""
+          : selectedItem.designation || "";
+
+      if (
+        formData.role === originalRole &&
+        formData.status === originalStatus &&
+        formData.teamName === originalTeamName &&
+        formData.department === originalDepartment &&
+        formData.designation === originalDesignation
+      ) {
+        showSuccess("No changes were made");
+        setModalConfig({ ...modalConfig, isOpen: false });
+        return;
+      }
+
+      setIsSubmitting(true);
+      try {
+        const payload = {
+          role: formData.role,
+          status: formData.status,
+          teamName: formData.teamName,
+          designation: formData.designation,
+          department: formData.department,
+        };
+        await updateUserDetails(selectedItem._id, payload);
+        showSuccess("Account updated successfully");
+        setModalConfig({ ...modalConfig, isOpen: false });
+        fetchData();
+      } catch (error) {
+        showError(error.message || "Failed to update account");
+      } finally {
+        setIsSubmitting(false);
+      }
     }
   };
 
+  const filteredUsers = users;
+
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
-            Users
-          </h1>
-          <p className="text-slate-600 dark:text-slate-400 text-sm mt-1">
-            Manage company users and create accounts.
-          </p>
-        </div>
-        <button
-          onClick={openCreateModal}
-          className="flex items-center gap-2 px-4 py-2 bg-ems-primary hover:bg-blue-700 text-white rounded-xl font-medium transition-colors cursor-pointer shadow-sm"
-        >
-          <Plus className="w-5 h-5" />
-          Add User
-        </button>
-      </div>
+    <div className="flex flex-col md:flex-row gap-6 h-full">
+      {/* Sidebar Filters */}
+      <div className="w-full md:w-64 flex-shrink-0 space-y-6">
+        <div className="bg-white/60 dark:bg-slate-800/60 backdrop-blur-xl p-6 rounded-3xl shadow-sm border border-slate-200/50 dark:border-slate-700/50">
+          <h2 className="text-lg font-bold text-slate-800 dark:text-white mb-4 flex items-center gap-2">
+            <Filter size={18} className="text-blue-500" />
+            Filters
+          </h2>
 
-      {isLoading ? (
-        <div className="flex justify-center p-12">
-          <div className="w-8 h-8 border-4 border-slate-200 border-t-ems-primary rounded-full animate-spin"></div>
-        </div>
-      ) : users.length === 0 ? (
-        <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-12 text-center shadow-sm">
-          <h3 className="text-lg font-medium text-slate-900 dark:text-white mb-1">
-            No Users Found
-          </h3>
-          <p className="text-slate-500 dark:text-slate-400">
-            Get started by creating your first user account.
-          </p>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {users.map((user) => (
-            <div
-              key={user._id}
-              className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-6 shadow-sm hover:shadow-md transition-shadow group"
-            >
-              <div className="flex justify-between items-start mb-4">
-                <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
-                  {user.name}
-                </h3>
-                <span
-                  className={`px-2.5 py-1 text-xs font-medium rounded-full ${
-                    user.status === "ACTIVE"
-                      ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
-                      : "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
-                  }`}
+          <div className="space-y-6">
+            {/* Search Filter */}
+            <div>
+              <label className="block text-sm font-semibold text-slate-600 dark:text-slate-400 mb-2">
+                Search
+              </label>
+              <div className="relative">
+                <input
+                  type="text"
+                  placeholder="Search users..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full pl-10 pr-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-sm text-slate-700 dark:text-slate-300 transition-shadow"
+                />
+                <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-slate-400">
+                  <svg className="w-4 h-4 fill-current" viewBox="0 0 20 20">
+                    <path
+                      fillRule="evenodd"
+                      d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                </div>
+              </div>
+            </div>
+
+            {/* Status Filter */}
+            <div>
+              <label className="block text-sm font-semibold text-slate-600 dark:text-slate-400 mb-2">
+                Status
+              </label>
+              <div className="relative">
+                <select
+                  value={activeStatus}
+                  onChange={(e) => setActiveStatus(e.target.value)}
+                  className="w-full pl-3 pr-10 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none appearance-none text-sm text-slate-700 dark:text-slate-300 transition-shadow cursor-pointer"
                 >
-                  {user.status || "ACTIVE"}
-                </span>
-              </div>
-              <p className="text-sm text-slate-600 dark:text-slate-400 mb-2 truncate">
-                {user.email}
-              </p>
-              <div className="mb-4 text-sm text-slate-500 dark:text-slate-400 space-y-1">
-                <div>
-                  Role:{" "}
-                  <span className="font-medium text-slate-700 dark:text-slate-300">
-                    {user.role}
-                  </span>
-                </div>
-                <div>
-                  Department:{" "}
-                  <span className="font-medium text-slate-700 dark:text-slate-300">
-                    {user.department?.departmentName || "Unknown"}
-                  </span>
-                </div>
-              </div>
-              <div className="flex items-center justify-between text-sm text-slate-500 dark:text-slate-400 mt-2 border-t border-slate-100 dark:border-slate-700 pt-3">
-                <span className="font-mono bg-slate-100 dark:bg-slate-900 px-2 py-1 rounded">
-                  {user.employeeId || "No ID"}
-                </span>
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => openViewModal(user)}
-                    className="p-1.5 hover:bg-green-50 hover:text-green-600 dark:hover:bg-green-900/30 dark:hover:text-green-400 rounded-lg transition-colors cursor-pointer"
-                    title="View Details"
-                  >
-                    <Eye className="w-4 h-4" />
-                  </button>
+                  {STATUS_OPTIONS.map((status) => (
+                    <option key={status.id} value={status.id}>
+                      {status.label}
+                    </option>
+                  ))}
+                </select>
+                <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-slate-400">
+                  <svg className="w-4 h-4 fill-current" viewBox="0 0 20 20">
+                    <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
+                  </svg>
                 </div>
               </div>
             </div>
-          ))}
-        </div>
-      )}
 
-      {/* Create User Modal */}
-      {modalConfig.isOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm overflow-y-auto pt-24 pb-10">
-          <div className="bg-white dark:bg-slate-800 w-full max-w-lg rounded-2xl shadow-xl overflow-hidden animate-in fade-in zoom-in-95 duration-200 my-auto">
-            <div className="flex items-center justify-between p-5 border-b border-slate-200 dark:border-slate-700">
-              <h2 className="text-lg font-bold text-slate-900 dark:text-white">
-                {modalConfig.mode === "CREATE"
-                  ? "Create Account"
-                  : "User Details"}
-              </h2>
-              <button
-                onClick={() =>
-                  setModalConfig({ ...modalConfig, isOpen: false })
-                }
-                className="p-1 text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-full transition-colors cursor-pointer"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            {modalConfig.mode === "VIEW" && selectedItem ? (
-              <div className="p-5 space-y-4 max-h-[70vh] overflow-y-auto">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-slate-500 dark:text-slate-400 mb-1">
-                      Name
-                    </label>
-                    <p className="text-slate-900 dark:text-white font-medium">
-                      {selectedItem.name}
-                    </p>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-slate-500 dark:text-slate-400 mb-1">
-                      Employee ID
-                    </label>
-                    <p className="font-mono text-slate-900 dark:text-white">
-                      {selectedItem.employeeId || "N/A"}
-                    </p>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-slate-500 dark:text-slate-400 mb-1">
-                      Email
-                    </label>
-                    <p className="text-slate-900 dark:text-white truncate">
-                      {selectedItem.email}
-                    </p>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-slate-500 dark:text-slate-400 mb-1">
-                      Phone Number
-                    </label>
-                    <p className="text-slate-900 dark:text-white">
-                      {selectedItem.phoneNumber}
-                    </p>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-slate-500 dark:text-slate-400 mb-1">
-                      Role
-                    </label>
-                    <p className="text-slate-900 dark:text-white font-medium">
-                      {selectedItem.role}
-                    </p>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-slate-500 dark:text-slate-400 mb-1">
-                      Status
-                    </label>
-                    <span
-                      className={`inline-flex px-2.5 py-1 text-xs font-medium rounded-full ${
-                        selectedItem.status === "ACTIVE"
-                          ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
-                          : "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
+            {/* Role Tabs */}
+            <div>
+              <label className="block text-sm font-semibold text-slate-600 dark:text-slate-400 mb-2">
+                Categories
+              </label>
+              <div className="space-y-1">
+                {ROLE_TABS.map((tab) => {
+                  const Icon = tab.icon;
+                  const isActive = activeTab === tab.id;
+                  return (
+                    <button
+                      key={tab.id}
+                      onClick={() => setActiveTab(tab.id)}
+                      className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-300 ${
+                        isActive
+                          ? "bg-blue-500 text-white shadow-md shadow-blue-500/20"
+                          : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700/50 hover:text-slate-900 dark:hover:text-white"
                       }`}
                     >
-                      {selectedItem.status || "ACTIVE"}
-                    </span>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-slate-500 dark:text-slate-400 mb-1">
-                      Department
-                    </label>
-                    <p className="text-slate-900 dark:text-white">
-                      {selectedItem.department?.departmentName || "Unknown"}
-                    </p>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-slate-500 dark:text-slate-400 mb-1">
-                      Designation
-                    </label>
-                    <p className="text-slate-900 dark:text-white">
-                      {selectedItem.designation?.designationName || "Unknown"}
-                    </p>
-                  </div>
-                  <div className="col-span-2">
-                    <label className="block text-sm font-medium text-slate-500 dark:text-slate-400 mb-1">
-                      Team Name
-                    </label>
-                    <p className="text-slate-900 dark:text-white">
-                      {typeof selectedItem.teamName === "object"
-                        ? selectedItem.teamName?.teamName
-                        : selectedItem.teamName}
-                    </p>
-                  </div>
-                </div>
+                      <Icon
+                        size={18}
+                        className={
+                          isActive
+                            ? "text-white"
+                            : "text-slate-400 dark:text-slate-500"
+                        }
+                      />
+                      {tab.label}
+                    </button>
+                  );
+                })}
               </div>
-            ) : (
-              <form
-                onSubmit={handleSubmit}
-                className="p-5 space-y-4 max-h-[70vh] overflow-y-auto"
-              >
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <InputField
-                    label="Name"
-                    name="name"
-                    value={formData.name}
-                    onChange={handleInputChange}
-                    error={errors.name}
-                    disabled={isSubmitting}
-                    placeholder="e.g. John Doe"
-                  />
-                  <InputField
-                    label="Email"
-                    name="email"
-                    type="email"
-                    value={formData.email}
-                    onChange={handleInputChange}
-                    error={errors.email}
-                    disabled={isSubmitting}
-                    placeholder="john@example.com"
-                  />
-                  <InputField
-                    label="Password"
-                    name="password"
-                    type="password"
-                    value={formData.password}
-                    onChange={handleInputChange}
-                    error={errors.password}
-                    disabled={isSubmitting}
-                    placeholder="••••••••"
-                  />
-                  <InputField
-                    label="Confirm Password"
-                    name="confirmPassword"
-                    type="password"
-                    value={formData.confirmPassword}
-                    onChange={handleInputChange}
-                    error={errors.confirmPassword}
-                    disabled={isSubmitting}
-                    placeholder="••••••••"
-                  />
-                  <InputField
-                    label="Phone Number"
-                    name="phoneNumber"
-                    value={formData.phoneNumber}
-                    onChange={handleInputChange}
-                    error={errors.phoneNumber}
-                    disabled={isSubmitting}
-                    placeholder="1234567890"
-                  />
-                  <div>
-                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
-                      Role
-                    </label>
-                    <select
-                      name="role"
-                      value={formData.role}
-                      onChange={handleInputChange}
-                      disabled={isSubmitting}
-                      className={`w-full px-4 py-2.5 rounded-xl border ${
-                        errors.role
-                          ? "border-red-300 focus:ring-red-500 dark:border-red-500/50"
-                          : "border-slate-300 dark:border-slate-700 focus:ring-ems-primary"
-                      } bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:border-transparent transition-all`}
-                    >
-                      <option value="Employee">Employee</option>
-                      <option value="Manager">Manager</option>
-                      <option value="Team Leader">Team Leader</option>
-                    </select>
-                    {errors.role && (
-                      <p className="mt-1.5 text-sm text-red-600 dark:text-red-400 font-medium">
-                        {errors.role}
-                      </p>
-                    )}
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
-                      Department
-                    </label>
-                    <select
-                      name="department"
-                      value={formData.department}
-                      onChange={handleInputChange}
-                      disabled={isSubmitting}
-                      className={`w-full px-4 py-2.5 rounded-xl border ${
-                        errors.department
-                          ? "border-red-300 focus:ring-red-500 dark:border-red-500/50"
-                          : "border-slate-300 dark:border-slate-700 focus:ring-ems-primary"
-                      } bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:border-transparent transition-all`}
-                    >
-                      <option value="">Select a department</option>
-                      {departments.map((dept) => (
-                        <option key={dept._id} value={dept._id}>
-                          {dept.departmentName}
-                        </option>
-                      ))}
-                    </select>
-                    {errors.department && (
-                      <p className="mt-1.5 text-sm text-red-600 dark:text-red-400 font-medium">
-                        {errors.department}
-                      </p>
-                    )}
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
-                      Designation
-                    </label>
-                    <select
-                      name="designation"
-                      value={formData.designation}
-                      onChange={handleInputChange}
-                      disabled={isSubmitting}
-                      className={`w-full px-4 py-2.5 rounded-xl border ${
-                        errors.designation
-                          ? "border-red-300 focus:ring-red-500 dark:border-red-500/50"
-                          : "border-slate-300 dark:border-slate-700 focus:ring-ems-primary"
-                      } bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:border-transparent transition-all`}
-                    >
-                      <option value="">Select a designation</option>
-                      {designations.map((desig) => (
-                        <option key={desig._id} value={desig._id}>
-                          {desig.designationName}
-                        </option>
-                      ))}
-                    </select>
-                    {errors.designation && (
-                      <p className="mt-1.5 text-sm text-red-600 dark:text-red-400 font-medium">
-                        {errors.designation}
-                      </p>
-                    )}
-                  </div>
-                  <div className="sm:col-span-2">
-                    <InputField
-                      label="Team Name"
-                      name="teamName"
-                      value={formData.teamName}
-                      onChange={handleInputChange}
-                      error={errors.teamName}
-                      disabled={isSubmitting}
-                      placeholder="e.g. Frontend Team"
-                    />
-                  </div>
-                </div>
-                <div className="pt-2">
-                  <SubmitButton isSubmitting={isSubmitting}>
-                    Create Account
-                  </SubmitButton>
-                </div>
-              </form>
-            )}
+            </div>
           </div>
         </div>
-      )}
+      </div>
+
+      {/* Main Content */}
+      <div className="flex-1 space-y-6">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white/60 dark:bg-slate-800/60 backdrop-blur-xl p-6 rounded-3xl shadow-sm border border-slate-200/50 dark:border-slate-700/50">
+          <div>
+            <h1 className="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
+              Users
+            </h1>
+            <p className="text-slate-600 dark:text-slate-400 text-sm mt-1">
+              Manage company users and create accounts.
+            </p>
+          </div>
+          {authUser?.role === "Management" && (
+            <button
+              onClick={openCreateModal}
+              className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-xl font-medium transition-all duration-300 shadow-md shadow-blue-500/20 hover:shadow-lg hover:-translate-y-0.5"
+            >
+              <Plus className="w-5 h-5" />
+              Add User
+            </button>
+          )}
+        </div>
+
+        {isLoading ? (
+          <div className="flex justify-center p-12">
+            <div className="w-10 h-10 border-4 border-slate-200 border-t-blue-600 rounded-full animate-spin"></div>
+          </div>
+        ) : filteredUsers.length === 0 ? (
+          <div className="bg-white/60 dark:bg-slate-800/60 backdrop-blur-xl rounded-3xl border border-slate-200/50 dark:border-slate-700/50 p-16 text-center shadow-sm">
+            <div className="w-20 h-20 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-6">
+              <UsersIcon
+                size={32}
+                className="text-slate-400 dark:text-slate-500"
+              />
+            </div>
+            <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">
+              No Users Found
+            </h3>
+            <p className="text-slate-500 dark:text-slate-400 max-w-md mx-auto">
+              {activeStatus || activeTab !== "ALL" || searchQuery
+                ? "No users match your current filter criteria. Try adjusting your filters."
+                : "Get started by creating your first user account."}
+            </p>
+            {(activeStatus || activeTab !== "ALL" || searchQuery) && (
+              <button
+                onClick={() => {
+                  setActiveTab("ALL");
+                  setActiveStatus("");
+                  setSearchQuery("");
+                }}
+                className="mt-6 text-blue-600 dark:text-blue-400 font-medium hover:underline"
+              >
+                Clear Filters
+              </button>
+            )}
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+            {filteredUsers.map((user) => (
+              <UserCard
+                key={user._id}
+                user={user}
+                authUser={authUser}
+                openViewModal={openViewModal}
+                openEditModal={openEditModal}
+              />
+            ))}
+          </div>
+        )}
+
+        <UserModal
+          modalConfig={modalConfig}
+          setModalConfig={setModalConfig}
+          selectedItem={selectedItem}
+          formData={formData}
+          errors={errors}
+          isSubmitting={isSubmitting}
+          departments={departments}
+          designations={designations}
+          teams={teams}
+          handleSubmit={handleSubmit}
+          handleInputChange={handleInputChange}
+        />
+      </div>
     </div>
   );
 }

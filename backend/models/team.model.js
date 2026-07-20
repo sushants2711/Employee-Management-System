@@ -10,13 +10,14 @@ const teamSchema = new mongoose.Schema(
     teamLead: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
+      required: true,
       unique: true,
-      default: null,
     },
     manager: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       required: true,
+      unique: true,
     },
     teamDescription: {
       type: String,
@@ -36,6 +37,14 @@ const teamSchema = new mongoose.Schema(
       ref: "User",
       required: true,
     },
+    members: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+        required: true,
+        unique: true,
+      },
+    ],
   },
   { timestamps: true, minimize: true }
 );

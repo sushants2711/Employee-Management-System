@@ -20,6 +20,9 @@ import { sendCookieToUser } from "../utils/send.cookie.js";
 import { cookieOptionsSetting } from "../utils/cookieOptions.js";
 import { verifyMongoDBId } from "../utils/verifyMongoId.js";
 import cloudinary from "../config/cloudinary.config.js";
+import teamModel from "../models/team.model.js";
+import designationModel from "../models/designation.model.js";
+import departmentModel from "../models/department.model.js";
 
 // management signup (usign email otp)
 export const signupManagementController = async (req, res) => {
@@ -950,7 +953,7 @@ export const allUsersControllers = async (req, res) => {
     const {
       role,
       status,
-      name,
+      search,
       employeeId,
       teamName,
       designation,
@@ -961,7 +964,12 @@ export const allUsersControllers = async (req, res) => {
 
     if (role) query.role = role;
     if (status) query.status = status;
-    if (name) query.name = name;
+    if (search) {
+      query.$or = [
+        { name: { $regex: search, $options: "i" } },
+        { email: { $regex: search, $options: "i" } },
+      ];
+    }
     if (employeeId) query.employeeId = employeeId;
     if (teamName) query.teamName = teamName;
     if (designation) query.designation = designation;
@@ -971,7 +979,8 @@ export const allUsersControllers = async (req, res) => {
       .find(query)
       .populate("teamName", "teamName")
       .populate("designation", "designationName")
-      .populate("department", "departmentName");
+      .populate("department", "departmentName")
+      .populate("createdAccount", "name");
 
     if (!allData || allData.length === 0 || !Array.isArray(allData)) {
       return notFoundResponse(res, "No data found");
@@ -1060,7 +1069,7 @@ export const createAccountForUserController = async (req, res) => {
 
     const hashedPassword = await hashPassword(password);
 
-    const empId = generateEmpId();
+    const empId = await generateEmpId();
 
     const newUserAccount = new userModel({
       employeeId: empId,
@@ -1069,9 +1078,9 @@ export const createAccountForUserController = async (req, res) => {
       password: hashedPassword,
       role,
       phoneNumber,
-      teamName,
-      designation,
-      department,
+      teamName: teamName || null,
+      designation: designation || null,
+      department: department || null,
       createdAccount: id,
     });
 
@@ -1114,31 +1123,47 @@ export const checkManagementCountController = async (req, res) => {
   }
 };
 
-// get all manager
-export const getAllManagersController = async (req, res) => {
+// get profile update of manager itself
+export const updateProfileManagerController = async (req, res) => {
   try {
-    const allManagers = await userModel
-      .find({
-        role: "Management",
-        isManagementVerified: true,
-        status: "ACTIVE",
-      })
-      .populate("teamName", "teamName")
-      .populate("department", "departmentName")
-      .select("-password");
+    const loggedInUser = req.user;
 
-    if (
-      !allManagers ||
-      allManagers.length === 0 ||
-      !Array.isArray(allManagers)
-    ) {
-      return notFoundResponse(res, "No managers found");
+    const { password, teamName, designation, department } = req.body;
+
+    if (password) {
+      const hashedPassword = await hashPassword(password);
+      loggedInUser.password = hashedPassword;
     }
+
+    if (teamName) {
+      const teamExist = await teamModel.findById(teamName);
+      if (!teamExist) return badRequestResponse(res, "Invalid Team");
+      loggedInUser.teamName = teamName;
+    }
+
+    if (designation) {
+      const designationExist = await designationModel.findById(designation);
+      if (!designationExist)
+        return badRequestResponse(res, "Invalid Designation");
+      loggedInUser.designation = designation;
+    }
+
+    if (department) {
+      const departmentExist = await departmentModel.findById(department);
+      if (!departmentExist)
+        return badRequestResponse(res, "Invalid Department");
+      loggedInUser.department = department;
+    }
+
+    const savedData = await loggedInUser.save();
+
+    const dataSendToClient = savedData.toObject();
+    delete dataSendToClient.password;
 
     return successResponse(
       res,
-      "All managers fetched successfully",
-      allManagers
+      "Profile updated successfully",
+      dataSendToClient
     );
   } catch (error) {
     return internalServerErrorResponse(
@@ -1149,4 +1174,269 @@ export const getAllManagersController = async (req, res) => {
   }
 };
 
+// get loggedin user details
+export const getLoggedInUserDetailsController = async (req, res) => {
+  try {
+    const loggedInUser = req.user;
+
+    const userExist = await userModel
+      .findById(loggedInUser._id)
+      .populate("teamName", "teamName")
+      .populate("designation", "designationName")
+      .populate("department", "departmentName");
+
+    if (!userExist) {
+      return notFoundResponse(res, "User not found");
+    }
+
+    const dataSendToClient = userExist.toObject();
+    delete dataSendToClient.password;
+
+    return successResponse(res, "User fetched successfully", dataSendToClient);
+  } catch (error) {
+    return internalServerErrorResponse(
+      res,
+      "Internal Server Error",
+      error.message
+    );
+  }
+};
+
+// update the user controller
+export const updateUserByManagementController = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const loggedInUser = req.user;
+
+    const { role, status, teamName, designation, department } = req.body;
+
+    const isVerified = verifyMongoDBId(id, res);
+
+    if (isVerified !== true) return isVerified;
+
+    const userExist = await userModel.findById(id);
+
+    if (!userExist) return notFoundResponse(res, "User not found");
+
+    if (userExist.role === "Management")
+      return badRequestResponse(res, "You can not update the user role");
+
+    if (role && role !== "Management") {
+      userExist.role = role;
+      userExist.updateByRole = loggedInUser._id;
+    }
+
+    if (status) {
+      userExist.status = status;
+      userExist.updateByStatus = loggedInUser._id;
+    }
+
+    if (teamName) {
+      const teamExist = await teamModel.findById(teamName);
+      if (!teamExist) return badRequestResponse(res, "Invalid Team");
+      userExist.teamName = teamName;
+    }
+    if (designation) {
+      const designationExist = await designationModel.findById(designation);
+      if (!designationExist)
+        return badRequestResponse(res, "Invalid Designation");
+      userExist.designation = designation;
+    }
+    if (department) {
+      const departmentExist = await departmentModel.findById(department);
+      if (!departmentExist)
+        return badRequestResponse(res, "Invalid Department");
+      userExist.department = department;
+    }
+
+    const savedData = await userExist.save();
+
+    const dataSendToClient = savedData.toObject();
+    delete dataSendToClient.password;
+
+    return successResponse(res, "User updated successfully", dataSendToClient);
+  } catch (error) {
+    return internalServerErrorResponse(
+      res,
+      "Internal Server Error",
+      error.message
+    );
+  }
+};
+
+// get all employee
+export const getAllEmployeeControllers = async (req, res) => {
+  try {
+    const { search, status } = req.query;
+
+    let filter = {};
+
+    if (search) {
+      filter.$or = [
+        { name: { $regex: search, $options: "i" } },
+        { email: { $regex: search, $options: "i" } },
+      ];
+    }
+    if (status) filter.status = status;
+
+    const allEmployee = await userModel
+      .find({ role: "Employee", ...filter })
+      .populate(
+        "teamName",
+        "teamName teamLead manager status department createdBy members"
+      )
+      .populate("designation", "designationName designationCode")
+      .populate("department", "departmentName departmentCode");
+
+    if (
+      !allEmployee ||
+      allEmployee.length === 0 ||
+      !Array.isArray(allEmployee)
+    ) {
+      return notFoundResponse(res, "No employee found");
+    }
+
+    return successResponse(
+      res,
+      "All employee fetched successfully",
+      allEmployee
+    );
+  } catch (error) {
+    return internalServerErrorResponse(
+      res,
+      "Internal Server Error",
+      error.message
+    );
+  }
+};
+
+// get all management
+export const getAllManagementControllers = async (req, res) => {
+  try {
+    const { search, status } = req.query;
+
+    let filter = {};
+
+    if (search) {
+      filter.$or = [
+        { name: { $regex: search, $options: "i" } },
+        { email: { $regex: search, $options: "i" } },
+      ];
+    }
+    if (status) filter.status = status;
+
+    const allManagement = await userModel
+      .find({ role: "Management", ...filter })
+      .populate(
+        "teamName",
+        "teamName teamLead manager status department createdBy members"
+      )
+      .populate("designation", "designationName designationCode")
+      .populate("department", "departmentName departmentCode");
+
+    if (
+      !allManagement ||
+      allManagement.length === 0 ||
+      !Array.isArray(allManagement)
+    ) {
+      return notFoundResponse(res, "No management found");
+    }
+
+    return successResponse(
+      res,
+      "All management fetched successfully",
+      allManagement
+    );
+  } catch (error) {
+    return internalServerErrorResponse(
+      res,
+      "Internal Server Error",
+      error.message
+    );
+  }
+};
+
+// get all manager
+export const getAllManagerControllers = async (req, res) => {
+  try {
+    const { search, status } = req.query;
+
+    let filter = {};
+
+    if (search) {
+      filter.$or = [
+        { name: { $regex: search, $options: "i" } },
+        { email: { $regex: search, $options: "i" } },
+      ];
+    }
+    if (status) filter.status = status;
+
+    const allManager = await userModel
+      .find({ role: "Manager", ...filter })
+      .populate(
+        "teamName",
+        "teamName teamLead manager status department createdBy members"
+      )
+      .populate("designation", "designationName designationCode")
+      .populate("department", "departmentName departmentCode");
+
+    if (!allManager || allManager.length === 0 || !Array.isArray(allManager)) {
+      return notFoundResponse(res, "No manager found");
+    }
+
+    return successResponse(res, "All manager fetched successfully", allManager);
+  } catch (error) {
+    return internalServerErrorResponse(
+      res,
+      "Internal Server Error",
+      error.message
+    );
+  }
+};
+
 // get all team leader
+export const getAllTeamLeaderControllers = async (req, res) => {
+  try {
+    const { search, status } = req.query;
+
+    let filter = {};
+
+    if (search) {
+      filter.$or = [
+        { name: { $regex: search, $options: "i" } },
+        { email: { $regex: search, $options: "i" } },
+      ];
+    }
+    if (status) filter.status = status;
+
+    const allTeamLeader = await userModel
+      .find({ role: "Team Leader", ...filter })
+      .populate(
+        "teamName",
+        "teamName teamLead manager status department createdBy members"
+      )
+      .populate("designation", "designationName designationCode")
+      .populate("department", "departmentName departmentCode");
+
+    if (
+      !allTeamLeader ||
+      allTeamLeader.length === 0 ||
+      !Array.isArray(allTeamLeader)
+    ) {
+      return notFoundResponse(res, "No team leader found");
+    }
+
+    return successResponse(
+      res,
+      "All team leader fetched successfully",
+      allTeamLeader
+    );
+  } catch (error) {
+    return internalServerErrorResponse(
+      res,
+      "Internal Server Error",
+      error.message
+    );
+  }
+};

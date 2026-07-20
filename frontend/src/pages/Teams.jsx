@@ -1,25 +1,33 @@
-import { useState, useEffect, useCallback } from "react";
-import { Plus, X, Edit2, Trash2, Eye } from "lucide-react";
+import { useState, useEffect, useCallback, useMemo } from "react";
+import { Plus, Trash2 } from "lucide-react";
 import {
   createTeam,
   getAllTeams,
   updateTeam,
   deleteTeam,
 } from "../api/teamApi";
-import { getAllDepartments } from "../api/departmentApi";
-import { getAllUsers } from "../api/authApi";
+import { getAllActiveDepartments } from "../api/departmentApi";
+import {
+  getAllEmployees,
+  getAllActiveManagers,
+  getAllActiveTeamLeaders,
+} from "../api/authApi";
 import { showSuccess, showError } from "../toastMessage/toastDeliver";
 import {
   validateTeamField,
   validateTeamForm,
 } from "../validators/teamValidators";
-import InputField from "../components/InputField";
-import SubmitButton from "../components/SubmitButton";
+import { useAuth } from "../context/AuthContext";
+import TeamCard from "../features/teams/TeamCard";
+import TeamModal from "../features/teams/TeamModal";
 
 function Teams() {
+  const { user } = useAuth();
   const [teams, setTeams] = useState([]);
   const [departments, setDepartments] = useState([]);
   const [users, setUsers] = useState([]);
+  const [managers, setManagers] = useState([]);
+  const [teamLeaders, setTeamLeaders] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [modalConfig, setModalConfig] = useState({
     isOpen: false,
@@ -29,6 +37,10 @@ function Teams() {
   const [deleteConfirmId, setDeleteConfirmId] = useState(null);
   const [selectedItem, setSelectedItem] = useState(null);
 
+  // Filters State
+  const [searchQuery, setSearchQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState("");
+
   // Form State
   const [formData, setFormData] = useState({
     teamName: "",
@@ -37,6 +49,7 @@ function Teams() {
     manager: "",
     teamLead: "",
     status: "ACTIVE",
+    members: [],
   });
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -44,25 +57,63 @@ function Teams() {
   const fetchData = useCallback(async () => {
     try {
       setIsLoading(true);
-      const [teamsRes, deptRes, usersRes] = await Promise.all([
-        getAllTeams(),
-        getAllDepartments(),
-        getAllUsers(),
-      ]);
+      const [teamsRes, deptRes, usersRes, managersRes, teamLeadersRes] =
+        await Promise.all([
+          getAllTeams(statusFilter, searchQuery).catch(() => ({ data: [] })),
+          getAllActiveDepartments().catch(() => ({ data: [] })),
+          getAllEmployees().catch(() => ({ data: [] })),
+          getAllActiveManagers().catch(() => ({ data: [] })),
+          getAllActiveTeamLeaders().catch(() => ({ data: [] })),
+        ]);
       setTeams(teamsRes.data || []);
       setDepartments(deptRes.data || []);
       setUsers(usersRes.data || []);
+      setManagers(managersRes.data || []);
+      setTeamLeaders(teamLeadersRes.data || []);
     } catch (error) {
       showError(error.message || "Failed to fetch data");
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [statusFilter, searchQuery]);
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    fetchData();
+    const delayDebounceFn = setTimeout(() => {
+      fetchData();
+    }, 300);
+    return () => clearTimeout(delayDebounceFn);
   }, [fetchData]);
+
+  const assignedUserIds = useMemo(() => {
+    const ids = new Set();
+    teams.forEach((team) => {
+      // If we are updating, skip the current team so its members can still be selected
+      if (modalConfig.mode === "UPDATE" && team._id === modalConfig.teamId) {
+        return;
+      }
+      if (team.status === "ACTIVE") {
+        if (team.teamLead) ids.add(team.teamLead._id || team.teamLead);
+        if (team.manager) ids.add(team.manager._id || team.manager);
+        if (team.members && Array.isArray(team.members)) {
+          team.members.forEach((m) => ids.add(m._id || m));
+        }
+      }
+    });
+    return ids;
+  }, [teams, modalConfig]);
+
+  const availableUsers = useMemo(
+    () => users.filter((u) => !assignedUserIds.has(u._id)),
+    [users, assignedUserIds]
+  );
+  const availableManagers = useMemo(
+    () => managers.filter((m) => !assignedUserIds.has(m._id)),
+    [managers, assignedUserIds]
+  );
+  const availableTeamLeaders = useMemo(
+    () => teamLeaders.filter((t) => !assignedUserIds.has(t._id)),
+    [teamLeaders, assignedUserIds]
+  );
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -81,6 +132,7 @@ function Teams() {
       manager: "",
       teamLead: "",
       status: "ACTIVE",
+      members: [],
     });
     setErrors({});
   };
@@ -100,6 +152,7 @@ function Teams() {
       manager: team.manager?._id || team.manager,
       teamLead: team.teamLead?._id || team.teamLead || "",
       status: team.status,
+      members: team.members?.map((m) => m._id || m) || [],
     });
     setErrors({});
   };
@@ -129,9 +182,9 @@ function Teams() {
     setIsSubmitting(true);
     try {
       const submitData = { ...formData };
-      if (!submitData.teamLead) delete submitData.teamLead; // Optional field
 
       if (modalConfig.mode === "CREATE") {
+        delete submitData.status;
         await createTeam(submitData);
         showSuccess("Team created successfully");
       } else {
@@ -160,353 +213,108 @@ function Teams() {
             Manage company teams and assignments.
           </p>
         </div>
-        <button
-          onClick={openCreateModal}
-          className="flex items-center gap-2 px-4 py-2 bg-ems-primary hover:bg-blue-700 text-white rounded-xl font-medium transition-colors cursor-pointer shadow-sm"
-        >
-          <Plus className="w-5 h-5" />
-          Add Team
-        </button>
+        {user?.role === "Management" && (
+          <button
+            onClick={openCreateModal}
+            className="flex items-center gap-2 px-4 py-2 bg-ems-primary hover:bg-blue-700 text-white rounded-xl font-medium transition-colors cursor-pointer shadow-sm"
+          >
+            <Plus className="w-5 h-5" />
+            Add Team
+          </button>
+        )}
+      </div>
+
+      {/* Filter Bar */}
+      <div className="flex flex-col sm:flex-row gap-4">
+        <div className="relative flex-1 max-w-md">
+          <input
+            type="text"
+            placeholder="Search teams..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full pl-10 pr-3 py-2 bg-white/60 dark:bg-slate-800/60 backdrop-blur-xl border border-slate-200/50 dark:border-slate-700/50 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-sm text-slate-700 dark:text-slate-300 transition-shadow shadow-sm"
+          />
+          <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-slate-400">
+            <svg className="w-4 h-4 fill-current" viewBox="0 0 20 20">
+              <path
+                fillRule="evenodd"
+                d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
+                clipRule="evenodd"
+              />
+            </svg>
+          </div>
+        </div>
+        <div className="relative">
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            className="w-full sm:w-48 pl-3 pr-10 py-2 bg-white/60 dark:bg-slate-800/60 backdrop-blur-xl border border-slate-200/50 dark:border-slate-700/50 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none appearance-none text-sm text-slate-700 dark:text-slate-300 transition-shadow shadow-sm cursor-pointer"
+          >
+            <option value="">All</option>
+            <option value="ACTIVE">Active</option>
+            <option value="INACTIVE">Inactive</option>
+          </select>
+          <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-slate-400">
+            <svg className="w-4 h-4 fill-current" viewBox="0 0 20 20">
+              <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
+            </svg>
+          </div>
+        </div>
       </div>
 
       {isLoading ? (
         <div className="flex justify-center p-12">
           <div className="w-8 h-8 border-4 border-slate-200 border-t-ems-primary rounded-full animate-spin"></div>
         </div>
-      ) : teams.length === 0 ? (
-        <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-12 text-center shadow-sm">
-          <h3 className="text-lg font-medium text-slate-900 dark:text-white mb-1">
-            No Teams Found
-          </h3>
-          <p className="text-slate-500 dark:text-slate-400">
-            Get started by creating your first team.
-          </p>
-        </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {teams.map((team) => (
-            <div
-              key={team._id}
-              className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-6 shadow-sm hover:shadow-md transition-shadow group"
-            >
-              <div className="flex justify-between items-start mb-4">
-                <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
-                  {team.teamName}
+        (() => {
+          if (teams.length === 0) {
+            return (
+              <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-12 text-center shadow-sm">
+                <h3 className="text-lg font-medium text-slate-900 dark:text-white mb-1">
+                  No Teams Found
                 </h3>
-                <span
-                  className={`px-2.5 py-1 text-xs font-medium rounded-full ${
-                    team.status === "ACTIVE"
-                      ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
-                      : "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
-                  }`}
-                >
-                  {team.status}
-                </span>
+                <p className="text-slate-500 dark:text-slate-400">
+                  {searchQuery || statusFilter
+                    ? "No teams match your filters."
+                    : "Get started by creating your first team."}
+                </p>
               </div>
-              <p className="text-sm text-slate-600 dark:text-slate-400 mb-4 line-clamp-2 min-h-[40px]">
-                {team.teamDescription || "No description provided."}
-              </p>
+            );
+          }
 
-              <div className="mb-4 text-sm text-slate-500 dark:text-slate-400 space-y-1">
-                <div>
-                  Dept:{" "}
-                  <span className="font-medium text-slate-700 dark:text-slate-300">
-                    {team.department?.departmentName || "Unknown"}
-                  </span>
-                </div>
-                <div>
-                  Manager:{" "}
-                  <span className="font-medium text-slate-700 dark:text-slate-300">
-                    {team.manager?.name || "Unknown"}
-                  </span>
-                </div>
-                {team.teamLead && (
-                  <div>
-                    Lead:{" "}
-                    <span className="font-medium text-slate-700 dark:text-slate-300">
-                      {team.teamLead?.name || "Unknown"}
-                    </span>
-                  </div>
-                )}
-              </div>
-
-              <div className="flex items-center justify-end text-sm text-slate-500 dark:text-slate-400 mt-2 border-t border-slate-100 dark:border-slate-700 pt-3">
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => openViewModal(team)}
-                    className="p-1.5 hover:bg-green-50 hover:text-green-600 dark:hover:bg-green-900/30 dark:hover:text-green-400 rounded-lg transition-colors cursor-pointer"
-                    title="View Details"
-                  >
-                    <Eye className="w-4 h-4" />
-                  </button>
-                  <button
-                    onClick={() => openUpdateModal(team)}
-                    className="p-1.5 hover:bg-blue-50 hover:text-blue-600 dark:hover:bg-blue-900/30 dark:hover:text-blue-400 rounded-lg transition-colors cursor-pointer"
-                    title="Edit Team"
-                  >
-                    <Edit2 className="w-4 h-4" />
-                  </button>
-                  <button
-                    onClick={() => setDeleteConfirmId(team._id)}
-                    className="p-1.5 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-900/30 dark:hover:text-red-400 rounded-lg transition-colors cursor-pointer"
-                    title="Delete Team"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                </div>
-              </div>
+          return (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {teams.map((team) => (
+                <TeamCard
+                  key={team._id}
+                  team={team}
+                  user={user}
+                  openViewModal={openViewModal}
+                  openUpdateModal={openUpdateModal}
+                  setDeleteConfirmId={setDeleteConfirmId}
+                />
+              ))}
             </div>
-          ))}
-        </div>
+          );
+        })()
       )}
 
       {/* Create/Update Modal */}
-      {modalConfig.isOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm overflow-y-auto pt-24 pb-10">
-          <div className="bg-white dark:bg-slate-800 w-full max-w-lg rounded-2xl shadow-xl overflow-hidden animate-in fade-in zoom-in-95 duration-200 my-auto">
-            <div className="flex items-center justify-between p-5 border-b border-slate-200 dark:border-slate-700">
-              <h2 className="text-lg font-bold text-slate-900 dark:text-white">
-                {modalConfig.mode === "CREATE"
-                  ? "Create Team"
-                  : modalConfig.mode === "UPDATE"
-                    ? "Edit Team"
-                    : "Team Details"}
-              </h2>
-              <button
-                onClick={() =>
-                  setModalConfig({ ...modalConfig, isOpen: false })
-                }
-                className="p-1 text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-full transition-colors cursor-pointer"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            {modalConfig.mode === "VIEW" && selectedItem ? (
-              <div className="p-5 space-y-4 max-h-[70vh] overflow-y-auto">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="col-span-2">
-                    <label className="block text-sm font-medium text-slate-500 dark:text-slate-400 mb-1">
-                      Team Name
-                    </label>
-                    <p className="text-slate-900 dark:text-white font-medium">
-                      {selectedItem.teamName}
-                    </p>
-                  </div>
-                  <div className="col-span-2">
-                    <label className="block text-sm font-medium text-slate-500 dark:text-slate-400 mb-1">
-                      Description
-                    </label>
-                    <p className="text-slate-900 dark:text-white">
-                      {selectedItem.teamDescription ||
-                        "No description provided."}
-                    </p>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-slate-500 dark:text-slate-400 mb-1">
-                      Department
-                    </label>
-                    <p className="text-slate-900 dark:text-white">
-                      {selectedItem.department?.departmentName || "Unknown"}
-                    </p>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-slate-500 dark:text-slate-400 mb-1">
-                      Status
-                    </label>
-                    <span
-                      className={`inline-flex px-2.5 py-1 text-xs font-medium rounded-full ${
-                        selectedItem.status === "ACTIVE"
-                          ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
-                          : "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
-                      }`}
-                    >
-                      {selectedItem.status}
-                    </span>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-slate-500 dark:text-slate-400 mb-1">
-                      Manager
-                    </label>
-                    <p className="text-slate-900 dark:text-white">
-                      {selectedItem.manager?.name || "Unknown"}
-                    </p>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-slate-500 dark:text-slate-400 mb-1">
-                      Team Lead
-                    </label>
-                    <p className="text-slate-900 dark:text-white">
-                      {selectedItem.teamLead?.name || "None assigned"}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            ) : (
-              <form
-                onSubmit={handleSubmit}
-                className="p-5 space-y-4 max-h-[70vh] overflow-y-auto"
-              >
-                <InputField
-                  label="Team Name"
-                  name="teamName"
-                  value={formData.teamName}
-                  onChange={handleInputChange}
-                  error={errors.teamName}
-                  disabled={isSubmitting}
-                  placeholder="e.g. Frontend Development"
-                />
-
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
-                    Description{" "}
-                    <span className="text-slate-400">(Optional)</span>
-                  </label>
-                  <textarea
-                    name="teamDescription"
-                    value={formData.teamDescription}
-                    onChange={handleInputChange}
-                    disabled={isSubmitting}
-                    className={`w-full px-4 py-2.5 rounded-xl border ${
-                      errors.teamDescription
-                        ? "border-red-300 focus:ring-red-500 dark:border-red-500/50"
-                        : "border-slate-300 dark:border-slate-700 focus:ring-ems-primary"
-                    } bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:border-transparent transition-all resize-none h-24`}
-                    placeholder="Briefly describe the team's purpose..."
-                  />
-                  {errors.teamDescription && (
-                    <p className="mt-1.5 text-sm text-red-600 dark:text-red-400 font-medium">
-                      {errors.teamDescription}
-                    </p>
-                  )}
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
-                      Department
-                    </label>
-                    <select
-                      name="department"
-                      value={formData.department}
-                      onChange={handleInputChange}
-                      disabled={isSubmitting}
-                      className={`w-full px-4 py-2.5 rounded-xl border ${
-                        errors.department
-                          ? "border-red-300 focus:ring-red-500 dark:border-red-500/50"
-                          : "border-slate-300 dark:border-slate-700 focus:ring-ems-primary"
-                      } bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:border-transparent transition-all`}
-                    >
-                      <option value="">Select a department</option>
-                      {departments.map((dept) => (
-                        <option key={dept._id} value={dept._id}>
-                          {dept.departmentName}
-                        </option>
-                      ))}
-                    </select>
-                    {errors.department && (
-                      <p className="mt-1.5 text-sm text-red-600 dark:text-red-400 font-medium">
-                        {errors.department}
-                      </p>
-                    )}
-                  </div>
-
-                  {modalConfig.mode === "UPDATE" && (
-                    <div>
-                      <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
-                        Status
-                      </label>
-                      <select
-                        name="status"
-                        value={formData.status}
-                        onChange={handleInputChange}
-                        disabled={isSubmitting}
-                        className="w-full px-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-ems-primary transition-all"
-                      >
-                        <option value="ACTIVE">Active</option>
-                        <option value="INACTIVE">Inactive</option>
-                      </select>
-                    </div>
-                  )}
-
-                  <div>
-                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
-                      Manager
-                    </label>
-                    <select
-                      name="manager"
-                      value={formData.manager}
-                      onChange={handleInputChange}
-                      disabled={isSubmitting}
-                      className={`w-full px-4 py-2.5 rounded-xl border ${
-                        errors.manager
-                          ? "border-red-300 focus:ring-red-500 dark:border-red-500/50"
-                          : "border-slate-300 dark:border-slate-700 focus:ring-ems-primary"
-                      } bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:border-transparent transition-all`}
-                    >
-                      <option value="">Select a manager</option>
-                      {users
-                        .filter(
-                          (user) =>
-                            user.role === "Manager" ||
-                            user.role === "Management"
-                        )
-                        .map((user) => (
-                          <option key={user._id} value={user._id}>
-                            {user.name} ({user.role})
-                          </option>
-                        ))}
-                    </select>
-                    {errors.manager && (
-                      <p className="mt-1.5 text-sm text-red-600 dark:text-red-400 font-medium">
-                        {errors.manager}
-                      </p>
-                    )}
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
-                      Team Lead{" "}
-                      <span className="text-slate-400">(Optional)</span>
-                    </label>
-                    <select
-                      name="teamLead"
-                      value={formData.teamLead}
-                      onChange={handleInputChange}
-                      disabled={isSubmitting}
-                      className={`w-full px-4 py-2.5 rounded-xl border ${
-                        errors.teamLead
-                          ? "border-red-300 focus:ring-red-500 dark:border-red-500/50"
-                          : "border-slate-300 dark:border-slate-700 focus:ring-ems-primary"
-                      } bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:border-transparent transition-all`}
-                    >
-                      <option value="">Select a team lead</option>
-                      {users.map((user) => (
-                        <option key={user._id} value={user._id}>
-                          {user.name}
-                        </option>
-                      ))}
-                    </select>
-                    {errors.teamLead && (
-                      <p className="mt-1.5 text-sm text-red-600 dark:text-red-400 font-medium">
-                        {errors.teamLead}
-                      </p>
-                    )}
-                  </div>
-                </div>
-
-                <div className="pt-2">
-                  <SubmitButton isSubmitting={isSubmitting}>
-                    {modalConfig.mode === "CREATE"
-                      ? "Create Team"
-                      : "Save Changes"}
-                  </SubmitButton>
-                </div>
-              </form>
-            )}
-          </div>
-        </div>
-      )}
+      <TeamModal
+        modalConfig={modalConfig}
+        setModalConfig={setModalConfig}
+        selectedItem={selectedItem}
+        formData={formData}
+        errors={errors}
+        isSubmitting={isSubmitting}
+        departments={departments}
+        availableManagers={availableManagers}
+        availableTeamLeaders={availableTeamLeaders}
+        availableUsers={availableUsers}
+        handleInputChange={handleInputChange}
+        handleSubmit={handleSubmit}
+      />
 
       {/* Delete Confirmation Modal */}
       {deleteConfirmId && (

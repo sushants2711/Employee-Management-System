@@ -6,8 +6,10 @@ import {
   loginUserByEmployeeIdMiddleware,
   otpCheckerMiddleware,
   resetPasswordMiddleware,
+  updateManagerProfileMiddleware,
   updatePasswordMiddleware,
   updateUserIsAvailableMiddleware,
+  updateUserMiddleware,
   updateUserRoleMiddleware,
   updateUserStatusMiddleware,
   userForgotPasswordEmailMiddleware,
@@ -20,7 +22,6 @@ import {
   countPasswordChangeAfterFirstLoginController,
   createAccountForUserController,
   forgotPasswordController,
-  getAllManagersController,
   isAvailableUpdateController,
   logoutController,
   managementLoginController,
@@ -28,17 +29,24 @@ import {
   otpController,
   resetPasswordController,
   signupManagementController,
-  singleUserDetailsController,
   updatePasswordController,
   updatePasswordFirstTimeController,
+  updateProfileManagerController,
+  getLoggedInUserDetailsController,
   updateTheProfileImageController,
   updateTheRoleController,
   updateTheStatusController,
+  updateUserByManagementController,
+  getAllEmployeeControllers,
+  getAllManagementControllers,
+  getAllTeamLeaderControllers,
+  getAllManagerControllers,
 } from "../controllers/user.controller.js";
 import { verifyCookie } from "../utils/verify.cookie.js";
 import { verifyManagement } from "../utils/verify.management.js";
 import { verifyManagerOrManagement } from "../utils/verify.managerOrManagement.js";
 import { verifyEmployeeOrManager } from "../utils/verify.employeeOrManager.js";
+import { uploadEmployeeImage } from "../config/multer.js";
 
 const userRouter = express.Router();
 
@@ -104,12 +112,18 @@ userRouter
   );
 
 // get single user details for user
-userRouter.route("/single-user").get(verifyCookie, singleUserDetailsController);
+userRouter
+  .route("/single-user")
+  .get(verifyCookie, getLoggedInUserDetailsController);
 
 // update the profile image controller for every user
 userRouter
   .route("/update-profile-image")
-  .put(verifyCookie, updateTheProfileImageController);
+  .put(
+    verifyCookie,
+    uploadEmployeeImage.single("image"),
+    updateTheProfileImageController
+  );
 
 // for management only specific routes
 
@@ -167,9 +181,36 @@ userRouter
     createAccountForUserController
   );
 
-// get all manager and team leader and department
+// get update the profile
 userRouter
-  .route("/all-managers")
-  .get(verifyCookie, verifyEmployeeOrManager, getAllManagersController);
+  .route("/update-profile-manager")
+  .put(
+    verifyCookie,
+    verifyManagerOrManagement,
+    updateManagerProfileMiddleware,
+    updateProfileManagerController
+  );
+
+// update the user details by Management and Manager
+userRouter
+  .route("/update-user/:id")
+  .put(
+    verifyCookie,
+    verifyManagerOrManagement,
+    updateUserMiddleware,
+    updateUserByManagementController
+  );
+
+userRouter.route("/get-employee").get(verifyCookie, getAllEmployeeControllers);
+
+userRouter.route("/get-manager").get(verifyCookie, getAllManagerControllers);
+
+userRouter
+  .route("/get-management")
+  .get(verifyCookie, getAllManagementControllers);
+
+userRouter
+  .route("/get-team-leader")
+  .get(verifyCookie, getAllTeamLeaderControllers);
 
 export default userRouter;

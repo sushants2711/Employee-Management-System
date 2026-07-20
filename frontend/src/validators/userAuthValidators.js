@@ -139,3 +139,56 @@ export const validateLoginForm = (formData, loginMethod) => {
     errors,
   };
 };
+
+// Validates a single field for Change Password
+export const validateChangePasswordField = (name, value, formData) => {
+  let error = "";
+
+  switch (name) {
+    case "oldPassword":
+      if (!value) {
+        error = '"oldPassword" is required';
+      } else if (value.length < 8) {
+        error = '"oldPassword" length must be at least 8 characters long';
+      }
+      break;
+
+    case "newPassword":
+      if (!value) {
+        error = '"newPassword" is required';
+      } else if (value.length < 8) {
+        error = '"newPassword" length must be at least 8 characters long';
+      }
+      break;
+
+    case "confirmPassword":
+      if (!value) {
+        error = '"confirmPassword" is required';
+      } else if (formData && value !== formData.newPassword) {
+        error = '"confirmPassword" must match "newPassword"';
+      }
+      break;
+
+    default:
+      break;
+  }
+
+  return error;
+};
+
+// Validates the entire Change Password form
+export const validateChangePasswordForm = (formData) => {
+  const errors = {};
+
+  Object.keys(formData).forEach((key) => {
+    const error = validateChangePasswordField(key, formData[key], formData);
+    if (error) {
+      errors[key] = error;
+    }
+  });
+
+  return {
+    isValid: Object.keys(errors).length === 0,
+    errors,
+  };
+};

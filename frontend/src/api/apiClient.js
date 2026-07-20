@@ -3,10 +3,11 @@ const BASE_URL = "http://localhost:3000/api/v1";
 export const apiClient = async (endpoint, options = {}) => {
   const url = `${BASE_URL}${endpoint}`;
 
-  const headers = {
-    "Content-Type": "application/json",
-    ...options.headers,
-  };
+  const headers = { ...options.headers };
+
+  if (!(options.body instanceof FormData)) {
+    headers["Content-Type"] = "application/json";
+  }
 
   const config = {
     ...options,

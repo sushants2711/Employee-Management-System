@@ -38,6 +38,12 @@ export const validateTeamField = (name, value) => {
       }
       break;
 
+    case "teamLead":
+      if (!value) {
+        error = '"teamLead" is required';
+      }
+      break;
+
     case "status":
       if (value && value !== "ACTIVE" && value !== "INACTIVE") {
         error = '"status" must be [ACTIVE, INACTIVE]';
