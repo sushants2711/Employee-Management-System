@@ -145,9 +145,9 @@ function Teams() {
     setIsSubmitting(true);
     try {
       const submitData = { ...formData };
-      if (!submitData.teamLead) delete submitData.teamLead; // Optional field
 
       if (modalConfig.mode === "CREATE") {
+        delete submitData.status;
         await createTeam(submitData);
         showSuccess("Team created successfully");
       } else {
@@ -463,7 +463,7 @@ function Teams() {
                   )}
 
                   <SelectField
-                    label="Team Lead (Optional)"
+                    label="Team Lead"
                     name="teamLead"
                     value={formData.teamLead}
                     onChange={handleInputChange}
