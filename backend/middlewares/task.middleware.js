@@ -12,6 +12,7 @@ export const createTaskMiddleware = async (req, res, next) => {
       description: joi.string().min(10).max(500).trim().optional().allow(""),
       project: joi.string().hex().length(24).required(),
       team: joi.string().hex().length(24).required(),
+      assignedTo: joi.string().hex().length(24).required(),
       priority: joi
         .string()
         .valid("LOW", "MEDIUM", "HIGH", "URGENT")
@@ -50,6 +51,7 @@ export const updateTaskMiddleware = async (req, res, next) => {
       description: joi.string().min(10).max(500).trim().optional().allow(""),
       project: joi.string().hex().length(24).optional().allow(""),
       team: joi.string().hex().length(24).optional().allow(""),
+      assignedTo: joi.string().hex().length(24).optional().allow(""),
       status: joi
         .string()
         .valid(
