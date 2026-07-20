@@ -94,7 +94,7 @@ function DashboardLayout() {
           <div className="flex items-center gap-2 sm:gap-4 ml-auto">
             <button
               onClick={toggleDarkMode}
-              className="p-2 rounded-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors text-slate-700 dark:text-yellow-500 cursor-pointer"
+              className="p-2 rounded-full text-slate-600 dark:text-yellow-500 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
               aria-label="Toggle Dark Mode"
             >
               {isDarkMode ? (
