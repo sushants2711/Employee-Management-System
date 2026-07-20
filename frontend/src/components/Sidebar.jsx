@@ -1,9 +1,9 @@
 import { NavLink, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { LogOut } from "lucide-react";
+import { LogOut, X } from "lucide-react";
 import { apiClient } from "../api/apiClient";
 
-function Sidebar() {
+function Sidebar({ onClose }) {
   const { user, logout } = useAuth();
 
   const handleLogout = async () => {
@@ -41,10 +41,19 @@ function Sidebar() {
 
   return (
     <aside className="w-64 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex flex-col h-full transition-colors duration-300">
-      <div className="h-16 flex items-center px-6 border-b border-slate-200 dark:border-slate-800">
+      <div className="h-16 flex shrink-0 items-center justify-between px-6 border-b border-slate-200 dark:border-slate-800">
         <h2 className="text-lg font-bold text-transparent bg-clip-text bg-gradient-to-r from-ems-primary to-purple-500 dark:from-ems-primary-dark dark:to-purple-400">
           EMS Portal
         </h2>
+        {onClose && (
+          <button
+            onClick={onClose}
+            className="md:hidden p-2 -mr-2 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-colors"
+            aria-label="Close Menu"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        )}
       </div>
 
       <div className="flex-1 overflow-y-auto py-4 px-3 space-y-1">
@@ -55,6 +64,7 @@ function Sidebar() {
               key={item.name}
               to={item.path}
               end={item.path === "/home"}
+              onClick={onClose}
               className={({ isActive }) =>
                 `flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium transition-colors ${
                   isActive
@@ -73,6 +83,7 @@ function Sidebar() {
       <div className="p-4 border-t border-slate-200 dark:border-slate-800">
         <Link
           to="/home/profile"
+          onClick={onClose}
           className="flex items-center gap-3 px-3 py-2 mb-2 hover:bg-slate-50 dark:hover:bg-slate-800/50 rounded-xl transition-colors cursor-pointer"
         >
           {user?.profilePicUrl ? (
