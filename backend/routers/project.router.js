@@ -11,6 +11,7 @@ import {
   getAllProjectController,
   getSingleProjectController,
   updateProjectController,
+  getAvailableTeamsController,
 } from "../controllers/project.controller.js";
 
 const projectRouter = express.Router();
@@ -24,6 +25,11 @@ projectRouter
     createProjectMiddleware,
     createProjectController
   );
+
+// Get available teams for a project (Only Management creates/updates projects)
+projectRouter
+  .route("/available-teams")
+  .get(verifyCookie, verifyManagement, getAvailableTeamsController);
 
 // Get all projects (Any authenticated user can view)
 projectRouter.route("/all-project").get(verifyCookie, getAllProjectController);

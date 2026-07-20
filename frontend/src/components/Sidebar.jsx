@@ -34,6 +34,10 @@ function Sidebar({ onClose }) {
     name: "Users",
     path: "/home/users",
   });
+  navItems.push({
+    name: "Projects",
+    path: "/home/projects",
+  });
 
   // Placeholder for future routes
   // navItems.push({ name: "Employees", path: "/home/employees", icon: Users });

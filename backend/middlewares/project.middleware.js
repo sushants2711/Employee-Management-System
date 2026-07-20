@@ -43,7 +43,6 @@ export const updateProjectMiddleware = async (req, res, next) => {
     const schema = joi.object({
       projectName: joi.string().min(5).max(500).trim().optional().allow(""),
       description: joi.string().min(10).max(500).trim().optional().allow(""),
-      teamName: joi.string().hex().length(24).optional().allow(""),
       startDate: joi.date().optional().allow(""),
       endDate: joi.date().optional().allow(""),
       status: joi

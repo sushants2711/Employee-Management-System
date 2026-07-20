@@ -15,3 +15,7 @@ export const showLoading = (message) => {
 export const dismissToast = (toastId) => {
   toast.dismiss(toastId);
 };
+
+export const showInfo = (message) => {
+  toast(message, { icon: "ℹ️" });
+};

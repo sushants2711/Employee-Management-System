@@ -10,6 +10,43 @@ import {
 import teamModel from "../models/team.model.js";
 import { verifyMongoDBId } from "../utils/verifyMongoId.js";
 
+// get available teams for project assignment
+export const getAvailableTeamsController = async (req, res) => {
+  try {
+    const { currentProjectId } = req.query;
+
+    // 1. Get all incomplete projects
+    const filter = { status: { $ne: "COMPLETED" } };
+    if (currentProjectId) {
+      filter._id = { $ne: currentProjectId };
+    }
+    const incompleteProjects = await projectModel.find(filter, "teamName");
+    const busyTeamIds = incompleteProjects.map((p) => p.teamName);
+
+    // 2. Fetch active teams that are not busy
+    const availableTeams = await teamModel.find({
+      status: "ACTIVE",
+      _id: { $nin: busyTeamIds },
+    });
+
+    if (!availableTeams) {
+      return notFoundResponse(res, "No available teams found");
+    }
+
+    return successResponse(
+      res,
+      "Available teams fetched successfully",
+      availableTeams
+    );
+  } catch (error) {
+    return internalServerErrorResponse(
+      res,
+      "Internal Server Error",
+      error.message
+    );
+  }
+};
+
 // create project
 export const createProjectController = async (req, res) => {
   try {
@@ -40,6 +77,18 @@ export const createProjectController = async (req, res) => {
       return notFoundResponse(res, "Team not found");
     }
 
+    const activeProject = await projectModel.findOne({
+      teamName: teamName,
+      status: { $ne: "COMPLETED" },
+    });
+
+    if (activeProject) {
+      return badRequestResponse(
+        res,
+        `This team is already assigned to an incomplete project: ${activeProject.projectName}`
+      );
+    }
+
     const project = await projectModel.create({
       projectName,
       description,
@@ -65,6 +114,9 @@ export const getAllProjectController = async (req, res) => {
     const { status, teamName, assignBy, isActive, startDate, endDate, search } =
       req.query;
 
+    const loggedInUserRole = req.user.role;
+    const loggedInUserId = req.user.id;
+
     let filterData = {};
 
     if (status) filterData.status = status;
@@ -77,14 +129,45 @@ export const getAllProjectController = async (req, res) => {
       filterData.$or = [{ projectName: { $regex: search, $options: "i" } }];
     }
 
+    // Role-based Access Control for fetching projects
+    if (loggedInUserRole !== "Management") {
+      // Find all teams where the user is a manager, team lead, or a member
+      const userTeams = await teamModel.find(
+        {
+          $or: [
+            { manager: loggedInUserId },
+            { teamLead: loggedInUserId },
+            { members: loggedInUserId },
+          ],
+        },
+        "_id"
+      );
+
+      const teamIds = userTeams.map((t) => t._id);
+
+      // If a specific teamName is requested, ensure the user actually belongs to it
+      if (filterData.teamName) {
+        if (
+          !teamIds.some(
+            (id) => id.toString() === filterData.teamName.toString()
+          )
+        ) {
+          return successResponse(res, "Projects fetched successfully", []);
+        }
+      } else {
+        filterData.teamName = { $in: teamIds };
+      }
+    }
+
     const projects = await projectModel
       .find(filterData)
       .populate({
         path: "teamName",
-        select: "teamName status manager teamLead",
+        select: "teamName status manager teamLead members",
         populate: [
           { path: "manager", select: "name email role" },
           { path: "teamLead", select: "name email role" },
+          { path: "members", select: "name email role" },
         ],
       })
       .populate("assignBy", "name email role");
@@ -115,16 +198,37 @@ export const getSingleProjectController = async (req, res) => {
       .findById(id)
       .populate({
         path: "teamName",
-        select: "teamName status manager teamLead",
+        select: "teamName status manager teamLead members",
         populate: [
           { path: "manager", select: "name email role" },
           { path: "teamLead", select: "name email role" },
+          { path: "members", select: "name email role" },
         ],
       })
       .populate("assignBy", "name email role");
 
     if (!project) {
       return notFoundResponse(res, "Project not found");
+    }
+
+    if (req.user.role !== "Management") {
+      const teamId = project.teamName._id;
+      const userTeam = await teamModel.findOne({
+        _id: teamId,
+        $or: [
+          { manager: req.user.id },
+          { teamLead: req.user.id },
+          { members: req.user.id },
+        ],
+      });
+
+      if (!userTeam) {
+        return unauthorizedResponse(
+          res,
+          "Unauthorized",
+          "You do not have access to this project"
+        );
+      }
     }
 
     return successResponse(res, "Project fetched successfully", project);
@@ -194,15 +298,30 @@ export const updateProjectController = async (req, res) => {
       }
     }
 
-    if (teamName) {
-      const teamExist = await teamModel.findById(teamName);
-      if (!teamExist) return badRequestResponse(res, "Team not found");
+    // We do not allow updating the assigned team for an existing project.
+    // It will always remain the team that was originally assigned.
+    const targetTeamId = projectExist.teamName;
+    const targetStatus = status || projectExist.status;
+
+    if (targetStatus !== "COMPLETED") {
+      const activeProject = await projectModel.findOne({
+        teamName: targetTeamId,
+        status: { $ne: "COMPLETED" },
+        _id: { $ne: id },
+      });
+
+      if (activeProject) {
+        return badRequestResponse(
+          res,
+          `This team is already assigned to an incomplete project: ${activeProject.projectName}`
+        );
+      }
     }
 
     const updateDataGroup = {
       projectName: projectName ?? projectExist.projectName,
       description: description ?? projectExist.description,
-      teamName: teamName ?? projectExist.teamName,
+      teamName: projectExist.teamName, // Team cannot be updated
       startDate: startDate ?? projectExist.startDate,
       endDate: endDate ?? projectExist.endDate,
       status: status ?? projectExist.status,
