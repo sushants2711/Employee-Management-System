@@ -122,11 +122,13 @@ export const createTeamController = async (req, res) => {
 // get all team controller
 export const getAllTeamController = async (req, res) => {
   try {
-    const { teamName, status } = req.query;
+    const { search, status } = req.query;
 
     let filterData = {};
 
-    if (teamName) filterData.teamName = teamName;
+    if (search) {
+      filterData.$or = [{ teamName: { $regex: search, $options: "i" } }];
+    }
     if (status) filterData.status = status;
 
     const team = await teamModel

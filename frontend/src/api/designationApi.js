@@ -7,8 +7,12 @@ export const createDesignation = async (designationData) => {
   });
 };
 
-export const getAllDesignations = async () => {
-  return await apiClient("/designation/all", {
+export const getAllDesignations = async (status, search) => {
+  let queryParts = [];
+  if (status) queryParts.push(`status=${status}`);
+  if (search) queryParts.push(`search=${search}`);
+  const query = queryParts.length ? `?${queryParts.join("&")}` : "";
+  return await apiClient(`/designation/all${query}`, {
     method: "GET",
   });
 };

@@ -44,18 +44,20 @@ function Departments() {
   const fetchDepartments = useCallback(async () => {
     try {
       setIsLoading(true);
-      const response = await getAllDepartments();
+      const response = await getAllDepartments(statusFilter, searchQuery);
       setDepartments(response.data || []);
     } catch (error) {
       showError(error.message || "Failed to fetch departments");
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [searchQuery, statusFilter]);
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    fetchDepartments();
+    const delayDebounceFn = setTimeout(() => {
+      fetchDepartments();
+    }, 300);
+    return () => clearTimeout(delayDebounceFn);
   }, [fetchDepartments]);
 
   const handleInputChange = (e) => {
@@ -211,21 +213,7 @@ function Departments() {
         </div>
       ) : (
         (() => {
-          const filteredDepartments = departments.filter((dept) => {
-            const matchesSearch =
-              (dept.departmentName || "")
-                .toLowerCase()
-                .includes(searchQuery.toLowerCase()) ||
-              (dept.departmentCode || "")
-                .toLowerCase()
-                .includes(searchQuery.toLowerCase());
-            const matchesStatus = statusFilter
-              ? dept.status === statusFilter
-              : true;
-            return matchesSearch && matchesStatus;
-          });
-
-          if (filteredDepartments.length === 0) {
+          if (departments.length === 0) {
             return (
               <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-12 text-center shadow-sm">
                 <h3 className="text-lg font-medium text-slate-900 dark:text-white mb-1">
@@ -242,7 +230,7 @@ function Departments() {
 
           return (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredDepartments.map((dept) => (
+              {departments.map((dept) => (
                 <DepartmentCard
                   key={dept._id}
                   dept={dept}

@@ -81,15 +81,16 @@ function Users() {
     try {
       setIsLoading(true);
       let usersPromise;
-      if (activeTab === "ALL") usersPromise = getAllUsers(activeStatus);
+      if (activeTab === "ALL")
+        usersPromise = getAllUsers(activeStatus, searchQuery);
       else if (activeTab === "Management")
-        usersPromise = getManagementByStatus(activeStatus);
+        usersPromise = getManagementByStatus(activeStatus, searchQuery);
       else if (activeTab === "Manager")
-        usersPromise = getManagersByStatus(activeStatus);
+        usersPromise = getManagersByStatus(activeStatus, searchQuery);
       else if (activeTab === "Team Leader")
-        usersPromise = getTeamLeadersByStatus(activeStatus);
+        usersPromise = getTeamLeadersByStatus(activeStatus, searchQuery);
       else if (activeTab === "Employee")
-        usersPromise = getEmployeesByStatus(activeStatus);
+        usersPromise = getEmployeesByStatus(activeStatus, searchQuery);
 
       const [usersRes, teamsRes, deptRes, desigRes] = await Promise.all([
         usersPromise.catch(() => ({ data: [] })),
@@ -106,11 +107,13 @@ function Users() {
     } finally {
       setIsLoading(false);
     }
-  }, [activeTab, activeStatus]);
+  }, [activeTab, activeStatus, searchQuery]);
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    fetchData();
+    const delayDebounceFn = setTimeout(() => {
+      fetchData();
+    }, 300);
+    return () => clearTimeout(delayDebounceFn);
   }, [fetchData]);
 
   const handleInputChange = (e) => {
@@ -245,11 +248,7 @@ function Users() {
     }
   };
 
-  const filteredUsers = users.filter(
-    (user) =>
-      (user.name || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (user.email || "").toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredUsers = users;
 
   return (
     <div className="flex flex-col md:flex-row gap-6 h-full">

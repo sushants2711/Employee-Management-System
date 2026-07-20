@@ -48,7 +48,7 @@ function Designations() {
     try {
       setIsLoading(true);
       const [desigRes, deptRes] = await Promise.all([
-        getAllDesignations(),
+        getAllDesignations(statusFilter, searchQuery),
         getAllActiveDepartments(),
       ]);
       setDesignations(desigRes.data || []);
@@ -58,11 +58,13 @@ function Designations() {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [searchQuery, statusFilter]);
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    fetchDesignationsAndDepartments();
+    const delayDebounceFn = setTimeout(() => {
+      fetchDesignationsAndDepartments();
+    }, 300);
+    return () => clearTimeout(delayDebounceFn);
   }, [fetchDesignationsAndDepartments]);
 
   const handleInputChange = (e) => {
@@ -218,21 +220,7 @@ function Designations() {
         </div>
       ) : (
         (() => {
-          const filteredDesignations = designations.filter((desig) => {
-            const matchesSearch =
-              (desig.designationName || "")
-                .toLowerCase()
-                .includes(searchQuery.toLowerCase()) ||
-              (desig.designationCode || "")
-                .toLowerCase()
-                .includes(searchQuery.toLowerCase());
-            const matchesStatus = statusFilter
-              ? desig.status === statusFilter
-              : true;
-            return matchesSearch && matchesStatus;
-          });
-
-          if (filteredDesignations.length === 0) {
+          if (designations.length === 0) {
             return (
               <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-12 text-center shadow-sm">
                 <h3 className="text-lg font-medium text-slate-900 dark:text-white mb-1">
@@ -249,7 +237,7 @@ function Designations() {
 
           return (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredDesignations.map((desig) => (
+              {designations.map((desig) => (
                 <DesignationCard
                   key={desig._id}
                   desig={desig}

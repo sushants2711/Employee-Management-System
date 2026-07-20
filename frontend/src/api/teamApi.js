@@ -7,8 +7,12 @@ export const createTeam = async (teamData) => {
   });
 };
 
-export const getAllTeams = async () => {
-  return await apiClient("/team/all-team", {
+export const getAllTeams = async (status, search) => {
+  let queryParts = [];
+  if (status) queryParts.push(`status=${status}`);
+  if (search) queryParts.push(`search=${search}`);
+  const query = queryParts.length ? `?${queryParts.join("&")}` : "";
+  return await apiClient(`/team/all-team${query}`, {
     method: "GET",
   });
 };

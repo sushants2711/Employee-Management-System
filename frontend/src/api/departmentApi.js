@@ -7,8 +7,12 @@ export const createDepartment = async (departmentData) => {
   });
 };
 
-export const getAllDepartments = async () => {
-  return await apiClient("/department/all", {
+export const getAllDepartments = async (status, search) => {
+  let queryParts = [];
+  if (status) queryParts.push(`status=${status}`);
+  if (search) queryParts.push(`search=${search}`);
+  const query = queryParts.length ? `?${queryParts.join("&")}` : "";
+  return await apiClient(`/department/all${query}`, {
     method: "GET",
   });
 };

@@ -953,7 +953,7 @@ export const allUsersControllers = async (req, res) => {
     const {
       role,
       status,
-      name,
+      search,
       employeeId,
       teamName,
       designation,
@@ -964,7 +964,12 @@ export const allUsersControllers = async (req, res) => {
 
     if (role) query.role = role;
     if (status) query.status = status;
-    if (name) query.name = name;
+    if (search) {
+      query.$or = [
+        { name: { $regex: search, $options: "i" } },
+        { email: { $regex: search, $options: "i" } },
+      ];
+    }
     if (employeeId) query.employeeId = employeeId;
     if (teamName) query.teamName = teamName;
     if (designation) query.designation = designation;
@@ -1118,41 +1123,6 @@ export const checkManagementCountController = async (req, res) => {
   }
 };
 
-// get all manager
-export const getAllManagersController = async (req, res) => {
-  try {
-    const allManagers = await userModel
-      .find({
-        role: "Management",
-        isManagementVerified: true,
-        status: "ACTIVE",
-      })
-      .populate("teamName", "teamName")
-      .populate("department", "departmentName")
-      .select("-password");
-
-    if (
-      !allManagers ||
-      allManagers.length === 0 ||
-      !Array.isArray(allManagers)
-    ) {
-      return notFoundResponse(res, "No managers found");
-    }
-
-    return successResponse(
-      res,
-      "All managers fetched successfully",
-      allManagers
-    );
-  } catch (error) {
-    return internalServerErrorResponse(
-      res,
-      "Internal Server Error",
-      error.message
-    );
-  }
-};
-
 // get profile update of manager itself
 export const updateProfileManagerController = async (req, res) => {
   try {
@@ -1232,87 +1202,6 @@ export const getLoggedInUserDetailsController = async (req, res) => {
   }
 };
 
-// get all manager
-export const getAllActiveManagerControllers = async (req, res) => {
-  try {
-    const allActiveManagers = await userModel.find({
-      role: "Manager",
-      status: "ACTIVE",
-    });
-
-    if (!allActiveManagers) {
-      return notFoundResponse(res, "No active managers found");
-    }
-
-    return successResponse(
-      res,
-      "All active managers fetched successfully",
-      allActiveManagers
-    );
-  } catch (error) {
-    return internalServerErrorResponse(
-      res,
-      "Internal Server Error",
-      error.message
-    );
-  }
-};
-
-// get all team leader
-export const getAllActiveTeamLeaderController = async (req, res) => {
-  try {
-    const allActiveTeamLeaders = await userModel.find({
-      role: "Team Leader",
-      status: "ACTIVE",
-    });
-
-    if (!allActiveTeamLeaders) {
-      return notFoundResponse(res, "No active team leaders found");
-    }
-
-    return successResponse(
-      res,
-      "All active team leaders fetched successfully",
-      allActiveTeamLeaders
-    );
-  } catch (error) {
-    return internalServerErrorResponse(
-      res,
-      "Internal Server Error",
-      error.message
-    );
-  }
-};
-
-// get all employee controller
-export const getAllEmployeeController = async (req, res) => {
-  try {
-    const allEmployee = await userModel
-      .find({
-        role: "Employee",
-        status: "ACTIVE",
-      })
-      .populate("department", "departmentName departmentCode")
-      .populate("designation", "designationName designationCode");
-
-    if (!allEmployee) {
-      return notFoundResponse(res, "No employee found");
-    }
-
-    return successResponse(
-      res,
-      "All employee fetched successfully",
-      allEmployee
-    );
-  } catch (error) {
-    return internalServerErrorResponse(
-      res,
-      "Internal Server Error",
-      error.message
-    );
-  }
-};
-
 // update the user controller
 export const updateUserByManagementController = async (req, res) => {
   try {
@@ -1379,10 +1268,16 @@ export const updateUserByManagementController = async (req, res) => {
 // get all employee
 export const getAllEmployeeControllers = async (req, res) => {
   try {
-    const { status } = req.query;
+    const { search, status } = req.query;
 
     let filter = {};
 
+    if (search) {
+      filter.$or = [
+        { name: { $regex: search, $options: "i" } },
+        { email: { $regex: search, $options: "i" } },
+      ];
+    }
     if (status) filter.status = status;
 
     const allEmployee = await userModel
@@ -1419,10 +1314,16 @@ export const getAllEmployeeControllers = async (req, res) => {
 // get all management
 export const getAllManagementControllers = async (req, res) => {
   try {
-    const { status } = req.query;
+    const { search, status } = req.query;
 
     let filter = {};
 
+    if (search) {
+      filter.$or = [
+        { name: { $regex: search, $options: "i" } },
+        { email: { $regex: search, $options: "i" } },
+      ];
+    }
     if (status) filter.status = status;
 
     const allManagement = await userModel
@@ -1459,10 +1360,16 @@ export const getAllManagementControllers = async (req, res) => {
 // get all manager
 export const getAllManagerControllers = async (req, res) => {
   try {
-    const { status } = req.query;
+    const { search, status } = req.query;
 
     let filter = {};
 
+    if (search) {
+      filter.$or = [
+        { name: { $regex: search, $options: "i" } },
+        { email: { $regex: search, $options: "i" } },
+      ];
+    }
     if (status) filter.status = status;
 
     const allManager = await userModel
@@ -1491,10 +1398,16 @@ export const getAllManagerControllers = async (req, res) => {
 // get all team leader
 export const getAllTeamLeaderControllers = async (req, res) => {
   try {
-    const { status } = req.query;
+    const { search, status } = req.query;
 
     let filter = {};
 
+    if (search) {
+      filter.$or = [
+        { name: { $regex: search, $options: "i" } },
+        { email: { $regex: search, $options: "i" } },
+      ];
+    }
     if (status) filter.status = status;
 
     const allTeamLeader = await userModel

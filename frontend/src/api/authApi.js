@@ -62,8 +62,11 @@ export const verifyOtp = async (otpData) => {
   });
 };
 
-export const getAllUsers = async (status) => {
-  const query = status ? `?status=${status}` : "";
+export const getAllUsers = async (status, search) => {
+  let queryParts = [];
+  if (status) queryParts.push(`status=${status}`);
+  if (search) queryParts.push(`search=${search}`);
+  const query = queryParts.length ? `?${queryParts.join("&")}` : "";
   return await apiClient(`/user/all-users${query}`, {
     method: "GET",
   });
@@ -121,22 +124,34 @@ export const updateIsAvailable = async (isAvailable) => {
   });
 };
 
-export const getEmployeesByStatus = async (status) => {
-  const query = status ? `?status=${status}` : "";
+export const getEmployeesByStatus = async (status, search) => {
+  let queryParts = [];
+  if (status) queryParts.push(`status=${status}`);
+  if (search) queryParts.push(`search=${search}`);
+  const query = queryParts.length ? `?${queryParts.join("&")}` : "";
   return await apiClient(`/user/get-employee${query}`, { method: "GET" });
 };
 
-export const getManagementByStatus = async (status) => {
-  const query = status ? `?status=${status}` : "";
+export const getManagementByStatus = async (status, search) => {
+  let queryParts = [];
+  if (status) queryParts.push(`status=${status}`);
+  if (search) queryParts.push(`search=${search}`);
+  const query = queryParts.length ? `?${queryParts.join("&")}` : "";
   return await apiClient(`/user/get-management${query}`, { method: "GET" });
 };
 
-export const getManagersByStatus = async (status) => {
-  const query = status ? `?status=${status}` : "";
+export const getManagersByStatus = async (status, search) => {
+  let queryParts = [];
+  if (status) queryParts.push(`status=${status}`);
+  if (search) queryParts.push(`search=${search}`);
+  const query = queryParts.length ? `?${queryParts.join("&")}` : "";
   return await apiClient(`/user/get-manager${query}`, { method: "GET" });
 };
 
-export const getTeamLeadersByStatus = async (status) => {
-  const query = status ? `?status=${status}` : "";
+export const getTeamLeadersByStatus = async (status, search) => {
+  let queryParts = [];
+  if (status) queryParts.push(`status=${status}`);
+  if (search) queryParts.push(`search=${search}`);
+  const query = queryParts.length ? `?${queryParts.join("&")}` : "";
   return await apiClient(`/user/get-team-leader${query}`, { method: "GET" });
 };

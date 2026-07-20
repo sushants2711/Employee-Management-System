@@ -59,7 +59,7 @@ function Teams() {
       setIsLoading(true);
       const [teamsRes, deptRes, usersRes, managersRes, teamLeadersRes] =
         await Promise.all([
-          getAllTeams().catch(() => ({ data: [] })),
+          getAllTeams(statusFilter, searchQuery).catch(() => ({ data: [] })),
           getAllActiveDepartments().catch(() => ({ data: [] })),
           getAllEmployees().catch(() => ({ data: [] })),
           getAllActiveManagers().catch(() => ({ data: [] })),
@@ -75,11 +75,13 @@ function Teams() {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [statusFilter, searchQuery]);
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    fetchData();
+    const delayDebounceFn = setTimeout(() => {
+      fetchData();
+    }, 300);
+    return () => clearTimeout(delayDebounceFn);
   }, [fetchData]);
 
   const assignedUserIds = useMemo(() => {
@@ -266,17 +268,7 @@ function Teams() {
         </div>
       ) : (
         (() => {
-          const filteredTeams = teams.filter((team) => {
-            const matchesSearch = (team.teamName || "")
-              .toLowerCase()
-              .includes(searchQuery.toLowerCase());
-            const matchesStatus = statusFilter
-              ? team.status === statusFilter
-              : true;
-            return matchesSearch && matchesStatus;
-          });
-
-          if (filteredTeams.length === 0) {
+          if (teams.length === 0) {
             return (
               <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-12 text-center shadow-sm">
                 <h3 className="text-lg font-medium text-slate-900 dark:text-white mb-1">
@@ -293,7 +285,7 @@ function Teams() {
 
           return (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredTeams.map((team) => (
+              {teams.map((team) => (
                 <TeamCard
                   key={team._id}
                   team={team}

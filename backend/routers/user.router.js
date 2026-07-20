@@ -22,7 +22,6 @@ import {
   countPasswordChangeAfterFirstLoginController,
   createAccountForUserController,
   forgotPasswordController,
-  getAllManagersController,
   isAvailableUpdateController,
   logoutController,
   managementLoginController,
@@ -37,9 +36,6 @@ import {
   updateTheProfileImageController,
   updateTheRoleController,
   updateTheStatusController,
-  getAllActiveManagerControllers,
-  getAllActiveTeamLeaderController,
-  getAllEmployeeController,
   updateUserByManagementController,
   getAllEmployeeControllers,
   getAllManagementControllers,
@@ -185,11 +181,6 @@ userRouter
     createAccountForUserController
   );
 
-// get all manager and team leader and department
-userRouter
-  .route("/all-managers")
-  .get(verifyCookie, verifyEmployeeOrManager, getAllManagersController);
-
 // get update the profile
 userRouter
   .route("/update-profile-manager")
@@ -199,19 +190,6 @@ userRouter
     updateManagerProfileMiddleware,
     updateProfileManagerController
   );
-
-// get all active manager
-userRouter
-  .route("/all-active-manager")
-  .get(verifyCookie, getAllActiveManagerControllers);
-
-// get all active team leader
-userRouter
-  .route("/all-active-team-leader")
-  .get(verifyCookie, getAllActiveTeamLeaderController);
-
-// get all employee
-userRouter.route("/all-employee").get(verifyCookie, getAllEmployeeController);
 
 // update the user details by Management and Manager
 userRouter
