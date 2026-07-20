@@ -27,6 +27,10 @@ function Departments() {
   const [deleteConfirmId, setDeleteConfirmId] = useState(null);
   const [selectedItem, setSelectedItem] = useState(null);
 
+  // Filters State
+  const [searchQuery, setSearchQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState("");
+
   // Form State
   const [formData, setFormData] = useState({
     departmentName: "",
@@ -163,32 +167,94 @@ function Departments() {
         )}
       </div>
 
+      {/* Filter Bar */}
+      <div className="flex flex-col sm:flex-row gap-4">
+        <div className="relative flex-1 max-w-md">
+          <input
+            type="text"
+            placeholder="Search departments..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full pl-10 pr-3 py-2 bg-white/60 dark:bg-slate-800/60 backdrop-blur-xl border border-slate-200/50 dark:border-slate-700/50 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-sm text-slate-700 dark:text-slate-300 transition-shadow shadow-sm"
+          />
+          <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-slate-400">
+            <svg className="w-4 h-4 fill-current" viewBox="0 0 20 20">
+              <path
+                fillRule="evenodd"
+                d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
+                clipRule="evenodd"
+              />
+            </svg>
+          </div>
+        </div>
+        <div className="relative">
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            className="w-full sm:w-48 pl-3 pr-10 py-2 bg-white/60 dark:bg-slate-800/60 backdrop-blur-xl border border-slate-200/50 dark:border-slate-700/50 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none appearance-none text-sm text-slate-700 dark:text-slate-300 transition-shadow shadow-sm cursor-pointer"
+          >
+            <option value="">All Statuses</option>
+            <option value="ACTIVE">Active</option>
+            <option value="INACTIVE">Inactive</option>
+          </select>
+          <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-slate-400">
+            <svg className="w-4 h-4 fill-current" viewBox="0 0 20 20">
+              <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
+            </svg>
+          </div>
+        </div>
+      </div>
+
       {isLoading ? (
         <div className="flex justify-center p-12">
           <div className="w-8 h-8 border-4 border-slate-200 border-t-ems-primary rounded-full animate-spin"></div>
         </div>
-      ) : departments.length === 0 ? (
-        <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-12 text-center shadow-sm">
-          <h3 className="text-lg font-medium text-slate-900 dark:text-white mb-1">
-            No Departments Found
-          </h3>
-          <p className="text-slate-500 dark:text-slate-400">
-            Get started by creating your first department.
-          </p>
-        </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {departments.map((dept) => (
-            <DepartmentCard
-              key={dept._id}
-              dept={dept}
-              user={user}
-              openViewModal={openViewModal}
-              openUpdateModal={openUpdateModal}
-              setDeleteConfirmId={setDeleteConfirmId}
-            />
-          ))}
-        </div>
+        (() => {
+          const filteredDepartments = departments.filter((dept) => {
+            const matchesSearch =
+              (dept.departmentName || "")
+                .toLowerCase()
+                .includes(searchQuery.toLowerCase()) ||
+              (dept.departmentCode || "")
+                .toLowerCase()
+                .includes(searchQuery.toLowerCase());
+            const matchesStatus = statusFilter
+              ? dept.status === statusFilter
+              : true;
+            return matchesSearch && matchesStatus;
+          });
+
+          if (filteredDepartments.length === 0) {
+            return (
+              <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-12 text-center shadow-sm">
+                <h3 className="text-lg font-medium text-slate-900 dark:text-white mb-1">
+                  No Departments Found
+                </h3>
+                <p className="text-slate-500 dark:text-slate-400">
+                  {searchQuery || statusFilter
+                    ? "No departments match your filters."
+                    : "Get started by creating your first department."}
+                </p>
+              </div>
+            );
+          }
+
+          return (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {filteredDepartments.map((dept) => (
+                <DepartmentCard
+                  key={dept._id}
+                  dept={dept}
+                  user={user}
+                  openViewModal={openViewModal}
+                  openUpdateModal={openUpdateModal}
+                  setDeleteConfirmId={setDeleteConfirmId}
+                />
+              ))}
+            </div>
+          );
+        })()
       )}
 
       {/* Modal extracted to separate component */}

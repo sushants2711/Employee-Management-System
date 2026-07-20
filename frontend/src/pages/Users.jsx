@@ -59,6 +59,7 @@ function Users() {
   // Filters State
   const [activeTab, setActiveTab] = useState("ALL");
   const [activeStatus, setActiveStatus] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
 
   // Form State
   const [formData, setFormData] = useState({
@@ -244,6 +245,12 @@ function Users() {
     }
   };
 
+  const filteredUsers = users.filter(
+    (user) =>
+      (user.name || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (user.email || "").toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   return (
     <div className="flex flex-col md:flex-row gap-6 h-full">
       {/* Sidebar Filters */}
@@ -255,6 +262,31 @@ function Users() {
           </h2>
 
           <div className="space-y-6">
+            {/* Search Filter */}
+            <div>
+              <label className="block text-sm font-semibold text-slate-600 dark:text-slate-400 mb-2">
+                Search
+              </label>
+              <div className="relative">
+                <input
+                  type="text"
+                  placeholder="Search users..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full pl-10 pr-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-sm text-slate-700 dark:text-slate-300 transition-shadow"
+                />
+                <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-slate-400">
+                  <svg className="w-4 h-4 fill-current" viewBox="0 0 20 20">
+                    <path
+                      fillRule="evenodd"
+                      d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                </div>
+              </div>
+            </div>
+
             {/* Status Filter */}
             <div>
               <label className="block text-sm font-semibold text-slate-600 dark:text-slate-400 mb-2">
@@ -343,7 +375,7 @@ function Users() {
           <div className="flex justify-center p-12">
             <div className="w-10 h-10 border-4 border-slate-200 border-t-blue-600 rounded-full animate-spin"></div>
           </div>
-        ) : users.length === 0 ? (
+        ) : filteredUsers.length === 0 ? (
           <div className="bg-white/60 dark:bg-slate-800/60 backdrop-blur-xl rounded-3xl border border-slate-200/50 dark:border-slate-700/50 p-16 text-center shadow-sm">
             <div className="w-20 h-20 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-6">
               <UsersIcon
@@ -355,15 +387,16 @@ function Users() {
               No Users Found
             </h3>
             <p className="text-slate-500 dark:text-slate-400 max-w-md mx-auto">
-              {activeStatus || activeTab !== "ALL"
+              {activeStatus || activeTab !== "ALL" || searchQuery
                 ? "No users match your current filter criteria. Try adjusting your filters."
                 : "Get started by creating your first user account."}
             </p>
-            {(activeStatus || activeTab !== "ALL") && (
+            {(activeStatus || activeTab !== "ALL" || searchQuery) && (
               <button
                 onClick={() => {
                   setActiveTab("ALL");
                   setActiveStatus("");
+                  setSearchQuery("");
                 }}
                 className="mt-6 text-blue-600 dark:text-blue-400 font-medium hover:underline"
               >
@@ -373,7 +406,7 @@ function Users() {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-            {users.map((user) => (
+            {filteredUsers.map((user) => (
               <UserCard
                 key={user._id}
                 user={user}
