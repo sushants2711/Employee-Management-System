@@ -1287,10 +1287,13 @@ export const getAllActiveTeamLeaderController = async (req, res) => {
 // get all employee controller
 export const getAllEmployeeController = async (req, res) => {
   try {
-    const allEmployee = await userModel.find({
-      role: "Employee",
-      status: "ACTIVE",
-    });
+    const allEmployee = await userModel
+      .find({
+        role: "Employee",
+        status: "ACTIVE",
+      })
+      .populate("department", "departmentName departmentCode")
+      .populate("designation", "designationName designationCode");
 
     if (!allEmployee) {
       return notFoundResponse(res, "No employee found");

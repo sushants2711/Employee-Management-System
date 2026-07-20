@@ -117,7 +117,14 @@ export const getAllTeamController = async (req, res) => {
       .populate("teamLead", "name email role")
       .populate("manager", "name email role")
       .populate("createdBy", "name email role")
-      .populate("members", "name email role");
+      .populate({
+        path: "members",
+        select: "name email role employeeId designation department",
+        populate: [
+          { path: "designation", select: "designationName" },
+          { path: "department", select: "departmentName" },
+        ],
+      });
 
     if (!team || team.length === 0 || !Array.isArray(team)) {
       return notFoundResponse(res, "Team not found");
@@ -148,7 +155,14 @@ export const getSingleTeamController = async (req, res) => {
       .populate("teamLead", "name email role")
       .populate("manager", "name email role")
       .populate("createdBy", "name email role")
-      .populate("members", "name email role");
+      .populate({
+        path: "members",
+        select: "name email role employeeId designation department",
+        populate: [
+          { path: "designation", select: "designationName" },
+          { path: "department", select: "departmentName" },
+        ],
+      });
 
     if (!singleTeam) return notFoundResponse(res, "Team not found");
 
@@ -324,7 +338,14 @@ export const allActiveTeamController = async (req, res) => {
       .populate("teamLead", "name email role")
       .populate("manager", "name email role")
       .populate("createdBy", "name email role")
-      .populate("members", "name email role");
+      .populate({
+        path: "members",
+        select: "name email role employeeId designation department",
+        populate: [
+          { path: "designation", select: "designationName" },
+          { path: "department", select: "departmentName" },
+        ],
+      });
 
     if (!team || team.length === 0 || !Array.isArray(team)) {
       return notFoundResponse(res, "Team not found");

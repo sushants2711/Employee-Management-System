@@ -18,24 +18,22 @@ function Sidebar() {
 
   const navItems = [{ name: "Dashboard", path: "/home" }];
 
-  if (user?.role === "Management" || user?.role === "Manager") {
-    navItems.push({
-      name: "Departments",
-      path: "/home/departments",
-    });
-    navItems.push({
-      name: "Designations",
-      path: "/home/designations",
-    });
-    navItems.push({
-      name: "Teams",
-      path: "/home/teams",
-    });
-    navItems.push({
-      name: "Users",
-      path: "/home/users",
-    });
-  }
+  navItems.push({
+    name: "Departments",
+    path: "/home/departments",
+  });
+  navItems.push({
+    name: "Designations",
+    path: "/home/designations",
+  });
+  navItems.push({
+    name: "Teams",
+    path: "/home/teams",
+  });
+  navItems.push({
+    name: "Users",
+    path: "/home/users",
+  });
 
   // Placeholder for future routes
   // navItems.push({ name: "Employees", path: "/home/employees", icon: Users });
