@@ -34,6 +34,20 @@ export const managementLoginEmpId = async (loginData) => {
   });
 };
 
+export const employeeLoginEmail = async (loginData) => {
+  return await apiClient("/user/login-email", {
+    method: "POST",
+    body: JSON.stringify(loginData),
+  });
+};
+
+export const employeeLoginEmpId = async (loginData) => {
+  return await apiClient("/user/login-empid", {
+    method: "POST",
+    body: JSON.stringify(loginData),
+  });
+};
+
 export const verifyOtp = async (otpData) => {
   return await apiClient("/user/otp", {
     method: "POST",

@@ -1,23 +1,82 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Mail, Lock, Users, User } from "lucide-react";
+import { employeeLoginEmail, employeeLoginEmpId } from "../api/authApi";
+import { useAuth } from "../context/AuthContext";
+import { showSuccess, showError } from "../toastMessage/toastDeliver";
+import {
+  validateLoginField,
+  validateLoginForm,
+} from "../validators/userAuthValidators";
 import AuthCard from "../components/AuthCard";
 import InputField from "../components/InputField";
 import SubmitButton from "../components/SubmitButton";
 
 function EmployeeLogin() {
   const [loginMethod, setLoginMethod] = useState("email");
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     identifier: "",
     password: "",
   });
+  const [errors, setErrors] = useState({});
+
+  const navigate = useNavigate();
+  const { login } = useAuth();
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+
+    const error = validateLoginField(name, value, loginMethod);
+    setErrors((prev) => ({ ...prev, [name]: error }));
   };
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
+
+    const { isValid, errors: formErrors } = validateLoginForm(
+      formData,
+      loginMethod
+    );
+
+    if (!isValid) {
+      setErrors(formErrors);
+      showError("Please fix the errors in the form before submitting.");
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      let response;
+      if (loginMethod === "email") {
+        response = await employeeLoginEmail({
+          email: formData.identifier,
+          password: formData.password,
+        });
+      } else {
+        response = await employeeLoginEmpId({
+          employeeId: formData.identifier,
+          password: formData.password,
+        });
+      }
+
+      showSuccess(response.message || "Login successful!");
+
+      const userData = response.data || {
+        email: loginMethod === "email" ? formData.identifier : "",
+        name: response.data?.name || "Employee User",
+      };
+      const userRole = response.data?.role || "Employee";
+
+      login(userData, userRole);
+      navigate("/home");
+    } catch (error) {
+      showError(error.message || "An error occurred during login");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -31,6 +90,7 @@ function EmployeeLogin() {
           onClick={() => {
             setLoginMethod("email");
             setFormData({ identifier: "", password: "" });
+            setErrors({});
           }}
           className={`flex-1 py-2 text-sm font-medium rounded-lg transition-colors cursor-pointer ${
             loginMethod === "email"
@@ -44,6 +104,7 @@ function EmployeeLogin() {
           onClick={() => {
             setLoginMethod("empid");
             setFormData({ identifier: "", password: "" });
+            setErrors({});
           }}
           className={`flex-1 py-2 text-sm font-medium rounded-lg transition-colors cursor-pointer ${
             loginMethod === "empid"
@@ -63,6 +124,8 @@ function EmployeeLogin() {
           name="identifier"
           value={formData.identifier}
           onChange={handleInputChange}
+          disabled={isSubmitting}
+          error={errors.identifier}
           placeholder={loginMethod === "email" ? "you@company.com" : "EMP12345"}
         />
 
@@ -73,6 +136,8 @@ function EmployeeLogin() {
           name="password"
           value={formData.password}
           onChange={handleInputChange}
+          disabled={isSubmitting}
+          error={errors.password}
           placeholder="••••••••"
         />
 
@@ -92,7 +157,7 @@ function EmployeeLogin() {
           </div>
         </div>
 
-        <SubmitButton>Login</SubmitButton>
+        <SubmitButton isSubmitting={isSubmitting}>Login</SubmitButton>
       </form>
     </AuthCard>
   );
