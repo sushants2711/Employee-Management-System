@@ -1,0 +1,64 @@
+import { Eye, Pencil } from "lucide-react";
+
+function UserCard({ user, authUser, openViewModal, openEditModal }) {
+  return (
+    <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-6 shadow-sm hover:shadow-md transition-shadow group">
+      <div className="flex justify-between items-start mb-4">
+        <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
+          {user.name}
+        </h3>
+        <span
+          className={`px-2.5 py-1 text-xs font-medium rounded-full ${
+            user.status === "ACTIVE"
+              ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
+              : "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
+          }`}
+        >
+          {user.status || "ACTIVE"}
+        </span>
+      </div>
+      <p className="text-sm text-slate-600 dark:text-slate-400 mb-2 truncate">
+        {user.email}
+      </p>
+      <div className="mb-4 text-sm text-slate-500 dark:text-slate-400 space-y-1">
+        <div>
+          Role:{" "}
+          <span className="font-medium text-slate-700 dark:text-slate-300">
+            {user.role}
+          </span>
+        </div>
+        <div>
+          Department:{" "}
+          <span className="font-medium text-slate-700 dark:text-slate-300">
+            {user.department?.departmentName || "Unknown"}
+          </span>
+        </div>
+      </div>
+      <div className="flex items-center justify-between text-sm text-slate-500 dark:text-slate-400 mt-2 border-t border-slate-100 dark:border-slate-700 pt-3">
+        <span className="font-mono bg-slate-100 dark:bg-slate-900 px-2 py-1 rounded">
+          {user.employeeId || "No ID"}
+        </span>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => openViewModal(user)}
+            className="p-1.5 hover:bg-green-50 hover:text-green-600 dark:hover:bg-green-900/30 dark:hover:text-green-400 rounded-lg transition-colors cursor-pointer"
+            title="View Details"
+          >
+            <Eye className="w-4 h-4" />
+          </button>
+          {authUser?.role === "Management" && user.role !== "Management" && (
+            <button
+              onClick={() => openEditModal(user)}
+              className="p-1.5 hover:bg-green-50 hover:text-green-600 dark:hover:bg-green-900/30 dark:hover:text-green-400 rounded-lg transition-colors cursor-pointer"
+              title="Edit User"
+            >
+              <Pencil className="w-4 h-4" />
+            </button>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default UserCard;

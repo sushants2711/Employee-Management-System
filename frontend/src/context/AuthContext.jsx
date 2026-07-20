@@ -1,5 +1,5 @@
 /* eslint-disable react-refresh/only-export-components */
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useState, useCallback } from "react";
 
 const AuthContext = createContext();
 
@@ -28,7 +28,7 @@ export const AuthProvider = ({ children }) => {
       : null;
   });
 
-  const login = (userData, role) => {
+  const login = useCallback((userData, role) => {
     localStorage.setItem("role", role);
     localStorage.setItem("name", userData.name);
     localStorage.setItem("email", userData.email);
@@ -42,9 +42,9 @@ export const AuthProvider = ({ children }) => {
       );
     }
     setUser({ ...userData, role });
-  };
+  }, []);
 
-  const logout = () => {
+  const logout = useCallback(() => {
     localStorage.removeItem("role");
     localStorage.removeItem("name");
     localStorage.removeItem("email");
@@ -52,9 +52,9 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem("profilePicUrl");
     localStorage.removeItem("isChangedPasswordCount");
     setUser(null);
-  };
+  }, []);
 
-  const updateUser = (updates) => {
+  const updateUser = useCallback((updates) => {
     if (updates.isAvailable !== undefined)
       localStorage.setItem("isAvailable", updates.isAvailable);
     if (updates.profilePicUrl !== undefined)
@@ -66,7 +66,7 @@ export const AuthProvider = ({ children }) => {
       );
 
     setUser((prev) => ({ ...prev, ...updates }));
-  };
+  }, []);
 
   return (
     <AuthContext.Provider value={{ user, login, logout, updateUser }}>
