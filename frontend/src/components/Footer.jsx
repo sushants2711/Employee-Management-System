@@ -1,11 +1,18 @@
-import { Link } from "react-router-dom";
+import { Link, NavLink } from "react-router-dom";
 import { Mail, Heart, ExternalLink } from "lucide-react";
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
 
+  const getLinkClasses = ({ isActive }) =>
+    `relative inline-block pb-1 transition-colors duration-300 font-medium after:content-[''] after:absolute after:bottom-0 after:left-0 after:h-[2px] after:w-full after:bg-current after:transition-transform after:duration-500 after:ease-in-out after:origin-left ${
+      isActive
+        ? "text-slate-900 dark:text-white after:scale-x-100"
+        : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white after:scale-x-0 hover:after:scale-x-100"
+    }`;
+
   return (
-    <footer className="w-full bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 relative overflow-hidden mt-auto">
+    <footer className="w-full bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 relative overflow-hidden mt-24">
       {/* Decorative gradient top border */}
       <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-transparent via-ems-primary to-transparent opacity-50" />
 
@@ -33,8 +40,66 @@ const Footer = () => {
             </div>
           </div>
 
+          {/* Quick Links */}
+          <div className="flex flex-col items-center lg:items-start gap-4 w-full lg:w-auto mt-6 lg:mt-0 hidden sm:flex">
+            <h3 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+              Links
+            </h3>
+            <ul className="flex flex-col gap-3 text-center lg:text-left text-sm text-slate-600 dark:text-slate-400 font-medium">
+              <li>
+                <NavLink to="/home" end className={getLinkClasses}>
+                  Dashboard
+                </NavLink>
+              </li>
+              <li>
+                <NavLink to="/home/projects" className={getLinkClasses}>
+                  Projects
+                </NavLink>
+              </li>
+              <li>
+                <NavLink to="/home/teams" className={getLinkClasses}>
+                  Teams
+                </NavLink>
+              </li>
+              <li>
+                <NavLink to="/home/users" className={getLinkClasses}>
+                  Employees
+                </NavLink>
+              </li>
+            </ul>
+          </div>
+
+          {/* Resources */}
+          <div className="flex flex-col items-center lg:items-start gap-4 w-full lg:w-auto mt-6 lg:mt-0 hidden sm:flex">
+            <h3 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+              Resources
+            </h3>
+            <ul className="flex flex-col gap-3 text-center lg:text-left text-sm text-slate-600 dark:text-slate-400 font-medium">
+              <li>
+                <NavLink to="/home/help-center" className={getLinkClasses}>
+                  Help Center
+                </NavLink>
+              </li>
+              <li>
+                <NavLink to="/home/documentation" className={getLinkClasses}>
+                  Documentation
+                </NavLink>
+              </li>
+              <li>
+                <NavLink to="/home/community" className={getLinkClasses}>
+                  Community
+                </NavLink>
+              </li>
+              <li>
+                <NavLink to="/home/system-status" className={getLinkClasses}>
+                  System Status
+                </NavLink>
+              </li>
+            </ul>
+          </div>
+
           {/* Connect Section */}
-          <div className="flex flex-col items-center lg:items-end gap-5 w-full lg:w-auto">
+          <div className="flex flex-col items-center lg:items-end gap-5 w-full lg:w-auto mt-6 lg:mt-0">
             <h3 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider">
               Let's Connect
             </h3>
@@ -100,12 +165,12 @@ const Footer = () => {
             &copy; {currentYear} Enterprise Workforce Hub.
           </p>
           <div className="flex items-center gap-6 text-sm text-slate-400 dark:text-slate-500 font-medium">
-            <span className="hover:text-slate-700 dark:hover:text-slate-300 transition-colors cursor-pointer">
+            <NavLink to="/home/privacy" className={getLinkClasses}>
               Privacy
-            </span>
-            <span className="hover:text-slate-700 dark:hover:text-slate-300 transition-colors cursor-pointer">
+            </NavLink>
+            <NavLink to="/home/terms" className={getLinkClasses}>
               Terms
-            </span>
+            </NavLink>
           </div>
         </div>
       </div>

@@ -21,6 +21,14 @@ import DashboardLayout from "./layouts/DashboardLayout";
 import ScrollToTop from "./components/ScrollToTop";
 import ProtectedRoute from "./components/ProtectedRoute";
 import PublicRoute from "./components/PublicRoute";
+import {
+  HelpCenter,
+  Documentation,
+  Community,
+  SystemStatus,
+  Privacy,
+  Terms,
+} from "./pages/StaticPages";
 
 function App() {
   return (
@@ -88,6 +96,12 @@ function App() {
                   <Route path="users" element={<Users />} />
                   <Route path="projects" element={<Projects />} />
                   <Route path="profile" element={<Profile />} />
+                  <Route path="help-center" element={<HelpCenter />} />
+                  <Route path="documentation" element={<Documentation />} />
+                  <Route path="community" element={<Community />} />
+                  <Route path="system-status" element={<SystemStatus />} />
+                  <Route path="privacy" element={<Privacy />} />
+                  <Route path="terms" element={<Terms />} />
                 </Route>
                 <Route path="*" element={<NotFound />} />
               </Routes>
