@@ -25,7 +25,7 @@ import SubmitButton from "../components/SubmitButton";
 import { useAuth } from "../context/AuthContext";
 
 function Profile() {
-  useAuth();
+  const { updateUser } = useAuth();
   const [user, setUser] = useState(null);
   const [teams, setTeams] = useState([]);
   const [departments, setDepartments] = useState([]);
@@ -54,6 +54,12 @@ function Profile() {
       const userData = userRes.data;
       setUser(userData);
 
+      // Sync the latest profile picture to global AuthContext & localStorage
+      // so it updates immediately in the Sidebar and Home page
+      if (userData.profilePicUrl !== undefined) {
+        updateUser({ profilePicUrl: userData.profilePicUrl });
+      }
+
       setTeams(teamsRes.data || []);
       setDepartments(deptRes.data || []);
       setDesignations(desigRes.data || []);
@@ -69,7 +75,7 @@ function Profile() {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [updateUser]);
 
   useEffect(() => {
     const loadProfile = async () => {
