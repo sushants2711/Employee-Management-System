@@ -35,7 +35,17 @@ function Home() {
             to="/home"
             className="group flex flex-col items-center justify-center gap-4 p-8 bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 hover:shadow-md hover:border-ems-primary/50 dark:hover:border-ems-primary-dark/50 transition-all duration-300"
           >
-            <div className="w-16 h-16 rounded-full bg-ems-primary/10 dark:bg-ems-primary-dark/10 flex items-center justify-center text-ems-primary dark:text-ems-primary-dark group-hover:scale-110 transition-transform duration-300"></div>
+            {user.profilePicUrl ? (
+              <img
+                src={user.profilePicUrl}
+                alt={user.name}
+                className="w-16 h-16 rounded-full object-cover ring-4 ring-slate-100 dark:ring-slate-800 group-hover:scale-110 transition-transform duration-300 shadow-sm"
+              />
+            ) : (
+              <div className="w-16 h-16 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center text-green-600 dark:text-green-400 text-2xl font-bold ring-4 ring-green-50 dark:ring-green-900/20 group-hover:scale-110 transition-transform duration-300 shadow-sm">
+                {user?.name?.charAt(0).toUpperCase() || "U"}
+              </div>
+            )}
             <div className="text-center">
               <h2 className="text-xl font-semibold text-slate-900 dark:text-white mb-2">
                 Continue to Dashboard

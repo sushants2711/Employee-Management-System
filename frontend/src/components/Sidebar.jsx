@@ -75,9 +75,17 @@ function Sidebar() {
           to="/home/profile"
           className="flex items-center gap-3 px-3 py-2 mb-2 hover:bg-slate-50 dark:hover:bg-slate-800/50 rounded-xl transition-colors cursor-pointer"
         >
-          <div className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-600 dark:text-slate-300 font-bold text-sm">
-            {user?.name?.charAt(0).toUpperCase()}
-          </div>
+          {user?.profilePicUrl ? (
+            <img
+              src={user.profilePicUrl}
+              alt="Profile"
+              className="w-8 h-8 rounded-full object-cover ring-2 ring-slate-100 dark:ring-slate-800"
+            />
+          ) : (
+            <div className="w-8 h-8 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center text-green-600 dark:text-green-400 font-bold text-sm ring-2 ring-green-50 dark:ring-green-900/20">
+              {user?.name?.charAt(0).toUpperCase() || "U"}
+            </div>
+          )}
           <div className="flex-1 min-w-0">
             <p className="text-sm font-medium text-slate-900 dark:text-white truncate">
               {user?.name}
