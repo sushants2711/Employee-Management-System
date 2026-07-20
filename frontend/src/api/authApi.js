@@ -62,8 +62,9 @@ export const verifyOtp = async (otpData) => {
   });
 };
 
-export const getAllUsers = async () => {
-  return await apiClient("/user/all-users", {
+export const getAllUsers = async (status) => {
+  const query = status ? `?status=${status}` : "";
+  return await apiClient(`/user/all-users${query}`, {
     method: "GET",
   });
 };
@@ -118,4 +119,24 @@ export const updateIsAvailable = async (isAvailable) => {
     method: "PUT",
     body: JSON.stringify({ isAvailable }),
   });
+};
+
+export const getEmployeesByStatus = async (status) => {
+  const query = status ? `?status=${status}` : "";
+  return await apiClient(`/user/get-employee${query}`, { method: "GET" });
+};
+
+export const getManagementByStatus = async (status) => {
+  const query = status ? `?status=${status}` : "";
+  return await apiClient(`/user/get-management${query}`, { method: "GET" });
+};
+
+export const getManagersByStatus = async (status) => {
+  const query = status ? `?status=${status}` : "";
+  return await apiClient(`/user/get-manager${query}`, { method: "GET" });
+};
+
+export const getTeamLeadersByStatus = async (status) => {
+  const query = status ? `?status=${status}` : "";
+  return await apiClient(`/user/get-team-leader${query}`, { method: "GET" });
 };

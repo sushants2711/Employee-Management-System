@@ -1,9 +1,20 @@
 import { useState, useEffect, useCallback } from "react";
-import { Plus } from "lucide-react";
+import {
+  Plus,
+  Users as UsersIcon,
+  Shield,
+  Briefcase,
+  Star,
+  Filter,
+} from "lucide-react";
 import {
   getAllUsers,
   createUserAccount,
   updateUserDetails,
+  getEmployeesByStatus,
+  getManagementByStatus,
+  getManagersByStatus,
+  getTeamLeadersByStatus,
 } from "../api/authApi";
 import { getAllActiveTeams } from "../api/teamApi";
 import { getAllActiveDepartments } from "../api/departmentApi";
@@ -17,6 +28,21 @@ import { useAuth } from "../context/AuthContext";
 import UserCard from "../features/users/UserCard";
 import UserModal from "../features/users/UserModal";
 
+const ROLE_TABS = [
+  { id: "ALL", label: "All Users", icon: UsersIcon },
+  { id: "Management", label: "Management", icon: Shield },
+  { id: "Manager", label: "Managers", icon: Briefcase },
+  { id: "Team Leader", label: "Team Leaders", icon: Star },
+  { id: "Employee", label: "Employees", icon: UsersIcon },
+];
+
+const STATUS_OPTIONS = [
+  { id: "", label: "All Status" },
+  { id: "ACTIVE", label: "Active" },
+  { id: "INACTIVE", label: "Inactive" },
+  { id: "SUSPENDED", label: "Suspended" },
+];
+
 function Users() {
   const { user: authUser } = useAuth();
   const [users, setUsers] = useState([]);
@@ -29,6 +55,10 @@ function Users() {
     mode: "CREATE",
   });
   const [selectedItem, setSelectedItem] = useState(null);
+
+  // Filters State
+  const [activeTab, setActiveTab] = useState("ALL");
+  const [activeStatus, setActiveStatus] = useState("");
 
   // Form State
   const [formData, setFormData] = useState({
@@ -49,8 +79,19 @@ function Users() {
   const fetchData = useCallback(async () => {
     try {
       setIsLoading(true);
+      let usersPromise;
+      if (activeTab === "ALL") usersPromise = getAllUsers(activeStatus);
+      else if (activeTab === "Management")
+        usersPromise = getManagementByStatus(activeStatus);
+      else if (activeTab === "Manager")
+        usersPromise = getManagersByStatus(activeStatus);
+      else if (activeTab === "Team Leader")
+        usersPromise = getTeamLeadersByStatus(activeStatus);
+      else if (activeTab === "Employee")
+        usersPromise = getEmployeesByStatus(activeStatus);
+
       const [usersRes, teamsRes, deptRes, desigRes] = await Promise.all([
-        getAllUsers().catch(() => ({ data: [] })),
+        usersPromise.catch(() => ({ data: [] })),
         getAllActiveTeams().catch(() => ({ data: [] })),
         getAllActiveDepartments().catch(() => ({ data: [] })),
         getAllActiveDesignations().catch(() => ({ data: [] })),
@@ -64,7 +105,7 @@ function Users() {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [activeTab, activeStatus]);
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -90,6 +131,7 @@ function Users() {
       password: "",
       confirmPassword: "",
       role: "Employee",
+      status: "ACTIVE",
       phoneNumber: "",
       teamName: "",
       department: "",
@@ -203,68 +245,160 @@ function Users() {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
-            Users
-          </h1>
-          <p className="text-slate-600 dark:text-slate-400 text-sm mt-1">
-            Manage company users and create accounts.
-          </p>
+    <div className="flex flex-col md:flex-row gap-6 h-full">
+      {/* Sidebar Filters */}
+      <div className="w-full md:w-64 flex-shrink-0 space-y-6">
+        <div className="bg-white/60 dark:bg-slate-800/60 backdrop-blur-xl p-6 rounded-3xl shadow-sm border border-slate-200/50 dark:border-slate-700/50">
+          <h2 className="text-lg font-bold text-slate-800 dark:text-white mb-4 flex items-center gap-2">
+            <Filter size={18} className="text-blue-500" />
+            Filters
+          </h2>
+
+          <div className="space-y-6">
+            {/* Status Filter */}
+            <div>
+              <label className="block text-sm font-semibold text-slate-600 dark:text-slate-400 mb-2">
+                Status
+              </label>
+              <div className="relative">
+                <select
+                  value={activeStatus}
+                  onChange={(e) => setActiveStatus(e.target.value)}
+                  className="w-full pl-3 pr-10 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none appearance-none text-sm text-slate-700 dark:text-slate-300 transition-shadow cursor-pointer"
+                >
+                  {STATUS_OPTIONS.map((status) => (
+                    <option key={status.id} value={status.id}>
+                      {status.label}
+                    </option>
+                  ))}
+                </select>
+                <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-slate-400">
+                  <svg className="w-4 h-4 fill-current" viewBox="0 0 20 20">
+                    <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
+                  </svg>
+                </div>
+              </div>
+            </div>
+
+            {/* Role Tabs */}
+            <div>
+              <label className="block text-sm font-semibold text-slate-600 dark:text-slate-400 mb-2">
+                Categories
+              </label>
+              <div className="space-y-1">
+                {ROLE_TABS.map((tab) => {
+                  const Icon = tab.icon;
+                  const isActive = activeTab === tab.id;
+                  return (
+                    <button
+                      key={tab.id}
+                      onClick={() => setActiveTab(tab.id)}
+                      className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-300 ${
+                        isActive
+                          ? "bg-blue-500 text-white shadow-md shadow-blue-500/20"
+                          : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700/50 hover:text-slate-900 dark:hover:text-white"
+                      }`}
+                    >
+                      <Icon
+                        size={18}
+                        className={
+                          isActive
+                            ? "text-white"
+                            : "text-slate-400 dark:text-slate-500"
+                        }
+                      />
+                      {tab.label}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
         </div>
-        {authUser?.role === "Management" && (
-          <button
-            onClick={openCreateModal}
-            className="flex items-center gap-2 px-4 py-2 bg-ems-primary hover:bg-blue-700 text-white rounded-xl font-medium transition-colors cursor-pointer shadow-sm"
-          >
-            <Plus className="w-5 h-5" />
-            Add User
-          </button>
-        )}
       </div>
 
-      {isLoading ? (
-        <div className="flex justify-center p-12">
-          <div className="w-8 h-8 border-4 border-slate-200 border-t-ems-primary rounded-full animate-spin"></div>
+      {/* Main Content */}
+      <div className="flex-1 space-y-6">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white/60 dark:bg-slate-800/60 backdrop-blur-xl p-6 rounded-3xl shadow-sm border border-slate-200/50 dark:border-slate-700/50">
+          <div>
+            <h1 className="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
+              Users
+            </h1>
+            <p className="text-slate-600 dark:text-slate-400 text-sm mt-1">
+              Manage company users and create accounts.
+            </p>
+          </div>
+          {authUser?.role === "Management" && (
+            <button
+              onClick={openCreateModal}
+              className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-xl font-medium transition-all duration-300 shadow-md shadow-blue-500/20 hover:shadow-lg hover:-translate-y-0.5"
+            >
+              <Plus className="w-5 h-5" />
+              Add User
+            </button>
+          )}
         </div>
-      ) : users.length === 0 ? (
-        <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-12 text-center shadow-sm">
-          <h3 className="text-lg font-medium text-slate-900 dark:text-white mb-1">
-            No Users Found
-          </h3>
-          <p className="text-slate-500 dark:text-slate-400">
-            Get started by creating your first user account.
-          </p>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {users.map((user) => (
-            <UserCard
-              key={user._id}
-              user={user}
-              authUser={authUser}
-              openViewModal={openViewModal}
-              openEditModal={openEditModal}
-            />
-          ))}
-        </div>
-      )}
 
-      {/* Modal extracted to separate component */}
-      <UserModal
-        modalConfig={modalConfig}
-        setModalConfig={setModalConfig}
-        selectedItem={selectedItem}
-        formData={formData}
-        errors={errors}
-        isSubmitting={isSubmitting}
-        departments={departments}
-        designations={designations}
-        teams={teams}
-        handleSubmit={handleSubmit}
-        handleInputChange={handleInputChange}
-      />
+        {isLoading ? (
+          <div className="flex justify-center p-12">
+            <div className="w-10 h-10 border-4 border-slate-200 border-t-blue-600 rounded-full animate-spin"></div>
+          </div>
+        ) : users.length === 0 ? (
+          <div className="bg-white/60 dark:bg-slate-800/60 backdrop-blur-xl rounded-3xl border border-slate-200/50 dark:border-slate-700/50 p-16 text-center shadow-sm">
+            <div className="w-20 h-20 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-6">
+              <UsersIcon
+                size={32}
+                className="text-slate-400 dark:text-slate-500"
+              />
+            </div>
+            <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">
+              No Users Found
+            </h3>
+            <p className="text-slate-500 dark:text-slate-400 max-w-md mx-auto">
+              {activeStatus || activeTab !== "ALL"
+                ? "No users match your current filter criteria. Try adjusting your filters."
+                : "Get started by creating your first user account."}
+            </p>
+            {(activeStatus || activeTab !== "ALL") && (
+              <button
+                onClick={() => {
+                  setActiveTab("ALL");
+                  setActiveStatus("");
+                }}
+                className="mt-6 text-blue-600 dark:text-blue-400 font-medium hover:underline"
+              >
+                Clear Filters
+              </button>
+            )}
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+            {users.map((user) => (
+              <UserCard
+                key={user._id}
+                user={user}
+                authUser={authUser}
+                openViewModal={openViewModal}
+                openEditModal={openEditModal}
+              />
+            ))}
+          </div>
+        )}
+
+        <UserModal
+          modalConfig={modalConfig}
+          setModalConfig={setModalConfig}
+          selectedItem={selectedItem}
+          formData={formData}
+          errors={errors}
+          isSubmitting={isSubmitting}
+          departments={departments}
+          designations={designations}
+          teams={teams}
+          handleSubmit={handleSubmit}
+          handleInputChange={handleInputChange}
+        />
+      </div>
     </div>
   );
 }

@@ -1375,3 +1375,155 @@ export const updateUserByManagementController = async (req, res) => {
     );
   }
 };
+
+// get all employee
+export const getAllEmployeeControllers = async (req, res) => {
+  try {
+    const { status } = req.query;
+
+    let filter = {};
+
+    if (status) filter.status = status;
+
+    const allEmployee = await userModel
+      .find({ role: "Employee", ...filter })
+      .populate(
+        "teamName",
+        "teamName teamLead manager status department createdBy members"
+      )
+      .populate("designation", "designationName designationCode")
+      .populate("department", "departmentName departmentCode");
+
+    if (
+      !allEmployee ||
+      allEmployee.length === 0 ||
+      !Array.isArray(allEmployee)
+    ) {
+      return notFoundResponse(res, "No employee found");
+    }
+
+    return successResponse(
+      res,
+      "All employee fetched successfully",
+      allEmployee
+    );
+  } catch (error) {
+    return internalServerErrorResponse(
+      res,
+      "Internal Server Error",
+      error.message
+    );
+  }
+};
+
+// get all management
+export const getAllManagementControllers = async (req, res) => {
+  try {
+    const { status } = req.query;
+
+    let filter = {};
+
+    if (status) filter.status = status;
+
+    const allManagement = await userModel
+      .find({ role: "Management", ...filter })
+      .populate(
+        "teamName",
+        "teamName teamLead manager status department createdBy members"
+      )
+      .populate("designation", "designationName designationCode")
+      .populate("department", "departmentName departmentCode");
+
+    if (
+      !allManagement ||
+      allManagement.length === 0 ||
+      !Array.isArray(allManagement)
+    ) {
+      return notFoundResponse(res, "No management found");
+    }
+
+    return successResponse(
+      res,
+      "All management fetched successfully",
+      allManagement
+    );
+  } catch (error) {
+    return internalServerErrorResponse(
+      res,
+      "Internal Server Error",
+      error.message
+    );
+  }
+};
+
+// get all manager
+export const getAllManagerControllers = async (req, res) => {
+  try {
+    const { status } = req.query;
+
+    let filter = {};
+
+    if (status) filter.status = status;
+
+    const allManager = await userModel
+      .find({ role: "Manager", ...filter })
+      .populate(
+        "teamName",
+        "teamName teamLead manager status department createdBy members"
+      )
+      .populate("designation", "designationName designationCode")
+      .populate("department", "departmentName departmentCode");
+
+    if (!allManager || allManager.length === 0 || !Array.isArray(allManager)) {
+      return notFoundResponse(res, "No manager found");
+    }
+
+    return successResponse(res, "All manager fetched successfully", allManager);
+  } catch (error) {
+    return internalServerErrorResponse(
+      res,
+      "Internal Server Error",
+      error.message
+    );
+  }
+};
+
+// get all team leader
+export const getAllTeamLeaderControllers = async (req, res) => {
+  try {
+    const { status } = req.query;
+
+    let filter = {};
+
+    if (status) filter.status = status;
+
+    const allTeamLeader = await userModel
+      .find({ role: "Team Leader", ...filter })
+      .populate(
+        "teamName",
+        "teamName teamLead manager status department createdBy members"
+      )
+      .populate("designation", "designationName designationCode")
+      .populate("department", "departmentName departmentCode");
+
+    if (
+      !allTeamLeader ||
+      allTeamLeader.length === 0 ||
+      !Array.isArray(allTeamLeader)
+    ) {
+      return notFoundResponse(res, "No team leader found");
+    }
+
+    return successResponse(
+      res,
+      "All team leader fetched successfully",
+      allTeamLeader
+    );
+  } catch (error) {
+    return internalServerErrorResponse(
+      res,
+      "Internal Server Error",
+      error.message
+    );
+  }
+};

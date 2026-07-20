@@ -41,6 +41,10 @@ import {
   getAllActiveTeamLeaderController,
   getAllEmployeeController,
   updateUserByManagementController,
+  getAllEmployeeControllers,
+  getAllManagementControllers,
+  getAllTeamLeaderControllers,
+  getAllManagerControllers,
 } from "../controllers/user.controller.js";
 import { verifyCookie } from "../utils/verify.cookie.js";
 import { verifyManagement } from "../utils/verify.management.js";
@@ -218,5 +222,17 @@ userRouter
     updateUserMiddleware,
     updateUserByManagementController
   );
+
+userRouter.route("/get-employee").get(verifyCookie, getAllEmployeeControllers);
+
+userRouter.route("/get-manager").get(verifyCookie, getAllManagerControllers);
+
+userRouter
+  .route("/get-management")
+  .get(verifyCookie, getAllManagementControllers);
+
+userRouter
+  .route("/get-team-leader")
+  .get(verifyCookie, getAllTeamLeaderControllers);
 
 export default userRouter;
