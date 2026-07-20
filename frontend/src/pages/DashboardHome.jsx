@@ -33,7 +33,7 @@ function DashboardHome() {
     if (hour < 18) return "Good Afternoon";
     return "Good Evening";
   });
-  
+
   const [currentDate] = useState(() => {
     const options = {
       weekday: "long",
@@ -43,7 +43,7 @@ function DashboardHome() {
     };
     return new Date().toLocaleDateString(undefined, options);
   });
-  
+
   const [firstName] = useState(() => {
     const storedName = localStorage.getItem("name");
     return storedName ? storedName.split(" ")[0] : "User";
