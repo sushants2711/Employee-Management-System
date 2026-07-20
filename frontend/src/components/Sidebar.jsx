@@ -70,10 +70,10 @@ function Sidebar({ onClose }) {
               end={item.path === "/home"}
               onClick={onClose}
               className={({ isActive }) =>
-                `flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium transition-colors ${
+                `relative flex items-center gap-3 px-3 py-2.5 font-medium transition-colors duration-300 after:content-[''] after:absolute after:bottom-0 after:left-0 after:h-[2px] after:w-full after:bg-current after:transition-transform after:duration-500 after:ease-in-out after:origin-left ${
                   isActive
-                    ? "bg-ems-primary/10 text-ems-primary dark:bg-ems-primary-dark/20 dark:text-ems-primary-dark"
-                    : "text-slate-600 hover:bg-slate-50 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800/50 dark:hover:text-white"
+                    ? "text-slate-900 dark:text-white after:scale-x-100"
+                    : "text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white after:scale-x-0 hover:after:scale-x-100"
                 }`
               }
             >
