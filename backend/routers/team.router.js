@@ -19,9 +19,9 @@ const teamRouter = express.Router();
 teamRouter
   .route("/create-team")
   .post(
-    createTeamMiddleware,
     verifyCookie,
     verifyManagement,
+    createTeamMiddleware,
     createTeamController
   );
 

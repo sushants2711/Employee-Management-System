@@ -1,4 +1,7 @@
 import teamModel from "../models/team.model.js";
+import userModel from "../models/user.model.js";
+import { verifyMongoDBId } from "../utils/verifyMongoId.js";
+import departmentModel from "../models/department.model.js";
 import {
   internalServerErrorResponse,
   createdResponse,
@@ -6,9 +9,6 @@ import {
   successResponse,
   notFoundResponse,
 } from "../utils/response.handler.js";
-import departmentModel from "../models/department.model.js";
-import { verifyMongoDBId } from "../utils/verifyMongoId.js";
-import userModel from "../models/user.model.js";
 
 // create team controller
 export const createTeamController = async (req, res) => {
@@ -24,14 +24,46 @@ export const createTeamController = async (req, res) => {
       members,
     } = req.body;
 
-    const isValid = verifyMongoDBId(department, res);
+    const isVerifyTeamLead = verifyMongoDBId(teamLead, res);
 
-    if (isValid !== true)
-      return badRequestResponse(res, "Invalid department ID");
+    if (isVerifyTeamLead !== true) return isVerifyTeamLead;
 
-    const teamNameExist = await teamModel.findOne({ teamName });
+    const isVerifyManager = verifyMongoDBId(manager, res);
 
-    if (teamNameExist) return badRequestResponse(res, "Team already exist");
+    if (isVerifyManager !== true) return isVerifyManager;
+
+    const isVerifyDepartment = verifyMongoDBId(department, res);
+
+    if (isVerifyDepartment !== true) return isVerifyDepartment;
+
+    if (members) {
+      if (!Array.isArray(members)) {
+        return badRequestResponse(res, "Members must be an array of IDs");
+      }
+
+      for (const curr of members) {
+        const isValidMember = verifyMongoDBId(curr, res);
+        if (isValidMember !== true) return isValidMember;
+      }
+    }
+
+    const teamExist = await teamModel.findOne({ teamName });
+
+    if (teamExist) return badRequestResponse(res, "Team name already exist");
+
+    const userExist = await userModel.findById(teamLead);
+
+    if (!userExist) return badRequestResponse(res, "User not exist");
+
+    if (userExist.role !== "Team Leader")
+      return badRequestResponse(res, "User is not a Team Leader");
+
+    const managerExist = await userModel.findById(manager);
+
+    if (!managerExist) return badRequestResponse(res, "Manager not exist");
+
+    if (managerExist.role !== "Manager")
+      return badRequestResponse(res, "User is not a Manager");
 
     const departmentExist = await departmentModel.findById(department);
 
@@ -39,25 +71,27 @@ export const createTeamController = async (req, res) => {
       return badRequestResponse(res, "Department not exist");
 
     if (members) {
-      for (const member of members) {
-        const memberExist = await userModel.findById(member);
-        if (!memberExist) return badRequestResponse(res, "Member not exist");
+      for (const curr of members) {
+        const memberExist = await userModel.findById(curr);
+
+        if (!memberExist) return badRequestResponse(res, "User not exist");
+
+        if (memberExist.role !== "Employee")
+          return badRequestResponse(res, "User is not an Employee");
       }
     }
 
-    const team = new teamModel({
+    const team = await teamModel.create({
       teamName,
       teamLead,
       manager,
       teamDescription,
       department,
-      members: members || [],
+      members,
       createdBy: loggedInUserId,
     });
 
-    const saveData = await team.save();
-
-    return createdResponse(res, "Team created successfully", saveData);
+    return createdResponse(res, "Team created successfully", team);
   } catch (error) {
     return internalServerErrorResponse(
       res,
@@ -70,13 +104,12 @@ export const createTeamController = async (req, res) => {
 // get all team controller
 export const getAllTeamController = async (req, res) => {
   try {
-    const { teamName, teamLead, manager } = req.query;
+    const { teamName, status } = req.query;
 
     let filterData = {};
 
     if (teamName) filterData.teamName = teamName;
-    if (teamLead) filterData.teamLead = teamLead;
-    if (manager) filterData.manager = manager;
+    if (status) filterData.status = status;
 
     const team = await teamModel
       .find(filterData)
@@ -144,33 +177,74 @@ export const updateTeamController = async (req, res) => {
       members,
     } = req.body;
 
-    const isValid = verifyMongoDBId(id, res);
-
-    if (isValid !== true) return badRequestResponse(res, "Invalid team ID");
+    // --- 1. Verify all provided MongoDB IDs first ---
+    const isValidId = verifyMongoDBId(id, res);
+    if (isValidId !== true) return badRequestResponse(res, "Invalid team ID");
 
     if (department) {
-      const isValid = verifyMongoDBId(department, res);
-
-      if (isValid !== true)
+      const isValidDepartment = verifyMongoDBId(department, res);
+      if (isValidDepartment !== true)
         return badRequestResponse(res, "Invalid department ID");
+    }
 
+    if (teamLead) {
+      const isValidTeamLead = verifyMongoDBId(teamLead, res);
+      if (isValidTeamLead !== true)
+        return badRequestResponse(res, "Invalid team lead ID");
+    }
+
+    if (manager) {
+      const isValidManager = verifyMongoDBId(manager, res);
+      if (isValidManager !== true)
+        return badRequestResponse(res, "Invalid manager ID");
+    }
+
+    if (members) {
+      if (!Array.isArray(members)) {
+        return badRequestResponse(res, "Members must be an array of IDs");
+      }
+      for (const curr of members) {
+        const isValidMember = verifyMongoDBId(curr, res);
+        if (isValidMember !== true) return isValidMember;
+      }
+    }
+
+    // --- 2. Perform Database Validation Queries ---
+    const singleTeam = await teamModel.findById(id);
+    if (!singleTeam) {
+      return notFoundResponse(res, "Team not found");
+    }
+
+    if (department) {
       const departmentExist = await departmentModel.findById(department);
-
       if (!departmentExist)
         return badRequestResponse(res, "Department not exist");
     }
 
-    if (members) {
-      for (const member of members) {
-        const memberExist = await userModel.findById(member);
-        if (!memberExist) return badRequestResponse(res, "Member not exist");
-      }
+    if (teamLead) {
+      const teamLeadExist = await userModel.findById(teamLead);
+      if (!teamLeadExist) return badRequestResponse(res, "Team lead not exist");
+
+      if (teamLeadExist.role !== "Team Leader")
+        return badRequestResponse(res, "User is not a Team Leader");
     }
 
-    const singleTeam = await teamModel.findById(id);
+    if (manager) {
+      const managerExist = await userModel.findById(manager);
+      if (!managerExist) return badRequestResponse(res, "Manager not exist");
 
-    if (!singleTeam) {
-      return notFoundResponse(res, "Team not found");
+      if (managerExist.role !== "Manager")
+        return badRequestResponse(res, "User is not a Manager");
+    }
+
+    if (members) {
+      for (const curr of members) {
+        const memberExist = await userModel.findById(curr);
+        if (!memberExist) return badRequestResponse(res, "Member not exist");
+
+        if (memberExist.role !== "Employee")
+          return badRequestResponse(res, "User is not an Employee");
+      }
     }
 
     if (teamName) {
@@ -180,16 +254,6 @@ export const updateTeamController = async (req, res) => {
       });
       if (teamNameExist) {
         return badRequestResponse(res, "Team name already exist");
-      }
-    }
-
-    if (teamLead) {
-      const teamLeadExist = await teamModel.findOne({
-        teamLead,
-        _id: { $ne: id },
-      });
-      if (teamLeadExist) {
-        return badRequestResponse(res, "Team lead already exist");
       }
     }
 
@@ -237,6 +301,9 @@ export const deleteTeamController = async (req, res) => {
     if (!singleTeam) return notFoundResponse(res, "Team not found");
 
     const deleteData = await teamModel.findByIdAndDelete(id);
+
+    if (!deleteData)
+      return badRequestResponse(res, "Error occur to delete the team");
 
     return successResponse(res, "Team deleted successfully", deleteData);
   } catch (error) {

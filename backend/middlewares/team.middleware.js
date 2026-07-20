@@ -14,9 +14,9 @@ export const createTeamMiddleware = async (req, res, next) => {
         .min(10)
         .max(250)
         .trim()
-        .optional("")
+        .optional()
         .allow(""),
-      teamLead: joi.string().hex().length(24).optional().allow(""),
+      teamLead: joi.string().hex().length(24).required(),
       manager: joi.string().hex().length(24).required(),
       department: joi.string().hex().length(24).required(),
       members: joi.array().items(joi.string().hex().length(24)).required(),
