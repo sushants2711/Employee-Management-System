@@ -21,8 +21,10 @@ import InputField from "../components/InputField";
 import SelectField from "../components/SelectField";
 import MultiSelectField from "../components/MultiSelectField";
 import SubmitButton from "../components/SubmitButton";
+import { useAuth } from "../context/AuthContext";
 
 function Teams() {
+  const { user } = useAuth();
   const [teams, setTeams] = useState([]);
   const [departments, setDepartments] = useState([]);
   const [users, setUsers] = useState([]);
@@ -176,13 +178,15 @@ function Teams() {
             Manage company teams and assignments.
           </p>
         </div>
-        <button
-          onClick={openCreateModal}
-          className="flex items-center gap-2 px-4 py-2 bg-ems-primary hover:bg-blue-700 text-white rounded-xl font-medium transition-colors cursor-pointer shadow-sm"
-        >
-          <Plus className="w-5 h-5" />
-          Add Team
-        </button>
+        {user?.role === "Management" && (
+          <button
+            onClick={openCreateModal}
+            className="flex items-center gap-2 px-4 py-2 bg-ems-primary hover:bg-blue-700 text-white rounded-xl font-medium transition-colors cursor-pointer shadow-sm"
+          >
+            <Plus className="w-5 h-5" />
+            Add Team
+          </button>
+        )}
       </div>
 
       {isLoading ? (
@@ -261,20 +265,24 @@ function Teams() {
                   >
                     <Eye className="w-4 h-4" />
                   </button>
-                  <button
-                    onClick={() => openUpdateModal(team)}
-                    className="p-1.5 hover:bg-blue-50 hover:text-blue-600 dark:hover:bg-blue-900/30 dark:hover:text-blue-400 rounded-lg transition-colors cursor-pointer"
-                    title="Edit Team"
-                  >
-                    <Edit2 className="w-4 h-4" />
-                  </button>
-                  <button
-                    onClick={() => setDeleteConfirmId(team._id)}
-                    className="p-1.5 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-900/30 dark:hover:text-red-400 rounded-lg transition-colors cursor-pointer"
-                    title="Delete Team"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
+                  {user?.role === "Management" && (
+                    <>
+                      <button
+                        onClick={() => openUpdateModal(team)}
+                        className="p-1.5 hover:bg-blue-50 hover:text-blue-600 dark:hover:bg-blue-900/30 dark:hover:text-blue-400 rounded-lg transition-colors cursor-pointer"
+                        title="Edit Team"
+                      >
+                        <Edit2 className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => setDeleteConfirmId(team._id)}
+                        className="p-1.5 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-900/30 dark:hover:text-red-400 rounded-lg transition-colors cursor-pointer"
+                        title="Delete Team"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </>
+                  )}
                 </div>
               </div>
             </div>

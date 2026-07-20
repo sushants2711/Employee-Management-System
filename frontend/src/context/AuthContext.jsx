@@ -9,7 +9,23 @@ export const AuthProvider = ({ children }) => {
     const name = localStorage.getItem("name");
     const email = localStorage.getItem("email");
     const isAvailable = localStorage.getItem("isAvailable") || "Available";
-    return role && name && email ? { role, name, email, isAvailable } : null;
+    const profilePicUrl = localStorage.getItem("profilePicUrl") || "";
+    const isChangedPasswordCount = localStorage.getItem(
+      "isChangedPasswordCount"
+    )
+      ? parseInt(localStorage.getItem("isChangedPasswordCount"), 10)
+      : null;
+
+    return role && name && email
+      ? {
+          role,
+          name,
+          email,
+          isAvailable,
+          profilePicUrl,
+          isChangedPasswordCount,
+        }
+      : null;
   });
 
   const login = (userData, role) => {
@@ -17,6 +33,14 @@ export const AuthProvider = ({ children }) => {
     localStorage.setItem("name", userData.name);
     localStorage.setItem("email", userData.email);
     localStorage.setItem("isAvailable", userData.isAvailable || "Available");
+    if (userData.profilePicUrl)
+      localStorage.setItem("profilePicUrl", userData.profilePicUrl);
+    if (userData.isChangedPasswordCount !== undefined) {
+      localStorage.setItem(
+        "isChangedPasswordCount",
+        userData.isChangedPasswordCount
+      );
+    }
     setUser({ ...userData, role });
   };
 
@@ -25,12 +49,22 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem("name");
     localStorage.removeItem("email");
     localStorage.removeItem("isAvailable");
+    localStorage.removeItem("profilePicUrl");
+    localStorage.removeItem("isChangedPasswordCount");
     setUser(null);
   };
 
   const updateUser = (updates) => {
-    if (updates.isAvailable)
+    if (updates.isAvailable !== undefined)
       localStorage.setItem("isAvailable", updates.isAvailable);
+    if (updates.profilePicUrl !== undefined)
+      localStorage.setItem("profilePicUrl", updates.profilePicUrl);
+    if (updates.isChangedPasswordCount !== undefined)
+      localStorage.setItem(
+        "isChangedPasswordCount",
+        updates.isChangedPasswordCount
+      );
+
     setUser((prev) => ({ ...prev, ...updates }));
   };
 

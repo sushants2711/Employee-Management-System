@@ -259,6 +259,7 @@ export const updatePasswordMiddleware = async (req, res, next) => {
     const schema = joi.object({
       oldPassword: joi.string().min(8).max(100).required(),
       newPassword: joi.string().min(8).max(100).required(),
+      confirmPassword: joi.string().min(8).max(100).required(),
     });
 
     const { error } = schema.validate(req.body);

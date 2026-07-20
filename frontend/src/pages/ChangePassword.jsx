@@ -1,6 +1,16 @@
 import { useState } from "react";
-import { Lock, LockKeyhole, Eye, EyeOff, ShieldCheck } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { Lock, LockKeyhole, ShieldCheck } from "lucide-react";
 import AuthCard from "../components/AuthCard";
+import SubmitButton from "../components/SubmitButton";
+import InputField from "../components/InputField";
+import { changePassword } from "../api/authApi";
+import { useAuth } from "../context/AuthContext";
+import { showSuccess, showError } from "../toastMessage/toastDeliver";
+import {
+  validateChangePasswordField,
+  validateChangePasswordForm,
+} from "../validators/userAuthValidators";
 
 function ChangePassword() {
   const [formData, setFormData] = useState({
@@ -9,22 +19,88 @@ function ChangePassword() {
     confirmPassword: "",
   });
 
-  const [showOldPassword, setShowOldPassword] = useState(false);
-  const [showNewPassword, setShowNewPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [errors, setErrors] = useState({});
+
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const navigate = useNavigate();
+  const { user, updateUser } = useAuth();
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    setFormData((prev) => {
+      const newFormData = { ...prev, [name]: value };
+
+      const error = validateChangePasswordField(name, value, newFormData);
+      setErrors((prevErrors) => ({ ...prevErrors, [name]: error }));
+
+      // Also validate confirm password if new password changes
+      if (name === "newPassword" && newFormData.confirmPassword) {
+        const confirmError = validateChangePasswordField(
+          "confirmPassword",
+          newFormData.confirmPassword,
+          newFormData
+        );
+        setErrors((prevErrors) => ({
+          ...prevErrors,
+          confirmPassword: confirmError,
+        }));
+      }
+
+      return newFormData;
+    });
   };
 
-  const handleChangePassword = (e) => {
+  const handleChangePassword = async (e) => {
     e.preventDefault();
-    if (formData.newPassword !== formData.confirmPassword) {
-      alert("New passwords do not match!");
+
+    if (
+      !formData.oldPassword &&
+      !formData.newPassword &&
+      !formData.confirmPassword
+    ) {
+      showSuccess("No changes detected");
       return;
     }
-    console.log("Changing password...", formData);
+
+    const { isValid, errors: formErrors } =
+      validateChangePasswordForm(formData);
+
+    if (!isValid) {
+      setErrors(formErrors);
+      showError("Please fix the errors in the form before submitting.");
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      const response = await changePassword({
+        oldPassword: formData.oldPassword,
+        newPassword: formData.newPassword,
+        confirmPassword: formData.confirmPassword,
+      });
+
+      showSuccess(response.message || "Password updated successfully!");
+
+      // Update context and localStorage so they are no longer trapped
+      updateUser({
+        isChangedPasswordCount: (user?.isChangedPasswordCount || 0) + 1,
+      });
+
+      // Clear form
+      setFormData({
+        oldPassword: "",
+        newPassword: "",
+        confirmPassword: "",
+      });
+
+      // Redirect to home
+      navigate("/home");
+    } catch (error) {
+      showError(error.message || "Failed to update password");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -34,105 +110,43 @@ function ChangePassword() {
       subtitle="Securely update your account password."
     >
       <form onSubmit={handleChangePassword} className="space-y-5">
-        {/* Old Password */}
-        <div>
-          <label className="block text-sm font-medium text-ems-text-light dark:text-ems-text-dark mb-2">
-            Old Password
-          </label>
-          <div className="relative">
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <Lock className="h-5 w-5 text-slate-400" />
-            </div>
-            <input
-              type={showOldPassword ? "text" : "password"}
-              name="oldPassword"
-              value={formData.oldPassword}
-              onChange={handleInputChange}
-              className="block w-full pl-10 pr-10 py-3 border border-slate-200 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-900/50 text-ems-text-light dark:text-ems-text-dark focus:outline-none focus:ring-2 focus:ring-ems-primary dark:focus:ring-ems-primary-dark transition-colors"
-              placeholder="••••••••"
-            />
-            <button
-              type="button"
-              onClick={() => setShowOldPassword(!showOldPassword)}
-              className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-ems-primary cursor-pointer transition-colors"
-            >
-              {showOldPassword ? (
-                <EyeOff className="h-5 w-5" />
-              ) : (
-                <Eye className="h-5 w-5" />
-              )}
-            </button>
-          </div>
-        </div>
+        <InputField
+          label="Old Password"
+          icon={Lock}
+          type="password"
+          name="oldPassword"
+          value={formData.oldPassword}
+          onChange={handleInputChange}
+          disabled={isSubmitting}
+          error={errors.oldPassword}
+          placeholder="••••••••"
+        />
 
-        {/* New Password */}
-        <div>
-          <label className="block text-sm font-medium text-ems-text-light dark:text-ems-text-dark mb-2">
-            New Password
-          </label>
-          <div className="relative">
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <LockKeyhole className="h-5 w-5 text-slate-400" />
-            </div>
-            <input
-              type={showNewPassword ? "text" : "password"}
-              name="newPassword"
-              value={formData.newPassword}
-              onChange={handleInputChange}
-              className="block w-full pl-10 pr-10 py-3 border border-slate-200 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-900/50 text-ems-text-light dark:text-ems-text-dark focus:outline-none focus:ring-2 focus:ring-ems-primary dark:focus:ring-ems-primary-dark transition-colors"
-              placeholder="••••••••"
-            />
-            <button
-              type="button"
-              onClick={() => setShowNewPassword(!showNewPassword)}
-              className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-ems-primary cursor-pointer transition-colors"
-            >
-              {showNewPassword ? (
-                <EyeOff className="h-5 w-5" />
-              ) : (
-                <Eye className="h-5 w-5" />
-              )}
-            </button>
-          </div>
-        </div>
+        <InputField
+          label="New Password"
+          icon={LockKeyhole}
+          type="password"
+          name="newPassword"
+          value={formData.newPassword}
+          onChange={handleInputChange}
+          disabled={isSubmitting}
+          error={errors.newPassword}
+          placeholder="••••••••"
+        />
 
-        {/* Confirm New Password */}
-        <div>
-          <label className="block text-sm font-medium text-ems-text-light dark:text-ems-text-dark mb-2">
-            Confirm New Password
-          </label>
-          <div className="relative">
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <LockKeyhole className="h-5 w-5 text-slate-400" />
-            </div>
-            <input
-              type={showConfirmPassword ? "text" : "password"}
-              name="confirmPassword"
-              value={formData.confirmPassword}
-              onChange={handleInputChange}
-              className="block w-full pl-10 pr-10 py-3 border border-slate-200 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-900/50 text-ems-text-light dark:text-ems-text-dark focus:outline-none focus:ring-2 focus:ring-ems-primary dark:focus:ring-ems-primary-dark transition-colors"
-              placeholder="••••••••"
-            />
-            <button
-              type="button"
-              onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-              className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-ems-primary cursor-pointer transition-colors"
-            >
-              {showConfirmPassword ? (
-                <EyeOff className="h-5 w-5" />
-              ) : (
-                <Eye className="h-5 w-5" />
-              )}
-            </button>
-          </div>
-        </div>
+        <InputField
+          label="Confirm New Password"
+          icon={LockKeyhole}
+          type="password"
+          name="confirmPassword"
+          value={formData.confirmPassword}
+          onChange={handleInputChange}
+          disabled={isSubmitting}
+          error={errors.confirmPassword}
+          placeholder="••••••••"
+        />
 
-        <button
-          type="submit"
-          className="w-full flex justify-center py-3 px-4 rounded-xl shadow-md text-base font-semibold text-white bg-ems-primary hover:bg-blue-700 dark:bg-ems-primary-dark dark:hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-ems-primary transition-all cursor-pointer transform hover:-translate-y-0.5 mt-4"
-        >
-          Update Password
-        </button>
+        <SubmitButton isSubmitting={isSubmitting}>Update Password</SubmitButton>
       </form>
     </AuthCard>
   );

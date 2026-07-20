@@ -16,8 +16,10 @@ import {
 import InputField from "../components/InputField";
 import SelectField from "../components/SelectField";
 import SubmitButton from "../components/SubmitButton";
+import { useAuth } from "../context/AuthContext";
 
 function Users() {
+  const { user: authUser } = useAuth();
   const [users, setUsers] = useState([]);
   const [teams, setTeams] = useState([]);
   const [departments, setDepartments] = useState([]);
@@ -212,13 +214,15 @@ function Users() {
             Manage company users and create accounts.
           </p>
         </div>
-        <button
-          onClick={openCreateModal}
-          className="flex items-center gap-2 px-4 py-2 bg-ems-primary hover:bg-blue-700 text-white rounded-xl font-medium transition-colors cursor-pointer shadow-sm"
-        >
-          <Plus className="w-5 h-5" />
-          Add User
-        </button>
+        {authUser?.role === "Management" && (
+          <button
+            onClick={openCreateModal}
+            className="flex items-center gap-2 px-4 py-2 bg-ems-primary hover:bg-blue-700 text-white rounded-xl font-medium transition-colors cursor-pointer shadow-sm"
+          >
+            <Plus className="w-5 h-5" />
+            Add User
+          </button>
+        )}
       </div>
 
       {isLoading ? (
@@ -284,15 +288,16 @@ function Users() {
                   >
                     <Eye className="w-4 h-4" />
                   </button>
-                  {user.role !== "Management" && (
-                    <button
-                      onClick={() => openEditModal(user)}
-                      className="p-1.5 hover:bg-green-50 hover:text-green-600 dark:hover:bg-green-900/30 dark:hover:text-green-400 rounded-lg transition-colors cursor-pointer"
-                      title="Edit User"
-                    >
-                      <Pencil className="w-4 h-4" />
-                    </button>
-                  )}
+                  {authUser?.role === "Management" &&
+                    user.role !== "Management" && (
+                      <button
+                        onClick={() => openEditModal(user)}
+                        className="p-1.5 hover:bg-green-50 hover:text-green-600 dark:hover:bg-green-900/30 dark:hover:text-green-400 rounded-lg transition-colors cursor-pointer"
+                        title="Edit User"
+                      >
+                        <Pencil className="w-4 h-4" />
+                      </button>
+                    )}
                 </div>
               </div>
             </div>

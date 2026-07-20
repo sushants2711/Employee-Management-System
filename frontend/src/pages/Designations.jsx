@@ -15,8 +15,10 @@ import {
 import InputField from "../components/InputField";
 import SelectField from "../components/SelectField";
 import SubmitButton from "../components/SubmitButton";
+import { useAuth } from "../context/AuthContext";
 
 function Designations() {
+  const { user } = useAuth();
   const [designations, setDesignations] = useState([]);
   const [departments, setDepartments] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -158,13 +160,15 @@ function Designations() {
             Manage company designations and their details.
           </p>
         </div>
-        <button
-          onClick={openCreateModal}
-          className="flex items-center gap-2 px-4 py-2 bg-ems-primary hover:bg-blue-700 text-white rounded-xl font-medium transition-colors cursor-pointer shadow-sm"
-        >
-          <Plus className="w-5 h-5" />
-          Add Designation
-        </button>
+        {user?.role === "Management" && (
+          <button
+            onClick={openCreateModal}
+            className="flex items-center gap-2 px-4 py-2 bg-ems-primary hover:bg-blue-700 text-white rounded-xl font-medium transition-colors cursor-pointer shadow-sm"
+          >
+            <Plus className="w-5 h-5" />
+            Add Designation
+          </button>
+        )}
       </div>
 
       {isLoading ? (
@@ -222,20 +226,24 @@ function Designations() {
                   >
                     <Eye className="w-4 h-4" />
                   </button>
-                  <button
-                    onClick={() => openUpdateModal(desig)}
-                    className="p-1.5 hover:bg-blue-50 hover:text-blue-600 dark:hover:bg-blue-900/30 dark:hover:text-blue-400 rounded-lg transition-colors cursor-pointer"
-                    title="Edit Designation"
-                  >
-                    <Edit2 className="w-4 h-4" />
-                  </button>
-                  <button
-                    onClick={() => setDeleteConfirmId(desig._id)}
-                    className="p-1.5 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-900/30 dark:hover:text-red-400 rounded-lg transition-colors cursor-pointer"
-                    title="Delete Designation"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
+                  {user?.role === "Management" && (
+                    <>
+                      <button
+                        onClick={() => openUpdateModal(desig)}
+                        className="p-1.5 hover:bg-blue-50 hover:text-blue-600 dark:hover:bg-blue-900/30 dark:hover:text-blue-400 rounded-lg transition-colors cursor-pointer"
+                        title="Edit Designation"
+                      >
+                        <Edit2 className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => setDeleteConfirmId(desig._id)}
+                        className="p-1.5 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-900/30 dark:hover:text-red-400 rounded-lg transition-colors cursor-pointer"
+                        title="Delete Designation"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </>
+                  )}
                 </div>
               </div>
             </div>

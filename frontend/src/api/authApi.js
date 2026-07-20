@@ -13,6 +13,13 @@ export const updateManagementProfile = async (profileData) => {
   });
 };
 
+export const changePassword = async (passwordData) => {
+  return await apiClient("/user/change-password", {
+    method: "PUT",
+    body: JSON.stringify(passwordData),
+  });
+};
+
 export const managementSignup = async (userData) => {
   return await apiClient("/user/manager-signup", {
     method: "POST",
