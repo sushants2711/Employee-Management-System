@@ -23,6 +23,7 @@ function OrgTreePage() {
     loadOrgTree();
   }, []);
 
+
   const stats = useMemo(() => {
     let deptCount = 0;
     let desigCount = 0;
@@ -86,9 +87,7 @@ function OrgTreePage() {
             <div className="flex items-center space-x-2 bg-white/50 dark:bg-slate-800/50 px-4 py-2.5 rounded-2xl shadow-sm border border-slate-200/50 dark:border-slate-700/50">
               <Building2 className="text-blue-500 w-5 h-5" />
               <div className="flex flex-col">
-                <span className="text-[10px] uppercase font-bold text-slate-500 tracking-wider">
-                  Departments
-                </span>
+                <span className="text-[10px] uppercase font-bold text-slate-500 tracking-wider">Departments</span>
                 <span className="text-sm font-black text-slate-800 dark:text-white leading-none">
                   <AnimatedCounter value={stats.deptCount} />
                 </span>
@@ -98,9 +97,7 @@ function OrgTreePage() {
             <div className="flex items-center space-x-2 bg-white/50 dark:bg-slate-800/50 px-4 py-2.5 rounded-2xl shadow-sm border border-slate-200/50 dark:border-slate-700/50">
               <Briefcase className="text-purple-500 w-5 h-5" />
               <div className="flex flex-col">
-                <span className="text-[10px] uppercase font-bold text-slate-500 tracking-wider">
-                  Designations
-                </span>
+                <span className="text-[10px] uppercase font-bold text-slate-500 tracking-wider">Designations</span>
                 <span className="text-sm font-black text-slate-800 dark:text-white leading-none">
                   <AnimatedCounter value={stats.desigCount} />
                 </span>
@@ -110,9 +107,7 @@ function OrgTreePage() {
             <div className="flex items-center space-x-2 bg-white/50 dark:bg-slate-800/50 px-4 py-2.5 rounded-2xl shadow-sm border border-slate-200/50 dark:border-slate-700/50">
               <Users className="text-emerald-500 w-5 h-5" />
               <div className="flex flex-col">
-                <span className="text-[10px] uppercase font-bold text-slate-500 tracking-wider">
-                  Employees
-                </span>
+                <span className="text-[10px] uppercase font-bold text-slate-500 tracking-wider">Employees</span>
                 <span className="text-sm font-black text-slate-800 dark:text-white leading-none">
                   <AnimatedCounter value={stats.totalEmployees} />
                 </span>
