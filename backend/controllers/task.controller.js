@@ -188,7 +188,6 @@ export const updateTaskController = async (req, res) => {
       project,
       team,
       assignedTo,
-      status,
       priority,
       startDate,
       dueDate,
@@ -234,23 +233,65 @@ export const updateTaskController = async (req, res) => {
       if (!userExist) return notFoundResponse(res, "Assigned user not found");
     }
 
-    if (status && (status === "COMPLETED" || status === "BLOCKED"))
-      singleTask.completedAt = new Date();
-
     const updateDataGroup = {
       taskName: taskName ?? singleTask.taskName,
       description: description ?? singleTask.description,
       project: project ?? singleTask.project,
       team: team ?? singleTask.team,
       assignedTo: assignedTo ?? singleTask.assignedTo,
-      status: status ?? singleTask.status,
+      status: singleTask.status,
       priority: priority ?? singleTask.priority,
       startDate: startDate ?? singleTask.startDate,
       dueDate: dueDate ?? singleTask.dueDate,
       remarks: remarks ?? singleTask.remarks,
     };
 
-    // If status is being updated to COMPLETED, update completedAt
+    const updatedTask = await taskModel.findByIdAndUpdate(
+      id,
+      { $set: updateDataGroup },
+      { new: true }
+    );
+
+    if (!updatedTask) {
+      return badRequestResponse(res, "Failed to update task");
+    }
+
+    return successResponse(res, "Task updated successfully", updatedTask);
+  } catch (error) {
+    return internalServerErrorResponse(
+      res,
+      "Internal Server Error",
+      error.message
+    );
+  }
+};
+
+// update task status by user controller
+export const updateTaskStatusController = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { status } = req.body;
+    const loggedInUser = req.user;
+
+    const isValid = verifyMongoDBId(id, res);
+    if (isValid !== true) return isValid;
+
+    const singleTask = await taskModel.findById(id);
+
+    if (!singleTask) {
+      return notFoundResponse(res, "Task not found");
+    }
+
+    // Only allow the assigned user to update the status
+    if (singleTask.assignedTo.toString() !== loggedInUser._id.toString()) {
+      return badRequestResponse(
+        res,
+        "You are not authorized to update this task status. Only the assigned user can update it."
+      );
+    }
+
+    const updateDataGroup = { status };
+
     if (status === "COMPLETED" && singleTask.status !== "COMPLETED") {
       updateDataGroup.completedAt = new Date();
     } else if (status && status !== "COMPLETED") {
@@ -264,10 +305,14 @@ export const updateTaskController = async (req, res) => {
     );
 
     if (!updatedTask) {
-      return badRequestResponse(res, "Failed to update task");
+      return badRequestResponse(res, "Failed to update task status");
     }
 
-    return successResponse(res, "Task updated successfully", updatedTask);
+    return successResponse(
+      res,
+      "Task status updated successfully",
+      updatedTask
+    );
   } catch (error) {
     return internalServerErrorResponse(
       res,

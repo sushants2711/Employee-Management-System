@@ -52,18 +52,6 @@ export const updateTaskMiddleware = async (req, res, next) => {
       project: joi.string().hex().length(24).optional().allow(""),
       team: joi.string().hex().length(24).optional().allow(""),
       assignedTo: joi.string().hex().length(24).optional().allow(""),
-      status: joi
-        .string()
-        .valid(
-          "TODO",
-          "IN_PROGRESS",
-          "IN_REVIEW",
-          "TESTING",
-          "COMPLETED",
-          "BLOCKED"
-        )
-        .optional()
-        .allow(""),
       priority: joi
         .string()
         .valid("LOW", "MEDIUM", "HIGH", "URGENT")
@@ -94,11 +82,14 @@ export const updateTaskMiddleware = async (req, res, next) => {
   }
 };
 
-// update the task completed at middleware
-export const updateTaskCompletedAtMiddleware = async (req, res, next) => {
+// update the status only
+export const updateTaskStatusByUserMiddleware = async (req, res, next) => {
   try {
     const schema = joi.object({
-      completedAt: joi.boolean().required(),
+      status: joi
+        .string()
+        .valid("TODO", "IN_PROGRESS", "IN_REVIEW", "TESTING", "COMPLETED")
+        .required(),
     });
 
     const { error } = schema.validate(req.body);
@@ -110,7 +101,6 @@ export const updateTaskCompletedAtMiddleware = async (req, res, next) => {
         error?.details?.[0]?.message
       );
     }
-
     next();
   } catch (error) {
     return internalServerErrorResponse(
