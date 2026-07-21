@@ -234,6 +234,9 @@ export const updateTaskController = async (req, res) => {
       if (!userExist) return notFoundResponse(res, "Assigned user not found");
     }
 
+    if (status && (status === "COMPLETED" || status === "BLOCKED"))
+      singleTask.completedAt = new Date();
+
     const updateDataGroup = {
       taskName: taskName ?? singleTask.taskName,
       description: description ?? singleTask.description,
