@@ -2,9 +2,9 @@ import joi from "joi";
 import {
   internalServerErrorResponse,
   validationErrorResponse,
-} from "../utils/response.handler";
+} from "../utils/response.handler.js";
 
-// cretae task middleware
+// create task middleware
 export const createTaskMiddleware = async (req, res, next) => {
   try {
     const schema = joi.object({

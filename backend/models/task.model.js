@@ -8,7 +8,6 @@ const taskSchema = new mongoose.Schema(
     },
     description: {
       type: String,
-      default: null,
     },
     project: {
       type: mongoose.Schema.Types.ObjectId,
@@ -51,19 +50,15 @@ const taskSchema = new mongoose.Schema(
     },
     startDate: {
       type: Date,
-      default: null,
     },
     dueDate: {
       type: Date,
-      default: null,
     },
     completedAt: {
       type: Date,
-      default: null,
     },
     remarks: {
       type: String,
-      default: null,
     },
   },
   { timestamps: true, minimize: true }

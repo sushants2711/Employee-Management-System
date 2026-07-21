@@ -19,9 +19,9 @@ export const createTaskController = async (req, res) => {
     const {
       taskName,
       description,
-      project,
-      team,
-      assignedTo,
+      project, // mongo id
+      team, // mongo id
+      assignedTo, // mongo id
       priority,
       startDate,
       dueDate,
@@ -30,13 +30,13 @@ export const createTaskController = async (req, res) => {
 
     // verify IDs
     const isProjectValid = verifyMongoDBId(project, res);
-    if (isProjectValid !== true) return;
+    if (isProjectValid !== true) return isProjectValid;
 
     const isTeamValid = verifyMongoDBId(team, res);
-    if (isTeamValid !== true) return;
+    if (isTeamValid !== true) return isTeamValid;
 
     const isAssignedToValid = verifyMongoDBId(assignedTo, res);
-    if (isAssignedToValid !== true) return;
+    if (isAssignedToValid !== true) return isAssignedToValid;
 
     // check if referenced entities exist
     const projectExist = await projectModel.findById(project);
@@ -54,6 +54,9 @@ export const createTaskController = async (req, res) => {
       return notFoundResponse(res, "Assigned user not found");
     }
 
+    if (userExist.role === "Management")
+      return badRequestResponse(res, "You cannot assign task to management");
+
     if (projectExist.teamName.toString() !== team) {
       return badRequestResponse(
         res,
@@ -62,7 +65,9 @@ export const createTaskController = async (req, res) => {
     }
 
     const isUserInTeam =
-      teamExist.members.includes(assignedTo) ||
+      teamExist.members.some(
+        (memberId) => memberId.toString() === assignedTo
+      ) ||
       teamExist.teamLead.toString() === assignedTo ||
       teamExist.manager.toString() === assignedTo;
 
@@ -191,7 +196,22 @@ export const updateTaskController = async (req, res) => {
     } = req.body;
 
     const isValid = verifyMongoDBId(id, res);
-    if (isValid !== true) return;
+    if (isValid !== true) return isValid;
+
+    if (project) {
+      const isProjectValid = verifyMongoDBId(project, res);
+      if (isProjectValid !== true) return isProjectValid;
+    }
+
+    if (team) {
+      const isTeamValid = verifyMongoDBId(team, res);
+      if (isTeamValid !== true) return isTeamValid;
+    }
+
+    if (assignedTo) {
+      const isAssignedToValid = verifyMongoDBId(assignedTo, res);
+      if (isAssignedToValid !== true) return isAssignedToValid;
+    }
 
     const singleTask = await taskModel.findById(id);
 
@@ -200,67 +220,26 @@ export const updateTaskController = async (req, res) => {
     }
 
     if (project) {
-      const isProjectValid = verifyMongoDBId(project, res);
-      if (isProjectValid !== true) return;
       const projectExist = await projectModel.findById(project);
       if (!projectExist) return notFoundResponse(res, "Project not found");
     }
 
     if (team) {
-      const isTeamValid = verifyMongoDBId(team, res);
-      if (isTeamValid !== true) return;
       const teamExist = await teamModel.findById(team);
       if (!teamExist) return notFoundResponse(res, "Team not found");
     }
 
     if (assignedTo) {
-      const isAssignedToValid = verifyMongoDBId(assignedTo, res);
-      if (isAssignedToValid !== true) return;
       const userExist = await userModel.findById(assignedTo);
       if (!userExist) return notFoundResponse(res, "Assigned user not found");
-    }
-
-    const finalProject = project ?? singleTask.project.toString();
-    const finalTeam = team ?? singleTask.team.toString();
-    const finalAssignedTo = assignedTo ?? singleTask.assignedTo.toString();
-
-    // Verify relationship if any of these are updated
-    if (project || team || assignedTo) {
-      const p = project
-        ? await projectModel.findById(finalProject)
-        : await projectModel.findById(singleTask.project);
-      const t = team
-        ? await teamModel.findById(finalTeam)
-        : await teamModel.findById(singleTask.team);
-
-      if (p && t && p.teamName.toString() !== finalTeam) {
-        return badRequestResponse(
-          res,
-          "The selected team is not assigned to this project"
-        );
-      }
-
-      if (t && finalAssignedTo) {
-        const isUserInTeam =
-          t.members.includes(finalAssignedTo) ||
-          t.teamLead.toString() === finalAssignedTo ||
-          t.manager.toString() === finalAssignedTo;
-
-        if (!isUserInTeam) {
-          return badRequestResponse(
-            res,
-            "Assigned user is not part of the team working on this project"
-          );
-        }
-      }
     }
 
     const updateDataGroup = {
       taskName: taskName ?? singleTask.taskName,
       description: description ?? singleTask.description,
-      project: finalProject,
-      team: finalTeam,
-      assignedTo: finalAssignedTo,
+      project: project ?? singleTask.project,
+      team: team ?? singleTask.team,
+      assignedTo: assignedTo ?? singleTask.assignedTo,
       status: status ?? singleTask.status,
       priority: priority ?? singleTask.priority,
       startDate: startDate ?? singleTask.startDate,
