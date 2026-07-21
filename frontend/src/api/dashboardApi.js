@@ -5,3 +5,9 @@ export const fetchDashboardDetails = async () => {
     method: "GET",
   });
 };
+
+export const fetchOrgTreeDetails = async () => {
+  return apiClient("/dashboard/org-tree", {
+    method: "GET",
+  });
+};

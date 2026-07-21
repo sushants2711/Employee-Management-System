@@ -17,6 +17,7 @@ import Users from "./pages/Users";
 import Projects from "./pages/Projects";
 import Tasks from "./pages/Tasks";
 import Profile from "./pages/Profile";
+import OrgTreePage from "./pages/OrgTreePage";
 import NotFound from "./pages/NotFound";
 import DashboardLayout from "./layouts/DashboardLayout";
 import ScrollToTop from "./components/ScrollToTop";
@@ -97,6 +98,7 @@ function App() {
                   <Route path="users" element={<Users />} />
                   <Route path="projects" element={<Projects />} />
                   <Route path="tasks" element={<Tasks />} />
+                  <Route path="org-tree" element={<OrgTreePage />} />
                   <Route path="profile" element={<Profile />} />
                   <Route path="help-center" element={<HelpCenter />} />
                   <Route path="documentation" element={<Documentation />} />

@@ -115,3 +115,108 @@ export const allDetailsController = async (req, res) => {
     );
   }
 };
+
+export const getOrgTreeController = async (req, res) => {
+  try {
+    const departments = await Department.find();
+    const designations = await Designation.find();
+    const users = await User.find({ status: "ACTIVE" }).select(
+      "name role employeeId department designation"
+    );
+
+    const tree = departments.map((dept) => {
+      const deptDesignations = designations.filter(
+        (d) => d.department.toString() === dept._id.toString()
+      );
+
+      const desigNodes = deptDesignations.map((desig) => {
+        const desigUsers = users.filter(
+          (u) =>
+            u.designation && u.designation.toString() === desig._id.toString()
+        );
+
+        const management = desigUsers
+          .filter((u) => u.role === "Management")
+          .map((u) => ({
+            name: u.name,
+            role: u.role,
+            empId: u.employeeId,
+            children: [],
+          }));
+        const managers = desigUsers
+          .filter((u) => u.role === "Manager")
+          .map((u) => ({
+            name: u.name,
+            role: u.role,
+            empId: u.employeeId,
+            children: [],
+          }));
+        const teamLeaders = desigUsers
+          .filter((u) => u.role === "Team Leader")
+          .map((u) => ({
+            name: u.name,
+            role: u.role,
+            empId: u.employeeId,
+            children: [],
+          }));
+        const employees = desigUsers
+          .filter((u) => u.role === "Employee")
+          .map((u) => ({
+            name: u.name,
+            role: u.role,
+            empId: u.employeeId,
+            children: [],
+          }));
+
+        if (employees.length > 0) {
+          if (teamLeaders.length > 0)
+            teamLeaders.forEach((tl) => (tl.children = [...employees]));
+          else if (managers.length > 0)
+            managers.forEach((m) => (m.children = [...employees]));
+          else if (management.length > 0)
+            management.forEach((m) => (m.children = [...employees]));
+        }
+
+        if (teamLeaders.length > 0) {
+          if (managers.length > 0)
+            managers.forEach((m) => (m.children = [...teamLeaders]));
+          else if (management.length > 0)
+            management.forEach((m) => (m.children = [...teamLeaders]));
+        }
+
+        if (managers.length > 0) {
+          if (management.length > 0)
+            management.forEach((m) => (m.children = [...managers]));
+        }
+
+        let topLevelUsers = [];
+        if (management.length > 0) topLevelUsers = management;
+        else if (managers.length > 0) topLevelUsers = managers;
+        else if (teamLeaders.length > 0) topLevelUsers = teamLeaders;
+        else topLevelUsers = employees;
+
+        return {
+          name: desig.designationName,
+          role: "Designation",
+          children: topLevelUsers,
+        };
+      });
+
+      return {
+        name: dept.departmentName,
+        role: "Department",
+        children: desigNodes,
+      };
+    });
+
+    return successResponse(res, "Org tree fetched successfully", [
+      { name: "Organization", role: "Root", children: tree },
+    ]);
+  } catch (error) {
+    return internalServerErrorResponse(
+      res,
+      "Internal Server Error",
+      error.message
+    );
+  }
+};

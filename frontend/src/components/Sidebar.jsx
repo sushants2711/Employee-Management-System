@@ -42,6 +42,10 @@ function Sidebar({ onClose }) {
     name: "Tasks",
     path: "/home/tasks",
   });
+  navItems.push({
+    name: "Org Chart",
+    path: "/home/org-tree",
+  });
 
   // Placeholder for future routes
   // navItems.push({ name: "Employees", path: "/home/employees", icon: Users });
