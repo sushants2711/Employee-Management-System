@@ -73,13 +73,13 @@ export const getAllUsers = async (status, search) => {
 };
 
 export const getAllActiveManagers = async () => {
-  return await apiClient("/user/all-active-manager", {
+  return await apiClient("/user/get-manager", {
     method: "GET",
   });
 };
 
 export const getAllActiveTeamLeaders = async () => {
-  return await apiClient("/user/all-active-team-leader", {
+  return await apiClient("/user/get-team-leader", {
     method: "GET",
   });
 };
@@ -92,7 +92,7 @@ export const updateUserDetails = async (id, userData) => {
 };
 
 export const getAllEmployees = async () => {
-  return await apiClient("/user/all-employee", {
+  return await apiClient("/user/get-employee", {
     method: "GET",
   });
 };
