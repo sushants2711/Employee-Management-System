@@ -103,21 +103,57 @@ function Teams() {
   }, [teams, modalConfig]);
 
   const availableUsers = useMemo(
-    () => users.filter((u) => !assignedUserIds.has(u._id)),
-    [users, assignedUserIds]
+    () =>
+      users.filter((u) => {
+        const notAssigned = !assignedUserIds.has(u._id);
+        const matchesDept =
+          !formData.department ||
+          (u.department &&
+            (u.department._id === formData.department ||
+              u.department === formData.department));
+        return notAssigned && matchesDept;
+      }),
+    [users, assignedUserIds, formData.department]
   );
   const availableManagers = useMemo(
-    () => managers.filter((m) => !assignedUserIds.has(m._id)),
-    [managers, assignedUserIds]
+    () =>
+      managers.filter((m) => {
+        const notAssigned = !assignedUserIds.has(m._id);
+        const matchesDept =
+          !formData.department ||
+          (m.department &&
+            (m.department._id === formData.department ||
+              m.department === formData.department));
+        return notAssigned && matchesDept;
+      }),
+    [managers, assignedUserIds, formData.department]
   );
   const availableTeamLeaders = useMemo(
-    () => teamLeaders.filter((t) => !assignedUserIds.has(t._id)),
-    [teamLeaders, assignedUserIds]
+    () =>
+      teamLeaders.filter((t) => {
+        const notAssigned = !assignedUserIds.has(t._id);
+        const matchesDept =
+          !formData.department ||
+          (t.department &&
+            (t.department._id === formData.department ||
+              t.department === formData.department));
+        return notAssigned && matchesDept;
+      }),
+    [teamLeaders, assignedUserIds, formData.department]
   );
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    setFormData((prev) => {
+      const newData = { ...prev, [name]: value };
+      // If the department changes, reset the users that belong to a department
+      if (name === "department") {
+        newData.manager = "";
+        newData.teamLead = "";
+        newData.members = [];
+      }
+      return newData;
+    });
 
     const error = validateTeamField(name, value);
     setErrors((prev) => ({ ...prev, [name]: error }));
