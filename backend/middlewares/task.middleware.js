@@ -88,8 +88,17 @@ export const updateTaskStatusByUserMiddleware = async (req, res, next) => {
     const schema = joi.object({
       status: joi
         .string()
-        .valid("TODO", "IN_PROGRESS", "IN_REVIEW", "TESTING", "COMPLETED")
-        .required(),
+        .valid(
+          "TODO",
+          "IN_PROGRESS",
+          "IN_REVIEW",
+          "TESTING",
+          "COMPLETED",
+          "BLOCKED"
+        )
+        .optional()
+        .allow(""),
+      remarks: joi.string().min(5).max(500).trim().optional().allow(""),
     });
 
     const { error } = schema.validate(req.body);

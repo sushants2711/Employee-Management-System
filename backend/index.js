@@ -16,6 +16,7 @@ import designationRouter from "./routers/designation.router.js";
 import teamRouter from "./routers/team.router.js";
 import dashboardRouter from "./routers/dashboard.router.js";
 import projectRouter from "./routers/project.router.js";
+import taskRouter from "./routers/task.router.js";
 
 // dotenv config
 dotenv.config();
@@ -97,6 +98,7 @@ app.use("/api/v1/designation", designationRouter);
 app.use("/api/v1/team", teamRouter);
 app.use("/api/v1/dashboard", dashboardRouter);
 app.use("/api/v1/project", projectRouter);
+app.use("/api/v1/task", taskRouter);
 
 // server start
 app.listen(PORTNUMBER, () => {

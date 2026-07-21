@@ -15,6 +15,7 @@ import Designations from "./pages/Designations";
 import Teams from "./pages/Teams";
 import Users from "./pages/Users";
 import Projects from "./pages/Projects";
+import Tasks from "./pages/Tasks";
 import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
 import DashboardLayout from "./layouts/DashboardLayout";
@@ -95,6 +96,7 @@ function App() {
                   <Route path="teams" element={<Teams />} />
                   <Route path="users" element={<Users />} />
                   <Route path="projects" element={<Projects />} />
+                  <Route path="tasks" element={<Tasks />} />
                   <Route path="profile" element={<Profile />} />
                   <Route path="help-center" element={<HelpCenter />} />
                   <Route path="documentation" element={<Documentation />} />

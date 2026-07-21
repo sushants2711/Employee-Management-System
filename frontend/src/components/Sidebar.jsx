@@ -38,6 +38,10 @@ function Sidebar({ onClose }) {
     name: "Projects",
     path: "/home/projects",
   });
+  navItems.push({
+    name: "Tasks",
+    path: "/home/tasks",
+  });
 
   // Placeholder for future routes
   // navItems.push({ name: "Employees", path: "/home/employees", icon: Users });

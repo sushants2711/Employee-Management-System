@@ -127,12 +127,46 @@ export const getTaskController = async (req, res) => {
     if (team) filterData.team = team;
     if (assignedTo) filterData.assignedTo = assignedTo;
 
+    const loggedInUserRole = req.user.role;
+    const loggedInUserId = req.user.id;
+
+    // Role-based Access Control for fetching tasks
+    if (loggedInUserRole !== "Management") {
+      // Find all teams where the user is a manager, team lead, or a member
+      const userTeams = await teamModel.find(
+        {
+          $or: [
+            { manager: loggedInUserId },
+            { teamLead: loggedInUserId },
+            { members: loggedInUserId },
+          ],
+        },
+        "_id"
+      );
+
+      const teamIds = userTeams.map((t) => t._id);
+
+      if (filterData.team) {
+        if (
+          !teamIds.some((id) => id.toString() === filterData.team.toString())
+        ) {
+          return successResponse(res, "Tasks fetched successfully", []);
+        }
+      } else {
+        filterData.team = { $in: teamIds };
+      }
+
+      if (loggedInUserRole === "Employee") {
+        filterData.assignedTo = loggedInUserId;
+      }
+    }
+
     const tasks = await taskModel
       .find(filterData)
       .populate("project", "projectName projectCode")
       .populate("team", "teamName teamCode")
-      .populate("assignedTo", "firstName lastName email")
-      .populate("assignedBy", "firstName lastName email");
+      .populate("assignedTo", "name email profilePicUrl")
+      .populate("assignedBy", "name email profilePicUrl");
 
     if (!tasks || tasks.length === 0 || !Array.isArray(tasks)) {
       return notFoundResponse(res, "No task found");
@@ -160,11 +194,33 @@ export const getSingleTaskController = async (req, res) => {
       .findById(id)
       .populate("project", "projectName projectCode")
       .populate("team", "teamName teamCode")
-      .populate("assignedTo", "firstName lastName email")
-      .populate("assignedBy", "firstName lastName email");
+      .populate("assignedTo", "name email profilePicUrl")
+      .populate("assignedBy", "name email profilePicUrl");
 
     if (!singleTask) {
       return notFoundResponse(res, "Task not found");
+    }
+
+    const loggedInUserRole = req.user.role;
+    const loggedInUserId = req.user.id;
+
+    if (loggedInUserRole === "Employee") {
+      if (singleTask.assignedTo._id.toString() !== loggedInUserId.toString()) {
+        return notFoundResponse(res, "Task not found");
+      }
+    } else if (loggedInUserRole !== "Management") {
+      const teamId = singleTask.team._id;
+      const userTeam = await teamModel.findOne({
+        _id: teamId,
+        $or: [
+          { manager: loggedInUserId },
+          { teamLead: loggedInUserId },
+          { members: loggedInUserId },
+        ],
+      });
+      if (!userTeam) {
+        return notFoundResponse(res, "Task not found");
+      }
     }
 
     return successResponse(res, "Task fetched successfully", singleTask);
@@ -270,7 +326,7 @@ export const updateTaskController = async (req, res) => {
 export const updateTaskStatusController = async (req, res) => {
   try {
     const { id } = req.params;
-    const { status } = req.body;
+    const { status, remarks } = req.body;
     const loggedInUser = req.user;
 
     const isValid = verifyMongoDBId(id, res);
@@ -283,19 +339,27 @@ export const updateTaskStatusController = async (req, res) => {
     }
 
     // Only allow the assigned user to update the status
-    if (singleTask.assignedTo.toString() !== loggedInUser._id.toString()) {
+    const userId = loggedInUser.id || loggedInUser._id;
+    if (singleTask.assignedTo.toString() !== userId.toString()) {
       return badRequestResponse(
         res,
         "You are not authorized to update this task status. Only the assigned user can update it."
       );
     }
 
-    const updateDataGroup = { status };
+    const updateDataGroup = {};
 
-    if (status === "COMPLETED" && singleTask.status !== "COMPLETED") {
-      updateDataGroup.completedAt = new Date();
-    } else if (status && status !== "COMPLETED") {
-      updateDataGroup.completedAt = null;
+    if (status) {
+      updateDataGroup.status = status;
+      if (status === "COMPLETED" && singleTask.status !== "COMPLETED") {
+        updateDataGroup.completedAt = new Date();
+      } else if (status !== "COMPLETED") {
+        updateDataGroup.completedAt = null;
+      }
+    }
+
+    if (remarks !== undefined) {
+      updateDataGroup.remarks = remarks;
     }
 
     const updatedTask = await taskModel.findByIdAndUpdate(
