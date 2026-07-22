@@ -190,7 +190,9 @@ function Users() {
       }
       setIsSubmitting(true);
       try {
-        await createUserAccount(formData);
+        // eslint-disable-next-line no-unused-vars
+        const { status, ...createPayload } = formData;
+        await createUserAccount(createPayload);
         showSuccess("Account created successfully");
         setModalConfig({ isOpen: false, mode: "CREATE" });
         fetchData(); // refresh list
