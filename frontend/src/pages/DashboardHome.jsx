@@ -85,35 +85,55 @@ function DashboardHome() {
       });
     });
 
-    const managementNodes = (data.hierarchy.management?.data || []).map((u) => userNodesMap.get(u._id));
-    const managerNodes = (data.hierarchy.managers?.data || []).map((u) => userNodesMap.get(u._id));
-    const tlNodes = (data.hierarchy.teamLeaders?.data || []).map((u) => userNodesMap.get(u._id));
-    const employeeNodes = (data.hierarchy.employees?.data || []).map((u) => userNodesMap.get(u._id));
+    const managementNodes = (data.hierarchy.management?.data || []).map((u) =>
+      userNodesMap.get(u._id)
+    );
+    const managerNodes = (data.hierarchy.managers?.data || []).map((u) =>
+      userNodesMap.get(u._id)
+    );
+    const tlNodes = (data.hierarchy.teamLeaders?.data || []).map((u) =>
+      userNodesMap.get(u._id)
+    );
+    const employeeNodes = (data.hierarchy.employees?.data || []).map((u) =>
+      userNodesMap.get(u._id)
+    );
 
     // Distribute Employees evenly to the next available higher role
     if (employeeNodes.length > 0) {
       if (tlNodes.length > 0) {
-        employeeNodes.forEach((emp, i) => tlNodes[i % tlNodes.length].children.push(emp));
+        employeeNodes.forEach((emp, i) =>
+          tlNodes[i % tlNodes.length].children.push(emp)
+        );
       } else if (managerNodes.length > 0) {
-        employeeNodes.forEach((emp, i) => managerNodes[i % managerNodes.length].children.push(emp));
+        employeeNodes.forEach((emp, i) =>
+          managerNodes[i % managerNodes.length].children.push(emp)
+        );
       } else if (managementNodes.length > 0) {
-        employeeNodes.forEach((emp, i) => managementNodes[i % managementNodes.length].children.push(emp));
+        employeeNodes.forEach((emp, i) =>
+          managementNodes[i % managementNodes.length].children.push(emp)
+        );
       }
     }
 
     // Distribute Team Leaders evenly to the next available higher role
     if (tlNodes.length > 0) {
       if (managerNodes.length > 0) {
-        tlNodes.forEach((tl, i) => managerNodes[i % managerNodes.length].children.push(tl));
+        tlNodes.forEach((tl, i) =>
+          managerNodes[i % managerNodes.length].children.push(tl)
+        );
       } else if (managementNodes.length > 0) {
-        tlNodes.forEach((tl, i) => managementNodes[i % managementNodes.length].children.push(tl));
+        tlNodes.forEach((tl, i) =>
+          managementNodes[i % managementNodes.length].children.push(tl)
+        );
       }
     }
 
     // Distribute Managers evenly to Management
     if (managerNodes.length > 0) {
       if (managementNodes.length > 0) {
-        managerNodes.forEach((m, i) => managementNodes[i % managementNodes.length].children.push(m));
+        managerNodes.forEach((m, i) =>
+          managementNodes[i % managementNodes.length].children.push(m)
+        );
       }
     }
 
