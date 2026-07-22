@@ -85,38 +85,43 @@ function DashboardHome() {
       });
     });
 
-    const roots = [];
+    const managementNodes = (data.hierarchy.management?.data || []).map((u) => userNodesMap.get(u._id));
+    const managerNodes = (data.hierarchy.managers?.data || []).map((u) => userNodesMap.get(u._id));
+    const tlNodes = (data.hierarchy.teamLeaders?.data || []).map((u) => userNodesMap.get(u._id));
+    const employeeNodes = (data.hierarchy.employees?.data || []).map((u) => userNodesMap.get(u._id));
 
-    allUsers.forEach((user) => {
-      const node = userNodesMap.get(user._id);
-      if (user.createdAccount && userNodesMap.has(user.createdAccount)) {
-        const parentNode = userNodesMap.get(user.createdAccount);
-        parentNode.children.push(node);
-      } else {
-        roots.push(node);
+    // Distribute Employees evenly to the next available higher role
+    if (employeeNodes.length > 0) {
+      if (tlNodes.length > 0) {
+        employeeNodes.forEach((emp, i) => tlNodes[i % tlNodes.length].children.push(emp));
+      } else if (managerNodes.length > 0) {
+        employeeNodes.forEach((emp, i) => managerNodes[i % managerNodes.length].children.push(emp));
+      } else if (managementNodes.length > 0) {
+        employeeNodes.forEach((emp, i) => managementNodes[i % managementNodes.length].children.push(emp));
       }
-    });
+    }
 
-    const roleWeight = {
-      Root: 0,
-      Management: 1,
-      Manager: 2,
-      "Team Leader": 3,
-      Employee: 4,
-    };
+    // Distribute Team Leaders evenly to the next available higher role
+    if (tlNodes.length > 0) {
+      if (managerNodes.length > 0) {
+        tlNodes.forEach((tl, i) => managerNodes[i % managerNodes.length].children.push(tl));
+      } else if (managementNodes.length > 0) {
+        tlNodes.forEach((tl, i) => managementNodes[i % managementNodes.length].children.push(tl));
+      }
+    }
 
-    const sortTree = (nodes) => {
-      nodes.sort(
-        (a, b) => (roleWeight[a.role] || 99) - (roleWeight[b.role] || 99)
-      );
-      nodes.forEach((node) => {
-        if (node.children && node.children.length > 0) {
-          sortTree(node.children);
-        }
-      });
-    };
+    // Distribute Managers evenly to Management
+    if (managerNodes.length > 0) {
+      if (managementNodes.length > 0) {
+        managerNodes.forEach((m, i) => managementNodes[i % managementNodes.length].children.push(m));
+      }
+    }
 
-    sortTree(roots);
+    let roots;
+    if (managementNodes.length > 0) roots = managementNodes;
+    else if (managerNodes.length > 0) roots = managerNodes;
+    else if (tlNodes.length > 0) roots = tlNodes;
+    else roots = employeeNodes;
 
     if (roots.length > 1) {
       return [
