@@ -17,11 +17,6 @@ const performanceSchema = new mongoose.Schema(
       ref: "Team",
       required: true,
     },
-    assignBy: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-      required: true,
-    },
     task: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Task",
